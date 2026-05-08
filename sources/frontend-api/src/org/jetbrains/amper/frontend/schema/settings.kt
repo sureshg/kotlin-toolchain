@@ -62,6 +62,7 @@ class Settings : SchemaNode() {
     val junit by value(JUnitVersion.JUNIT5)
 
     @SchemaDoc("Publishing settings")
+    @PlatformAgnostic
     val publishing: PublishingSettings by nested()
 
     @SchemaDoc("Native applications settings")

@@ -7,7 +7,6 @@ package org.jetbrains.amper.frontend.schema
 import org.jetbrains.amper.frontend.api.DeprecatedSchema
 import org.jetbrains.amper.frontend.api.KnownStringValues
 import org.jetbrains.amper.frontend.api.Misnomers
-import org.jetbrains.amper.frontend.api.PlatformAgnostic
 import org.jetbrains.amper.frontend.api.SchemaDoc
 import org.jetbrains.amper.frontend.api.SchemaNode
 import org.jetbrains.amper.frontend.tree.NullLiteralNode
@@ -17,36 +16,29 @@ import org.jetbrains.amper.frontend.tree.StringNode
 
 class PublishingSettings : SchemaNode() {
 
-    @PlatformAgnostic
     @SchemaDoc("Enables the publication of the module to Maven repositories (via `./amper publish`)")
     val enabled by value(default = false)
 
-    @PlatformAgnostic
     @SchemaDoc("Group ID of the published Maven artifact")
     val group by nullableValue<String>()
 
-    @PlatformAgnostic
     @SchemaDoc("Version of the published Maven artifact")
     val version by nullableValue<String>()
 
     @Misnomers("name")
-    @PlatformAgnostic
     @SchemaDoc("Base artifact ID of the published Maven artifacts (for multiplatform libraries, a suffix may be " +
             "appended to distinguish artifacts from different platforms)")
     @Suppress("DEPRECATION_ERROR") // it's the only allowed usage for the transition
     val artifactId by referenceValue(::name)
 
-    @PlatformAgnostic
     @SchemaDoc("Obsolete, use 'artifactId' instead.")
     @DeprecatedSchema("obsolete.settings.publishing.name", isError = false)
     @Deprecated("Use 'artifactId' instead.", level = DeprecationLevel.ERROR, replaceWith = ReplaceWith("artifactId"))
     val name by nullableValue<String>()
 
-    @PlatformAgnostic
     @SchemaDoc("Custom metadata to configure in the published `pom.xml` file.")
     val pom by nested<PomSettings>()
 
-    @PlatformAgnostic
     @SchemaDoc("If set to true, artifacts published to Maven repositories are signed with a private PGP signing key," +
             "and these signatures are published as extra artifacts." +
             "\n\n" +
@@ -56,7 +48,6 @@ class PublishingSettings : SchemaNode() {
             "environment variable.")
     val signArtifacts by value(default = false)
 
-    @PlatformAgnostic
     @SchemaDoc("If set to true, JARs with sources for each platform are published as extra artifacts.")
     val publishSources by value(default = false)
 }
