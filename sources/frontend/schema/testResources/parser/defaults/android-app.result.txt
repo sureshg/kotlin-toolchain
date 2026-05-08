@@ -149,7 +149,7 @@ Fragments:
       ktor: <default> {
         applyBom: <default> true
         enabled: <default> false
-        version: <default> 3.4.1
+        version: <default> 3.4.3
       }
       lombok: <default> {
         enabled: <default> false
@@ -338,7 +338,7 @@ Fragments:
       ktor: <default> {
         applyBom: <default> true
         enabled: <default> false
-        version: <default> 3.4.1
+        version: <default> 3.4.3
       }
       lombok: <default> {
         enabled: <default> false
