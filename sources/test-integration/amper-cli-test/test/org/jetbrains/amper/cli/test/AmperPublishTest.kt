@@ -255,7 +255,7 @@ class AmperPublishTest : AmperCliTestBase() {
                 <dependency>
                   <groupId>org.jetbrains.kotlin</groupId>
                   <artifactId>kotlin-stdlib</artifactId>
-                  <version>2.3.20</version>
+                  <version>${DefaultVersions.kotlin}</version>
                   <scope>runtime</scope>
                 </dependency>
               </dependencies>
