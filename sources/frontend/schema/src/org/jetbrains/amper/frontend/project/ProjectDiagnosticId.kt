@@ -16,6 +16,7 @@ enum class ProjectDiagnosticId : DiagnosticId {
     ProjectHasNoModules,
     ModuleDirectoryIsNotUnderRoot,
     ModuleDirectoryHasNoModuleFile,
+    ModuleListShouldBeSorted,
     ModuleReferenceIsNotDirectory,
     ModuleRootIsIncludedByDefault,
     PluginDependencyNotFound,

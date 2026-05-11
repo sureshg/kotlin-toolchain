@@ -17,6 +17,7 @@ import org.jetbrains.amper.frontend.diagnostics.UnresolvedModuleDeclaration
 import org.jetbrains.amper.frontend.reportBundleError
 import org.jetbrains.amper.frontend.schema.MavenPlugin
 import org.jetbrains.amper.frontend.schema.Project
+import org.jetbrains.amper.frontend.types.generated.*
 import org.jetbrains.amper.problems.reporting.BuildProblemType
 import org.jetbrains.amper.problems.reporting.GlobalBuildProblemSource
 import org.jetbrains.amper.problems.reporting.Level
@@ -219,6 +220,22 @@ class StandaloneAmperProjectContext(
                     rootDir.presentableUrl,
                     level = Level.Warning,
                 )
+            }
+
+            val explicitModulePaths = amperProject?.modules?.map {
+                // `./` prefix shouldn't affect ordering
+                it.value.removePrefix("./")
+            }
+            if (!explicitModulePaths.isNullOrEmpty()) {
+                val sortedList = explicitModulePaths.sorted()
+                if (sortedList != explicitModulePaths) {
+                    problemReporter.reportBundleError(
+                        source = amperProject.modulesDelegate.asBuildProblemSource(),
+                        diagnosticId = ProjectDiagnosticId.ModuleListShouldBeSorted,
+                        messageKey = "project.module.list.should.be.sorted",
+                        level = Level.WeakWarning,
+                    )
+                }
             }
 
             val localPluginDependencies = amperProject?.plugins.orEmpty().mapNotNull { dependency ->

@@ -3,5 +3,5 @@ modules:
   - su[b]2/.
   - ./su[b]3/
   - su[b]4/./.
-  - ./su[b]5/./subsub/./deep/.
   - ./su[b]5/./subsub/././deep2/../deep2
+  - ./su[b]5/./subsub/./deep/.

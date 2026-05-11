@@ -8,6 +8,7 @@ import org.jetbrains.amper.cli.test.utils.assertStdoutContains
 import org.jetbrains.amper.cli.test.utils.assertWarnings
 import org.jetbrains.amper.cli.test.utils.runSlowTest
 import org.jetbrains.amper.test.AmperCliResult
+import org.junit.jupiter.api.Assertions.assertFalse
 import kotlin.io.path.div
 import kotlin.io.path.pathString
 import kotlin.test.Test
@@ -77,6 +78,7 @@ class ProjectFileTest : AmperCliTestBase() {
             expectedExitCode = 1,
             assertEmptyStdErr = false,
         )
+        assertContains(r.stdout, "project.yaml:2:3: It is recommended to sort the `modules` list alphabetically. This reduces the chance of Git conflicts and makes it easier to visually locate a module in the list.")
         assertContains(r.stdout, "project.yaml:7:5: Glob pattern `glob-with-no-matches-at-all/*` doesn't match any Amper module directory under the project root")
         assertContains(r.stdout, "project.yaml:8:5: Glob pattern `not-a-modul?` doesn't match any Amper module directory under the project root")
         assertContains(r.stdout, "project.yaml:14:5: The root module is included by default")
@@ -111,6 +113,18 @@ class ProjectFileTest : AmperCliTestBase() {
         val expected = "ERROR: The given path '$explicitRoot' is not a valid Amper project root " +
                 "directory. Make sure you have a project file or a module file at the root of your Amper project."
         assertEquals(expected, r.stderr.trim())
+    }
+
+    @Test
+    fun `project module list alphabetic order`() = runSlowTest {
+        val explicitRoot = testProject("project-modules-sorted-alphabetically")
+        val r = runCli(
+            projectDir = explicitRoot,
+            "show", "tasks",
+        )
+        assertFalse(r.stdout.contains("It is recommended to sort the `modules` list alphabetically")) {
+            "Expected no warning about unsorted module list"
+        }
     }
 
     private fun assertModulesList(modulesCommandResult: AmperCliResult, expectedModules: List<String>) =

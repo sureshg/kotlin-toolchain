@@ -1,0 +1,5 @@
+modules:
+  - module1
+  - ./module2
+  - nested/*
+  - ./nested/deep/*
