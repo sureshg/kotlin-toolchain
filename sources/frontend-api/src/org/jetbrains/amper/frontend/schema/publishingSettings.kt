@@ -9,6 +9,7 @@ import org.jetbrains.amper.frontend.api.KnownStringValues
 import org.jetbrains.amper.frontend.api.Misnomers
 import org.jetbrains.amper.frontend.api.SchemaDoc
 import org.jetbrains.amper.frontend.api.SchemaNode
+import org.jetbrains.amper.frontend.api.Shorthand
 import org.jetbrains.amper.frontend.tree.NullLiteralNode
 import org.jetbrains.amper.frontend.tree.ReferenceNode
 import org.jetbrains.amper.frontend.tree.RefinedTreeNode
@@ -140,6 +141,7 @@ class ScmInfo : SchemaNode() {
         }
     }
 
+    @Shorthand
     @SchemaDoc(
         "The URL to the repository hosting the source code of this module. " +
                 "Required for Maven Central publication.\n\n" +
