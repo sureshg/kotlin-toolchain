@@ -17,7 +17,6 @@ import org.jetbrains.amper.frontend.api.PlatformSpecific
 import org.jetbrains.amper.frontend.api.SchemaDoc
 import org.jetbrains.amper.frontend.api.SchemaNode
 import org.jetbrains.amper.frontend.api.Shorthand
-import org.jetbrains.amper.frontend.api.StandaloneSpecific
 import org.jetbrains.amper.frontend.api.TraceableString
 
 /**
@@ -204,7 +203,6 @@ class KotlinSettings : SchemaNode() {
     @SchemaDoc("Usages of API that [requires opt-in](https://kotlinlang.org/docs/opt-in-requirements.html) with a requirement annotation with the given fully qualified name")
     val optIns by nullableValue<List<TraceableString>>()
 
-    @StandaloneSpecific
     @SchemaDoc("[KSP (Kotlin Symbol Processing)](https://github.com/google/ksp) settings.")
     val ksp: KspSettings by nested()
 

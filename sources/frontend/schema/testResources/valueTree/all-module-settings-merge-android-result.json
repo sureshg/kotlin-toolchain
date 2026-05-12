@@ -58,29 +58,9 @@
         "kotlinx.Experimental"
       ]
     },
-    "ios" : {
-      "teamId" : "iosTeam",
-      "framework" : {
-        "basename" : "iosBasename",
-        "isStatic" : "true"
-      }
-    },
     "publishing" : {
       "group" : "org.jetbrains.amper.frontend.without-fragments.yaml",
       "version" : "42-SNAPSHOT"
-    },
-    "kover" : {
-      "enabled" : "true",
-      "html" : {
-        "title" : "koverHtmlReportTitle",
-        "onCheck" : "true",
-        "reportDir" : "html",
-        "charset" : "UTF8"
-      },
-      "xml" : {
-        "onCheck" : "false",
-        "reportFile" : "coverage.xml"
-      }
     },
     "native" : {
       "entryPoint" : "entrypoint-native"

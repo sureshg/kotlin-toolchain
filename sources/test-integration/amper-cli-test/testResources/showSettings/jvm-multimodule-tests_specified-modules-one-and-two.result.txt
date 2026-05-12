@@ -70,7 +70,6 @@ settings@jvm:
     suppressWarnings: false  # default
     verbose: false  # default
     version: 2.3.21  # default
-  kover: null  # default
   ktor:
     applyBom: true  # default
     enabled: false  # default
@@ -173,7 +172,6 @@ settings@jvm:
     suppressWarnings: false  # default
     verbose: false  # default
     version: 2.3.21  # default
-  kover: null  # default
   ktor:
     applyBom: true  # default
     enabled: false  # default

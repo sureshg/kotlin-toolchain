@@ -164,22 +164,6 @@ internal class ParserKtTest : FrontendTestCaseBase(Path("testResources") / "pars
     }
 
     @Test
-    fun coverage() {
-        aomTest(
-            "22-coverage",
-            expectedError = "This setting was only applicable in Gradle-based Amper and is now obsolete: kover is not yet supported."
-        )
-    }
-
-    @Test
-    fun `coverage short form`() {
-        aomTest(
-            "23-coverage-short-form",
-            expectedError = "This setting was only applicable in Gradle-based Amper and is now obsolete: kover is not yet supported."
-        )
-    }
-
-    @Test
     fun `no NPE when leaf platform is accessed`() {
         aomTest(
             "24-no-npe-for-leaf-platform",

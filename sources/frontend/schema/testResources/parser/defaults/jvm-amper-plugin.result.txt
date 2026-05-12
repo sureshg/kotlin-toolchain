@@ -48,13 +48,6 @@ Fragments:
         }
         version: <default> 1.10.3
       }
-      ios: <default> {
-        framework: <default> {
-          basename: <default> kotlin
-          isStatic: <default> false
-        }
-        teamId: <default> null
-      }
       java: <default> {
         annotationProcessing: <default> {
           processorOptions: <default> {
@@ -144,7 +137,6 @@ Fragments:
         verbose: <default> false
         version: <default> 2.3.21
       }
-      kover: <default> null
       ktor: <default> {
         applyBom: <default> true
         enabled: <default> false
@@ -236,13 +228,6 @@ Fragments:
         }
         version: <default> 1.10.3
       }
-      ios: <default> {
-        framework: <default> {
-          basename: <default> kotlin
-          isStatic: <default> false
-        }
-        teamId: <default> null
-      }
       java: <default> {
         annotationProcessing: <default> {
           processorOptions: <default> {
@@ -332,7 +317,6 @@ Fragments:
         verbose: <default> false
         version: <default> 2.3.21
       }
-      kover: <default> null
       ktor: <default> {
         applyBom: <default> true
         enabled: <default> false

@@ -49,7 +49,6 @@ object IncorrectSettingsSectionFactory : TreeDiagnosticFactory {
             platformAgnostic()
             platformSpecific()
             productSpecific()
-            gradleSpecific()
         } else Unit
 
         fun platformAgnostic() {
@@ -105,18 +104,6 @@ object IncorrectSettingsSectionFactory : TreeDiagnosticFactory {
                     usedProductType,
                     productTypes.joinToString { "`${it.value}`" },
                     level = Level.Warning,
-                )
-            )
-        }
-
-        private fun gradleSpecific() = prop.propertyDeclaration?.specificToGradleMessage?.let { message ->
-            problemReporter.reportMessage(
-                IncorrectSettingsSection(
-                    trace = prop.trace,
-                    messageKey = "gradle.specific.unsupported",
-                    message,
-                    level = Level.Warning,
-                    buildProblemType = BuildProblemType.ObsoleteDeclaration,
                 )
             )
         }

@@ -81,6 +81,7 @@ interface SchemaObjectDeclaration : SchemaTypeDeclaration {
         val specificToPlatforms: Set<Platform> = emptySet(),
         val specificToProducts: Set<ProductType> = emptySet(),
         val isPlatformAgnostic: Boolean = false,
+        @Deprecated("Gradle-based Amper is gone. There should be no schema properties with this message being non-null.")
         val specificToGradleMessage: String? = null,
         val hasShorthand: Boolean = false,
         val isHiddenFromCompletion: Boolean = false,

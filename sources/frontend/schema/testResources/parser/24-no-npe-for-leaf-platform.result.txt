@@ -42,15 +42,6 @@ Fragments:
         suppressWarnings: false
         verbose: true
       }
-      kover: {
-        enabled: true
-        html: {
-          onCheck: true
-        }
-        xml: {
-          onCheck: true
-        }
-      }
     }
 
   androidTest
@@ -98,15 +89,6 @@ Fragments:
         suppressWarnings: false
         verbose: true
       }
-      kover: {
-        enabled: true
-        html: {
-          onCheck: true
-        }
-        xml: {
-          onCheck: true
-        }
-      }
     }
 
   apple
@@ -148,15 +130,6 @@ Fragments:
         progressiveMode: false
         suppressWarnings: false
         verbose: true
-      }
-      kover: {
-        enabled: true
-        html: {
-          onCheck: true
-        }
-        xml: {
-          onCheck: true
-        }
       }
     }
 
@@ -203,15 +176,6 @@ Fragments:
         suppressWarnings: false
         verbose: true
       }
-      kover: {
-        enabled: true
-        html: {
-          onCheck: true
-        }
-        xml: {
-          onCheck: true
-        }
-      }
     }
 
   common
@@ -252,15 +216,6 @@ Fragments:
         progressiveMode: false
         suppressWarnings: false
         verbose: true
-      }
-      kover: {
-        enabled: true
-        html: {
-          onCheck: true
-        }
-        xml: {
-          onCheck: true
-        }
       }
     }
 
@@ -306,15 +261,6 @@ Fragments:
         suppressWarnings: false
         verbose: true
       }
-      kover: {
-        enabled: true
-        html: {
-          onCheck: true
-        }
-        xml: {
-          onCheck: true
-        }
-      }
     }
 
   ios
@@ -357,15 +303,6 @@ Fragments:
         suppressWarnings: false
         verbose: true
       }
-      kover: {
-        enabled: true
-        html: {
-          onCheck: true
-        }
-        xml: {
-          onCheck: true
-        }
-      }
     }
 
   iosArm64
@@ -407,15 +344,6 @@ Fragments:
         progressiveMode: false
         suppressWarnings: false
         verbose: true
-      }
-      kover: {
-        enabled: true
-        html: {
-          onCheck: true
-        }
-        xml: {
-          onCheck: true
-        }
       }
     }
 
@@ -462,15 +390,6 @@ Fragments:
         suppressWarnings: false
         verbose: true
       }
-      kover: {
-        enabled: true
-        html: {
-          onCheck: true
-        }
-        xml: {
-          onCheck: true
-        }
-      }
     }
 
   iosTest
@@ -516,15 +435,6 @@ Fragments:
         suppressWarnings: false
         verbose: true
       }
-      kover: {
-        enabled: true
-        html: {
-          onCheck: true
-        }
-        xml: {
-          onCheck: true
-        }
-      }
     }
 
   jvm
@@ -569,15 +479,6 @@ Fragments:
         suppressWarnings: false
         verbose: true
       }
-      kover: {
-        enabled: true
-        html: {
-          onCheck: true
-        }
-        xml: {
-          onCheck: true
-        }
-      }
     }
 
   jvmAndAndroid
@@ -619,15 +520,6 @@ Fragments:
         progressiveMode: false
         suppressWarnings: false
         verbose: true
-      }
-      kover: {
-        enabled: true
-        html: {
-          onCheck: true
-        }
-        xml: {
-          onCheck: true
-        }
       }
     }
 
@@ -673,15 +565,6 @@ Fragments:
         progressiveMode: false
         suppressWarnings: false
         verbose: true
-      }
-      kover: {
-        enabled: true
-        html: {
-          onCheck: true
-        }
-        xml: {
-          onCheck: true
-        }
       }
     }
 
@@ -729,15 +612,6 @@ Fragments:
         suppressWarnings: false
         verbose: true
       }
-      kover: {
-        enabled: true
-        html: {
-          onCheck: true
-        }
-        xml: {
-          onCheck: true
-        }
-      }
     }
 
   native
@@ -779,15 +653,6 @@ Fragments:
         progressiveMode: false
         suppressWarnings: false
         verbose: true
-      }
-      kover: {
-        enabled: true
-        html: {
-          onCheck: true
-        }
-        xml: {
-          onCheck: true
-        }
       }
     }
 
@@ -833,15 +698,6 @@ Fragments:
         progressiveMode: false
         suppressWarnings: false
         verbose: true
-      }
-      kover: {
-        enabled: true
-        html: {
-          onCheck: true
-        }
-        xml: {
-          onCheck: true
-        }
       }
     }
 

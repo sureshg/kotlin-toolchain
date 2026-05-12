@@ -27,7 +27,6 @@ import org.jetbrains.amper.frontend.api.Default
 import org.jetbrains.amper.frontend.api.DeprecatedSchema
 import org.jetbrains.amper.frontend.api.ExternalDependencyNotation
 import org.jetbrains.amper.frontend.api.FromKeyAndTheRestIsNested
-import org.jetbrains.amper.frontend.api.GradleSpecific
 import org.jetbrains.amper.frontend.api.HiddenFromCompletion
 import org.jetbrains.amper.frontend.api.IgnoreForSchema
 import org.jetbrains.amper.frontend.api.Misnomers
@@ -139,9 +138,6 @@ internal fun <T : SchemaNode> parseAndGenerateSchemaNode(clazz: KClass<T>): Pars
                         it.productTypes.forEach { product -> add("%T.%N, ", ProductType::class, product.name) }
                     }.build()
                     add("specificToProducts = setOf(%L),\n", list)
-                }
-                prop.findAnnotation<GradleSpecific>()?.let {
-                    add("specificToGradleMessage = %S,\n", it.message)
                 }
                 prop.findAnnotation<PathMark>()?.let {
                     add("inputOutputMark = %T.%N,\n", InputOutputMark::class, it.type.name)

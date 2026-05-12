@@ -9,7 +9,6 @@ import org.jetbrains.amper.frontend.Platform
 import org.jetbrains.amper.frontend.SchemaEnum
 import org.jetbrains.amper.frontend.api.CanBeReferenced
 import org.jetbrains.amper.frontend.api.CustomSchemaDeclaration
-import org.jetbrains.amper.frontend.api.GradleSpecific
 import org.jetbrains.amper.frontend.api.HiddenFromCompletion
 import org.jetbrains.amper.frontend.api.KnownStringValues
 import org.jetbrains.amper.frontend.api.Misnomers
@@ -23,7 +22,6 @@ import org.jetbrains.amper.frontend.tree.NullLiteralNode
 import org.jetbrains.amper.frontend.tree.ReferenceNode
 import org.jetbrains.amper.frontend.tree.RefinedTreeNode
 import org.jetbrains.amper.frontend.userGuideUrl
-import java.nio.file.Path
 
 @SchemaDoc("JUnit version that is used for the module tests")
 enum class JUnitVersion(override val schemaValue: String, override val outdated: Boolean = false) : SchemaEnum {
@@ -63,17 +61,8 @@ class Settings : SchemaNode() {
     @PlatformSpecific(Platform.JVM, Platform.ANDROID)
     val junit by value(JUnitVersion.JUNIT5)
 
-    @SchemaDoc("iOS toolchain and platform settings")
-    @PlatformSpecific(Platform.IOS)
-    val ios: IosSettings by nested()
-
     @SchemaDoc("Publishing settings")
     val publishing: PublishingSettings by nested()
-
-    @GradleSpecific("kover is not yet supported")
-    @Misnomers("coverage")
-    @SchemaDoc("Kover settings for code coverage. Read more [about Kover](https://kotlin.github.io/kotlinx-kover/gradle-plugin/)")
-    val kover by nullableValue<KoverSettings>()
 
     @SchemaDoc("Native applications settings")
     @PlatformSpecific(Platform.NATIVE)
@@ -181,68 +170,6 @@ class SerializationSettings : SchemaNode() {
 }
 
 const val legacySerializationFormatNone = "none"
-
-class IosSettings : SchemaNode() {
-
-    @GradleSpecific("the team ID is managed in the Xcode project")
-    @SchemaDoc("A Team ID is a unique string assigned to your team by Apple.<br>" +
-            "It's necessary if you want to run/test on a Apple device.<br>" +
-            "Read [how to locate your team ID in Xcode](https://developer.apple.com/help/account/manage-your-team/locate-your-team-id/)," +
-            " or use [KDoctor tool](https://github.com/Kotlin/kdoctor) (`kdoctor --team-ids`)")
-    val teamId by nullableValue<String>()
-
-    @Suppress("DEPRECATION")
-    @SchemaDoc("(Only for the library [product type]($userGuideUrl/product-types/) " +
-            "Configure the generated framework to [share the common code with an Xcode project](https://kotlinlang.org/docs/multiplatform-mobile-understand-project-structure.html#ios-framework)")
-    @ProductTypeSpecific(ProductType.KMP_LIB, ProductType.LIB)
-    val framework: IosFrameworkSettings by nested()
-}
-
-class IosFrameworkSettings : SchemaNode() {
-
-    @GradleSpecific(message = "the framework name is always `KotlinModules` in Amper")
-    @SchemaDoc("The name of the generated framework")
-    val basename by value("kotlin")
-
-    @GradleSpecific(message = "Amper uses static framework linking")
-    @SchemaDoc("Whether to create a dynamically linked or statically linked framework")
-    val isStatic by value(false)
-}
-
-class KoverSettings : SchemaNode() {
-
-    @Shorthand
-    @SchemaDoc("Enables code overage with Kover")
-    val enabled by value(false)
-
-//    @SchemaDoc("")
-    val xml by nullableValue<KoverXmlSettings>()
-
-//    @SchemaDoc("")
-    val html by nullableValue<KoverHtmlSettings>()
-}
-
-class KoverXmlSettings : SchemaNode() {
-//    @SchemaDoc("")
-    val onCheck by nullableValue<Boolean>()
-
-//    @SchemaDoc("")
-    val reportFile by nullableValue<Path>()
-}
-
-class KoverHtmlSettings : SchemaNode() {
-//    @SchemaDoc("")
-    val title by nullableValue<String>()
-
-//    @SchemaDoc("")
-    val charset by nullableValue<String>()
-
-//    @SchemaDoc("")
-    val onCheck by nullableValue<Boolean>()
-
-//    @SchemaDoc("")
-    val reportDir by nullableValue<Path>()
-}
 
 class NativeSettings : SchemaNode() {
 
