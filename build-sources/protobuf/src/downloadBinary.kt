@@ -27,7 +27,7 @@ fun downloadBinary(
         add(name)
     }.joinToString("/")
 
-    val url = "https://repo1.maven.org/maven2/$path/$version/$name-$version-" +
+    val url = "https://cache-redirector.jetbrains.com/repo1.maven.org/maven2/$path/$version/$name-$version-" +
             "${systemInfo.os.string}-${systemInfo.arch.string}.exe"
     try {
         URI(url).toURL().openStream().buffered(64 * 1024).use { input ->
