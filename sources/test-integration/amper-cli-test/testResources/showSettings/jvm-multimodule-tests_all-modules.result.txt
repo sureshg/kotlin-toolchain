@@ -7,7 +7,6 @@ settings@jvm:
       hotReload:
         version: 1.1.1  # default
     resources:
-      enabled: false  # default
       exposedAccessors: false  # default
       nameOfResClass: Res  # default
       packageName:   # default
@@ -111,7 +110,6 @@ settings@jvm:
       hotReload:
         version: 1.1.1  # default
     resources:
-      enabled: false  # default
       exposedAccessors: false  # default
       nameOfResClass: Res  # default
       packageName:   # default

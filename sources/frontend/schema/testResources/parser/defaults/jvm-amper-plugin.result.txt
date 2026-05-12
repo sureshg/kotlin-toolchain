@@ -42,7 +42,6 @@ Fragments:
           }
         }
         resources: <default> {
-          enabled: <default> false
           exposedAccessors: <default> false
           nameOfResClass: <default> Res
           packageName: <default>
@@ -231,7 +230,6 @@ Fragments:
           }
         }
         resources: <default> {
-          enabled: <default> false
           exposedAccessors: <default> false
           nameOfResClass: <default> Res
           packageName: <default>

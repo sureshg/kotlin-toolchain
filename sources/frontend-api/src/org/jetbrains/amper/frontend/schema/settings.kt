@@ -123,10 +123,6 @@ class ComposeSettings : SchemaNode() {
 }
 
 class ComposeResourcesSettings : SchemaNode() {
-    
-    @Deprecated("Need to remove its usage in external projects first")
-    val enabled by value(default = false)
-    
     @SchemaDoc(
         "A unique identifier for the resources in the current module.<br>" +
                 "Used as package for the generated Res class and for isolating resources in the final artifact."
