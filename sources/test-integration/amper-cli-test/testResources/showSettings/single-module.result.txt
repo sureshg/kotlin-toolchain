@@ -80,6 +80,9 @@ settings@jvm:
     artifactId: null  # default, from ${name}
     enabled: false  # default
     group: null  # default
+    mavenCentral:
+      enabled: false  # default
+      publishingMode: manual  # default
     name: null  # default
     pom:
       description: null  # default

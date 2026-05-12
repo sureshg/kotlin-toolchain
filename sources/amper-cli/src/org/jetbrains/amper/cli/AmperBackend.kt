@@ -10,8 +10,9 @@ import org.jetbrains.amper.cli.options.UserJvmArgsOption
 import org.jetbrains.amper.cli.widgets.TaskProgressRenderer
 import org.jetbrains.amper.engine.BuildTask
 import org.jetbrains.amper.engine.MaybeBuildTypeAware
+import org.jetbrains.amper.engine.MaybePlatformAware
 import org.jetbrains.amper.engine.PackageTask
-import org.jetbrains.amper.engine.PlatformAware
+import org.jetbrains.amper.engine.PublishTask
 import org.jetbrains.amper.engine.RunTask
 import org.jetbrains.amper.engine.TaskExecutor
 import org.jetbrains.amper.engine.TaskExecutor.TaskExecutionFailed
@@ -31,7 +32,6 @@ import org.jetbrains.amper.system.info.OsFamily
 import org.jetbrains.amper.system.info.SystemInfo
 import org.jetbrains.amper.tasks.AllRunSettings
 import org.jetbrains.amper.tasks.ProjectTasksBuilder
-import org.jetbrains.amper.tasks.PublishTask
 import org.jetbrains.amper.tasks.TaskResult
 import org.jetbrains.amper.tasks.compose.isComposeEnabledFor
 import org.jetbrains.amper.tasks.ios.IosPreBuildTask
@@ -196,7 +196,6 @@ class AmperBackend(
 
         val platformsToPackage = platforms ?: possiblePlatforms
         val modulesToPackage = (modules?.map { resolveModule(it) } ?: model.modules).toSet()
-        val buildTypesToPackage = buildTypes ?: BuildType.entries.toSet()
         val formatsToPackage = formats ?: PackageTask.Format.entries.toSet()
 
         val taskNames = taskGraph
@@ -204,9 +203,8 @@ class AmperBackend(
             .filterIsInstance<PackageTask>()
             .filter {
                 it.module in modulesToPackage &&
-                it.platform in platformsToPackage &&
-                it.format in formatsToPackage &&
-                it.buildType in buildTypesToPackage
+                (it.platform == null || it.platform in platformsToPackage) &&
+                it.format in formatsToPackage
             }.filterByBuildTypeAndReport(
                 explicit = buildTypes,
                 default = BuildType.Release,
@@ -259,7 +257,7 @@ class AmperBackend(
 
         val publishTasks = taskGraph.tasks
             .filterIsInstance<PublishTask>()
-            .filter { it.targetRepository.id == repositoryId }
+            .filter { it.targetRepositoryId == repositoryId }
             .filter { modules == null || modules.contains(it.module.userReadableName) }
             .map { it.taskName }
             .toSet()
@@ -745,12 +743,12 @@ class AmperBackend(
     private fun <T> List<T>.filterByBuildTypeAndReport(
         explicit: Set<BuildType>?,
         default: BuildType,
-    ): List<T> where T : MaybeBuildTypeAware, T : PlatformAware {
+    ): List<T> where T : MaybeBuildTypeAware, T : MaybePlatformAware {
         return if (explicit != null) {
             require(explicit.isNotEmpty())
             val matchingTasks = filter { it.buildType == null || it.buildType in explicit }
             if (matchingTasks.isNotEmpty() && matchingTasks.all { it.buildType == null }) {
-                val allPlatforms = matchingTasks.map(PlatformAware::platform).distinct()
+                val allPlatforms = matchingTasks.mapNotNull(MaybePlatformAware::platform).distinct()
                 logger.warn("Explicit -v/--variant argument is ignored because " +
                         "none of the selected platforms (${formatPlatforms(allPlatforms)}) support build variants.")
             }

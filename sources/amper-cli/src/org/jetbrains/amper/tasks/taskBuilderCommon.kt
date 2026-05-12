@@ -17,10 +17,14 @@ import org.jetbrains.amper.frontend.dr.resolver.AmperResolutionSettings
 import org.jetbrains.amper.frontend.dr.resolver.ModuleDependencies
 import org.jetbrains.amper.frontend.isPublishingEnabled
 import org.jetbrains.amper.frontend.mavenRepositories
+import org.jetbrains.amper.frontend.publishingSettings
 import org.jetbrains.amper.frontend.shouldPublishSourcesJars
 import org.jetbrains.amper.tasks.ProjectTasksBuilder.Companion.getTaskOutputPath
 import org.jetbrains.amper.tasks.js.JsTaskType
 import org.jetbrains.amper.tasks.native.NativeTaskType
+import org.jetbrains.amper.tasks.publication.MavenCentralPublishTask
+import org.jetbrains.amper.tasks.publication.MavenPublishTask
+import org.jetbrains.amper.tasks.publication.PrepareMavenCentralBundleTask
 import org.jetbrains.amper.tasks.wasm.WasmTaskType
 import org.jetbrains.amper.util.BuildType
 
@@ -150,11 +154,31 @@ fun ProjectTasksBuilder.setupCommonTasks() {
                     },
                 )
 
+                if (module.publishingSettings.mavenCentral.enabled) {
+                    val packageTaskName = TaskName.moduleTask(module, "prepareMavenCentralBundle")
+                    tasks.registerTask(
+                        task = PrepareMavenCentralBundleTask(
+                            taskName = packageTaskName,
+                            module = module,
+                            incrementalCache = context.incrementalCache,
+                            taskOutputRoot = context.getTaskOutputPath(packageTaskName),
+                        ),
+                        dependsOn = listOf(prepareMavenPublishablesTaskName),
+                    )
+                    tasks.registerTask(
+                        task = MavenCentralPublishTask(
+                            taskName = TaskName.moduleTask(module, "publishToMavenCentral"),
+                            module = module,
+                        ),
+                        dependsOn = listOf(packageTaskName),
+                    )
+                }
+
                 val publishRepositories = module.mavenRepositories.filter { it.publish }
                 for (repository in publishRepositories) {
                     val publishTaskName = publishTaskNameFor(module, repository)
                     tasks.registerTask(
-                        PublishTask(
+                        task = MavenPublishTask(
                             taskName = publishTaskName,
                             module = module,
                             targetRepository = repository,

@@ -4,6 +4,7 @@
 
 package org.jetbrains.amper.frontend.schema
 
+import org.jetbrains.amper.frontend.SchemaEnum
 import org.jetbrains.amper.frontend.api.DeprecatedSchema
 import org.jetbrains.amper.frontend.api.KnownStringValues
 import org.jetbrains.amper.frontend.api.Misnomers
@@ -51,6 +52,38 @@ class PublishingSettings : SchemaNode() {
 
     @SchemaDoc("If set to true, JARs with sources for each platform are published as extra artifacts.")
     val publishSources by value(default = false)
+
+    @SchemaDoc("Configures publication to Maven Central (via the Publish portal).")
+    val mavenCentral by nested<MavenCentralSettings>()
+}
+
+class MavenCentralSettings : SchemaNode() {
+
+    @Shorthand
+    @SchemaDoc("Enables publication to Maven Central, which can then be triggered using `./amper publish maven-central`.")
+    val enabled: Boolean by value(default = false)
+
+    @SchemaDoc("Configures whether the publication should be fully automated, or pause for manual verification.")
+    val publishingMode: PublishingMode by value(default = PublishingMode.Manual)
+}
+
+/**
+ * Configures whether the publication should be fully automated, or pause for manual verification.
+ *
+ * See https://central.sonatype.org/publish/publish-portal-api/#uploading-a-deployment-bundle
+ */
+enum class PublishingMode(override val schemaValue: String) : SchemaEnum {
+    @SchemaDoc(
+        "After validation of the uploaded deployment bundle (containing the artifacts), the publication process " +
+                "pauses and awaits a manual user trigger. " +
+            "The user then has to publish the deployment from the Central Portal UI, or via a separate API call.",
+    )
+    Manual("manual"),
+    @SchemaDoc(
+        "After validation of the uploaded deployment bundle (containing the artifacts), the publication process " +
+                "automatically continues and publishes the deployment to Maven Central without manual intervention.",
+    )
+    Auto("auto"),
 }
 
 class PomSettings : SchemaNode() {

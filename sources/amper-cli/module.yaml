@@ -85,6 +85,7 @@ dependencies:
   - $libs.maven.plugin.annotations
   - $libs.maven.site.plugin
   - com.google.code.findbugs:jsr305:3.0.2
+  - ../libraries/maven-central-portal-publisher-client
 
 test-dependencies:
   - ../test-base

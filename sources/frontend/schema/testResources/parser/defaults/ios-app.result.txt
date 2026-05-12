@@ -151,6 +151,10 @@ Fragments:
         artifactId: <default> null
         enabled: <default> false
         group: <default> null
+        mavenCentral: <default> {
+          enabled: <default> false
+          publishingMode: <default> manual
+        }
         name: <default> null
         pom: <default> {
           description: <default> null
@@ -332,6 +336,10 @@ Fragments:
         artifactId: <default> null
         enabled: <default> false
         group: <default> null
+        mavenCentral: <default> {
+          enabled: <default> false
+          publishingMode: <default> manual
+        }
         name: <default> null
         pom: <default> {
           description: <default> null
@@ -509,6 +517,10 @@ Fragments:
         artifactId: <default> null
         enabled: <default> false
         group: <default> null
+        mavenCentral: <default> {
+          enabled: <default> false
+          publishingMode: <default> manual
+        }
         name: <default> null
         pom: <default> {
           description: <default> null
@@ -689,6 +701,10 @@ Fragments:
         artifactId: <default> null
         enabled: <default> false
         group: <default> null
+        mavenCentral: <default> {
+          enabled: <default> false
+          publishingMode: <default> manual
+        }
         name: <default> null
         pom: <default> {
           description: <default> null
@@ -867,6 +883,10 @@ Fragments:
         artifactId: <default> null
         enabled: <default> false
         group: <default> null
+        mavenCentral: <default> {
+          enabled: <default> false
+          publishingMode: <default> manual
+        }
         name: <default> null
         pom: <default> {
           description: <default> null
@@ -1045,6 +1065,10 @@ Fragments:
         artifactId: <default> null
         enabled: <default> false
         group: <default> null
+        mavenCentral: <default> {
+          enabled: <default> false
+          publishingMode: <default> manual
+        }
         name: <default> null
         pom: <default> {
           description: <default> null
@@ -1226,6 +1250,10 @@ Fragments:
         artifactId: <default> null
         enabled: <default> false
         group: <default> null
+        mavenCentral: <default> {
+          enabled: <default> false
+          publishingMode: <default> manual
+        }
         name: <default> null
         pom: <default> {
           description: <default> null
@@ -1404,6 +1432,10 @@ Fragments:
         artifactId: <default> null
         enabled: <default> false
         group: <default> null
+        mavenCentral: <default> {
+          enabled: <default> false
+          publishingMode: <default> manual
+        }
         name: <default> null
         pom: <default> {
           description: <default> null
@@ -1585,6 +1617,10 @@ Fragments:
         artifactId: <default> null
         enabled: <default> false
         group: <default> null
+        mavenCentral: <default> {
+          enabled: <default> false
+          publishingMode: <default> manual
+        }
         name: <default> null
         pom: <default> {
           description: <default> null
@@ -1766,6 +1802,10 @@ Fragments:
         artifactId: <default> null
         enabled: <default> false
         group: <default> null
+        mavenCentral: <default> {
+          enabled: <default> false
+          publishingMode: <default> manual
+        }
         name: <default> null
         pom: <default> {
           description: <default> null
@@ -1944,6 +1984,10 @@ Fragments:
         artifactId: <default> null
         enabled: <default> false
         group: <default> null
+        mavenCentral: <default> {
+          enabled: <default> false
+          publishingMode: <default> manual
+        }
         name: <default> null
         pom: <default> {
           description: <default> null
@@ -2125,6 +2169,10 @@ Fragments:
         artifactId: <default> null
         enabled: <default> false
         group: <default> null
+        mavenCentral: <default> {
+          enabled: <default> false
+          publishingMode: <default> manual
+        }
         name: <default> null
         pom: <default> {
           description: <default> null
@@ -2303,6 +2351,10 @@ Fragments:
         artifactId: <default> null
         enabled: <default> false
         group: <default> null
+        mavenCentral: <default> {
+          enabled: <default> false
+          publishingMode: <default> manual
+        }
         name: <default> null
         pom: <default> {
           description: <default> null
@@ -2484,6 +2536,10 @@ Fragments:
         artifactId: <default> null
         enabled: <default> false
         group: <default> null
+        mavenCentral: <default> {
+          enabled: <default> false
+          publishingMode: <default> manual
+        }
         name: <default> null
         pom: <default> {
           description: <default> null

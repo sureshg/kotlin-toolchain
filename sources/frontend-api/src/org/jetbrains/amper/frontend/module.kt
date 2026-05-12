@@ -15,6 +15,7 @@ import org.jetbrains.amper.frontend.schema.JdkSettings
 import org.jetbrains.amper.frontend.schema.MavenPluginSettings
 import org.jetbrains.amper.frontend.schema.Module
 import org.jetbrains.amper.frontend.schema.ProductType
+import org.jetbrains.amper.frontend.schema.PublishingSettings
 import org.jetbrains.amper.frontend.schema.Repository.Companion.SpecialMavenLocalUrl
 import java.nio.file.Path
 
@@ -40,6 +41,10 @@ data class RepositoriesModulePart(
         val password: String? = null,
     ) {
         val isMavenLocal = url == SpecialMavenLocalUrl
+        val isMavenCentral = url.trimEnd('/') in setOf(
+            "https://repo.maven.apache.org/maven2",
+            "https://repo1.maven.org/maven2"
+        )
     }
 }
 
@@ -160,22 +165,30 @@ fun AmperModule.fragmentsTargeting(platform: Platform, isTest: Boolean = false):
     fragmentsTargeting(setOf(platform), isTest)
 
 /**
+ * Returns the publishing settings for this module (which are platform-agnostic).
+ */
+// We don't have to go through all fragments because these settings are platform-agnostic.
+// We also don't care about test fragments because publication is inherently about main.
+val AmperModule.publishingSettings: PublishingSettings
+    get() = fragments.first { !it.isTest }.settings.publishing
+
+/**
  * Returns whether maven publishing is enabled for this module.
  */
 // We don't have to go through all fragments because this setting is platform-agnostic
-fun AmperModule.isPublishingEnabled() = fragments.first { !it.isTest }.settings.publishing.enabled
+fun AmperModule.isPublishingEnabled() = publishingSettings.enabled
 
 /**
  * Returns whether JARs with sources for each platform should be published (as extra artifacts).
  */
 // We don't have to go through all fragments, settings.publishing.publishSources is platform-agnostic.
-fun AmperModule.shouldPublishSourcesJars() = fragments.first { !it.isTest }.settings.publishing.publishSources
+fun AmperModule.shouldPublishSourcesJars() = publishingSettings.publishSources
 
 /**
  * Returns whether published artifacts should be signed, and their signatures published alongside them.
  */
 // We don't have to go through all fragments because this setting is platform-agnostic
-fun AmperModule.isArtifactSigningEnabled() = fragments.first { !it.isTest }.settings.publishing.signArtifacts
+fun AmperModule.isArtifactSigningEnabled() = publishingSettings.signArtifacts
 
 /**
  * Returns the JDK settings for this module's production code.

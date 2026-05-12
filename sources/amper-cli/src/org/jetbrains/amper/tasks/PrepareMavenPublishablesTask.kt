@@ -66,6 +66,7 @@ class PrepareMavenPublishablesTask(
                 "coordsPerPlatform" to Json.encodeToString(coordsPerPlatform),
                 "modulePublishablesFromOtherTasks" to Json.encodeToString(modulePublishablesFromOtherTasks),
                 "signingEnabled" to signingEnabled.toString(),
+                "moduleInfo" to Json.encodeToString(listOf(module.userReadableName, module.description)),
             ),
             inputFiles = modulePublishablesFromOtherTasks.map { it.path },
         ) {

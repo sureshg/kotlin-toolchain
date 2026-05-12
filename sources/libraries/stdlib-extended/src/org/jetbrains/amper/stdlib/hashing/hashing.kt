@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.stdlib.hashing
@@ -7,9 +7,18 @@ package org.jetbrains.amper.stdlib.hashing
 import java.security.MessageDigest
 
 /**
+ * Computes the hash of these bytes using the given [algorithm].
+ *
+ * The given [algorithm] must be a standard algorithm name as described in the
+ * [Java Security Standard Algorithm Names Specification](https://docs.oracle.com/en/java/javase/25/docs/specs/security/standard-names.html),
+ * in the _MessageDigest Algorithms_ section.
+ */
+fun ByteArray.hash(algorithm: String): ByteArray = MessageDigest.getInstance(algorithm).digest(this)
+
+/**
  * Returns the SHA-256 hash of these bytes.
  */
-fun ByteArray.sha256(): ByteArray = MessageDigest.getInstance("SHA-256").digest(this)
+fun ByteArray.sha256(): ByteArray = hash("SHA-256")
 
 /**
  * Returns the SHA-256 hash of the UTF-8 representation of this string.

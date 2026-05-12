@@ -2,7 +2,7 @@
  * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
-package org.jetbrains.amper.tasks
+package org.jetbrains.amper.tasks.publication
 
 import org.codehaus.plexus.PlexusContainer
 import org.eclipse.aether.artifact.Artifact
@@ -11,7 +11,7 @@ import org.eclipse.aether.repository.RemoteRepository
 import org.eclipse.aether.util.repository.AuthenticationBuilder
 import org.jetbrains.amper.cli.userReadableError
 import org.jetbrains.amper.dependency.resolution.MavenLocalRepository
-import org.jetbrains.amper.engine.Task
+import org.jetbrains.amper.engine.PublishTask
 import org.jetbrains.amper.engine.TaskGraphExecutionContext
 import org.jetbrains.amper.frontend.AmperModule
 import org.jetbrains.amper.frontend.RepositoriesModulePart
@@ -19,6 +19,9 @@ import org.jetbrains.amper.frontend.TaskName
 import org.jetbrains.amper.maven.publish.createPlexusContainer
 import org.jetbrains.amper.maven.publish.deployToRemoteRepo
 import org.jetbrains.amper.maven.publish.installToMavenLocal
+import org.jetbrains.amper.tasks.MavenPublishable
+import org.jetbrains.amper.tasks.PrepareMavenPublishablesTask
+import org.jetbrains.amper.tasks.TaskResult
 import org.jetbrains.amper.telemetry.spanBuilder
 import org.jetbrains.amper.telemetry.use
 import org.jetbrains.amper.telemetry.useWithoutCoroutines
@@ -41,11 +44,14 @@ private val artifactComparator = compareBy<Artifact>(
     { it.extension },
 )
 
-class PublishTask(
+class MavenPublishTask(
     override val taskName: TaskName,
-    val module: AmperModule,
+    override val module: AmperModule,
     val targetRepository: RepositoriesModulePart.Repository,
-) : Task {
+) : PublishTask {
+
+    override val targetRepositoryId: String
+        get() = targetRepository.id
 
     override suspend fun run(dependenciesResult: List<TaskResult>, executionContext: TaskGraphExecutionContext): TaskResult {
 

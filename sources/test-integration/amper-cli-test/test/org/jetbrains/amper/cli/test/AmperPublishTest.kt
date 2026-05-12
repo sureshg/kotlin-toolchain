@@ -8,7 +8,9 @@ import com.sun.net.httpserver.BasicAuthenticator
 import org.bouncycastle.openpgp.api.OpenPGPCertificate
 import org.bouncycastle.openpgp.api.bc.BcOpenPGPApi
 import org.jetbrains.amper.cli.test.utils.assertContainsRelativeFiles
+import org.jetbrains.amper.cli.test.utils.getTaskOutputPath
 import org.jetbrains.amper.cli.test.utils.runSlowTest
+import org.jetbrains.amper.core.extract.extractZip
 import org.jetbrains.amper.frontend.schema.DefaultVersions
 import org.jetbrains.amper.test.assertEqualsWithDiff
 import org.jetbrains.amper.test.server.Request
@@ -161,6 +163,85 @@ class AmperPublishTest : AmperCliTestBase() {
             "artifactName/2.2/artifactName-2.2.pom",
             "artifactName/2.2/artifactName-2.2.pom.asc",
             "artifactName/maven-metadata-local.xml",
+        )
+
+        assertSignatureIsValid(
+            dataFile = groupDir.resolve("artifactName/2.2/artifactName-2.2.jar"),
+            signatureFile = groupDir.resolve("artifactName/2.2/artifactName-2.2.jar.asc"),
+            verificationCertificate = testPgpKey,
+        )
+        assertSignatureIsValid(
+            dataFile = groupDir.resolve("artifactName/2.2/artifactName-2.2-sources.jar"),
+            signatureFile = groupDir.resolve("artifactName/2.2/artifactName-2.2-sources.jar.asc"),
+            verificationCertificate = testPgpKey,
+        )
+        assertSignatureIsValid(
+            dataFile = groupDir.resolve("artifactName/2.2/artifactName-2.2.pom"),
+            signatureFile = groupDir.resolve("artifactName/2.2/artifactName-2.2.pom.asc"),
+            verificationCertificate = testPgpKey,
+        )
+    }
+
+    @Test
+    fun `prepare maven central bundle`() = runSlowTest {
+        val openPgpApi = BcOpenPGPApi()
+        val testPgpKey = openPgpApi.generateKey().signOnlyKey().build()
+
+        val result = runCli(
+            projectDir = testProject("jvm-publish-with-signing"),
+            "package", "--format=maven-central-bundle",
+            environment = mapOf("AMPER_SIGNING_KEY" to testPgpKey.toAsciiArmoredString()),
+        )
+
+        val zipBundle = result
+            .getTaskOutputPath(":jvm-publish-with-signing:prepareMavenCentralBundle")
+            .resolve("jvm-publish-with-signing-central-bundle.zip")
+
+        val bundleDir = tempRoot.resolve("jvm-publish-with-signing-central-bundle").also { it.createDirectories() }
+        extractZip(zipBundle, bundleDir, stripRoot = false)
+
+        val groupDir = bundleDir.resolve("amper/test/jvm-publish-with-signing")
+        groupDir.assertContainsRelativeFiles(
+            "artifactName/2.2/artifactName-2.2-javadoc.jar",
+            "artifactName/2.2/artifactName-2.2-javadoc.jar.asc",
+            "artifactName/2.2/artifactName-2.2-javadoc.jar.asc.md5",
+            "artifactName/2.2/artifactName-2.2-javadoc.jar.asc.sha1",
+            "artifactName/2.2/artifactName-2.2-javadoc.jar.asc.sha256",
+            "artifactName/2.2/artifactName-2.2-javadoc.jar.asc.sha512",
+            "artifactName/2.2/artifactName-2.2-javadoc.jar.md5",
+            "artifactName/2.2/artifactName-2.2-javadoc.jar.sha1",
+            "artifactName/2.2/artifactName-2.2-javadoc.jar.sha256",
+            "artifactName/2.2/artifactName-2.2-javadoc.jar.sha512",
+            "artifactName/2.2/artifactName-2.2-sources.jar",
+            "artifactName/2.2/artifactName-2.2-sources.jar.asc",
+            "artifactName/2.2/artifactName-2.2-sources.jar.asc.md5",
+            "artifactName/2.2/artifactName-2.2-sources.jar.asc.sha1",
+            "artifactName/2.2/artifactName-2.2-sources.jar.asc.sha256",
+            "artifactName/2.2/artifactName-2.2-sources.jar.asc.sha512",
+            "artifactName/2.2/artifactName-2.2-sources.jar.md5",
+            "artifactName/2.2/artifactName-2.2-sources.jar.sha1",
+            "artifactName/2.2/artifactName-2.2-sources.jar.sha256",
+            "artifactName/2.2/artifactName-2.2-sources.jar.sha512",
+            "artifactName/2.2/artifactName-2.2.jar",
+            "artifactName/2.2/artifactName-2.2.jar.asc",
+            "artifactName/2.2/artifactName-2.2.jar.asc.md5",
+            "artifactName/2.2/artifactName-2.2.jar.asc.sha1",
+            "artifactName/2.2/artifactName-2.2.jar.asc.sha256",
+            "artifactName/2.2/artifactName-2.2.jar.asc.sha512",
+            "artifactName/2.2/artifactName-2.2.jar.md5",
+            "artifactName/2.2/artifactName-2.2.jar.sha1",
+            "artifactName/2.2/artifactName-2.2.jar.sha256",
+            "artifactName/2.2/artifactName-2.2.jar.sha512",
+            "artifactName/2.2/artifactName-2.2.pom",
+            "artifactName/2.2/artifactName-2.2.pom.asc",
+            "artifactName/2.2/artifactName-2.2.pom.asc.md5",
+            "artifactName/2.2/artifactName-2.2.pom.asc.sha1",
+            "artifactName/2.2/artifactName-2.2.pom.asc.sha256",
+            "artifactName/2.2/artifactName-2.2.pom.asc.sha512",
+            "artifactName/2.2/artifactName-2.2.pom.md5",
+            "artifactName/2.2/artifactName-2.2.pom.sha1",
+            "artifactName/2.2/artifactName-2.2.pom.sha256",
+            "artifactName/2.2/artifactName-2.2.pom.sha512",
         )
 
         assertSignatureIsValid(

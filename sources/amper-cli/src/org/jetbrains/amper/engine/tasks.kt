@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 @file:JvmName("TasksKt")
@@ -26,8 +26,15 @@ interface MaybeBuildTypeAware {
     val buildType: BuildType?
 }
 
-interface PlatformAware {
-    val platform: Platform
+interface MaybePlatformAware {
+    /**
+     * If `null`, the task is platform-independent.
+     */
+    val platform: Platform?
+}
+
+interface PlatformAware : MaybePlatformAware {
+    override val platform: Platform
 }
 
 interface RunTask : Task, MaybeBuildTypeAware, PlatformAware {
@@ -35,17 +42,22 @@ interface RunTask : Task, MaybeBuildTypeAware, PlatformAware {
     val module: AmperModule
 }
 
-interface PackageTask : Task, MaybeBuildTypeAware, PlatformAware {
+interface PackageTask : Task, MaybeBuildTypeAware, MaybePlatformAware {
     enum class Format(val value: String) {
         Jar("jar"),
         ExecutableJar("executable-jar"),
         Aab("aab"),
+        MavenCentralBundle("maven-central-bundle"),
         // TODO DistZip("dist-zip"),
     }
 
-    override val platform: Platform
     val format: Format
     val module: AmperModule
+}
+
+interface PublishTask : Task {
+    val module: AmperModule
+    val targetRepositoryId: String
 }
 
 interface TestTask : Task, MaybeBuildTypeAware, PlatformAware {

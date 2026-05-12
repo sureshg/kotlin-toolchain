@@ -235,7 +235,7 @@ repositories:
   - https://jitpack.io
 ```
 
-1. When using just a string, it is used as both the `url` and `id` of the repository
+1. When using just a string, it is used as both the `url` and `uuidValue` of the repository
 
 ```yaml title="Full form"
 repositories:
