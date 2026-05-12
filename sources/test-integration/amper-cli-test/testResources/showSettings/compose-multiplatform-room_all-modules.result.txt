@@ -93,7 +93,7 @@ settings@android:
     version: 3.4.3  # default
   lombok:
     enabled: false  # default
-    version: 1.18.38  # default
+    version: 1.18.46  # default
   publishing:
     artifactId: null  # default, from ${name}
     enabled: false  # default
@@ -192,7 +192,7 @@ settings@jvm:
     version: 3.4.3  # default
   lombok:
     enabled: false  # default
-    version: 1.18.38  # default
+    version: 1.18.46  # default
   publishing:
     artifactId: null  # default, from ${name}
     enabled: false  # default
@@ -307,7 +307,7 @@ settings@jvm+android:
     version: 3.4.3  # default
   lombok:
     enabled: false  # default
-    version: 1.18.38  # default
+    version: 1.18.46  # default
   publishing:
     artifactId: null  # default, from ${name}
     enabled: false  # default
@@ -412,7 +412,7 @@ settings@jvm:
     version: 3.4.3  # default
   lombok:
     enabled: false  # default
-    version: 1.18.38  # default
+    version: 1.18.46  # default
   publishing:
     artifactId: null  # default, from ${name}
     enabled: false  # default
@@ -524,7 +524,7 @@ settings@android:
     version: 3.4.3  # default
   lombok:
     enabled: false  # default
-    version: 1.18.38  # default
+    version: 1.18.46  # default
   publishing:
     artifactId: null  # default, from ${name}
     enabled: false  # default

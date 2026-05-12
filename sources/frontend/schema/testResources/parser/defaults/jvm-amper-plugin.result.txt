@@ -144,7 +144,7 @@ Fragments:
       }
       lombok: <default> {
         enabled: <default> false
-        version: <default> 1.18.38
+        version: <default> 1.18.46
       }
       native: <default> null
       publishing: <default> {
@@ -324,7 +324,7 @@ Fragments:
       }
       lombok: <default> {
         enabled: <default> false
-        version: <default> 1.18.38
+        version: <default> 1.18.46
       }
       native: <default> null
       publishing: <default> {
