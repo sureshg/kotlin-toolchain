@@ -25,6 +25,7 @@ private fun ProjectTasksBuilder.configureComposeResourcesGeneration() {
         val config = rootFragment.settings.compose.resources
         val packageName = config.getResourcesPackageName(module)
         val makeAccessorsPublic = config.exposedAccessors
+        val resClassName = config.nameOfResClass
         val packagingDir = "composeResources/$packageName/"
 
         // `expect` is generated in `common` only, while `actual` are generated in the refined fragments.
@@ -51,6 +52,7 @@ private fun ProjectTasksBuilder.configureComposeResourcesGeneration() {
                 packageName = packageName,
                 packagingDir = packagingDir,
                 shouldGenerateCode = shouldGenerateCode,
+                resClassName = resClassName,
             )
         )
         if (shouldSeparateExpectActual) {
@@ -62,6 +64,7 @@ private fun ProjectTasksBuilder.configureComposeResourcesGeneration() {
                     packageName = packageName,
                     makeAccessorsPublic = makeAccessorsPublic,
                     shouldGenerateCode = shouldGenerateCode,
+                    resClassName = resClassName,
                 )
             )
         }
@@ -92,6 +95,7 @@ private fun ProjectTasksBuilder.configureComposeResourcesGeneration() {
                     packageName = packageName,
                     packagingDir = packagingDir,
                     makeAccessorsPublic = makeAccessorsPublic,
+                    resClassName = resClassName,
             ))
         }
 
@@ -106,6 +110,7 @@ private fun ProjectTasksBuilder.configureComposeResourcesGeneration() {
                     packageName = packageName,
                     makeAccessorsPublic = makeAccessorsPublic,
                     shouldGenerateCode = shouldGenerateCode,
+                    resClassName = resClassName,
                 )
             )
             tasks.registerTask(

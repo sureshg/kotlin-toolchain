@@ -28,18 +28,21 @@ fun generateExpectResourceCollectors(
     packageName: String,
     makeAccessorsPublic: Boolean,
     outputSourceDirectory: Path,
+    resClassName: String,
 ) {
     getExpectResourceCollectorsFileSpec(
         packageName = packageName,
         fileName = "ExpectResourceCollectors",
         isPublic = makeAccessorsPublic,
+        resClassName = resClassName,
     ).writeTo(outputSourceDirectory)
 }
 
 private fun getExpectResourceCollectorsFileSpec(
     packageName: String,
     fileName: String,
-    isPublic: Boolean
+    isPublic: Boolean,
+    resClassName: String,
 ): FileSpec {
     val resModifier = if (isPublic) KModifier.PUBLIC else KModifier.INTERNAL
     return FileSpec.builder(packageName, fileName).also { file ->
@@ -53,7 +56,7 @@ private fun getExpectResourceCollectorsFileSpec(
                         KModifier.EXPECT,
                         resModifier
                     )
-                    .receiver(ClassName(packageName, "Res"))
+                    .receiver(ClassName(packageName, resClassName))
                     .build()
             )
         }

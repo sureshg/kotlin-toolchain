@@ -43,6 +43,7 @@ fun generateActualResourceCollectors(
     accessorDirectories: List<Path>,
     outputSourceDirectory: Path,
     logger: Logger? = null,
+    resClassName: String = "Res",
 ) {
     val inputFiles = accessorDirectories.flatMap { dir ->
         dir.toFile().walkTopDown().filter { !it.isHidden && it.isFile && it.extension == "kt" }.toList()
@@ -76,6 +77,7 @@ fun generateActualResourceCollectors(
         fileName = "ActualResourceCollectors",
         useActualModifier = useActualModifier,
         typeToCollectorFunctions = funNames,
+        resClassName = resClassName,
     ).writeTo(outputSourceDirectory)
 }
 
@@ -85,7 +87,8 @@ internal fun getActualResourceCollectorsFileSpec(
     fileName: String,
     isPublic: Boolean,
     useActualModifier: Boolean, //e.g. java only project doesn't need actual modifiers
-    typeToCollectorFunctions: Map<ResourceType, List<String>>
+    typeToCollectorFunctions: Map<ResourceType, List<String>>,
+    resClassName: String = "Res",
 ): FileSpec = FileSpec.builder(packageName, fileName).also { file ->
     val resModifier = if (isPublic) KModifier.PUBLIC else KModifier.INTERNAL
 
@@ -120,7 +123,7 @@ internal fun getActualResourceCollectorsFileSpec(
                 MAP.parameterizedBy(String::class.asClassName(), typeClassName),
                 mods
             )
-            .receiver(ClassName(packageName, "Res"))
+            .receiver(ClassName(packageName, resClassName))
             .delegate(initBlock)
             .build()
         file.addProperty(property)

@@ -27,11 +27,13 @@ class GenerateActualResourceCollectorsTask(
     makeAccessorsPublic: Boolean,
     useActualModifier: Boolean,
     shouldGenerateCode: Boolean,
+    resClassName: String,
 ) : PureArtifactTaskBase(buildOutputRoot, incrementalCache) {
     private val packageName by extraInput(packageName)
     private val makeAccessorsPublic by extraInput(makeAccessorsPublic)
     private val useActualModifier by extraInput(useActualModifier)
     private val shouldGenerateCode by extraInput(shouldGenerateCode)
+    private val resClassName by extraInput(resClassName)
 
     private val accessorsDirs by Selectors.fromFragmentWithDependencies(
         type = ComposeResourcesAccessorsDirArtifact::class,
@@ -53,6 +55,7 @@ class GenerateActualResourceCollectorsTask(
                 accessorDirectories = accessorsDirs.map { it.path },
                 outputSourceDirectory = codeDir.path.createDirectory(),
                 useActualModifier = useActualModifier,
+                resClassName = resClassName,
             )
         }
     }

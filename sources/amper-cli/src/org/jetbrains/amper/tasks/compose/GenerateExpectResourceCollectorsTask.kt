@@ -24,10 +24,12 @@ class GenerateExpectResourceCollectorsTask(
     packageName: String,
     makeAccessorsPublic: Boolean,
     shouldGenerateCode: Boolean,
+    resClassName: String,
 ) : PureArtifactTaskBase(buildOutputRoot, incrementalCache) {
     private val packageName by extraInput(packageName)
     private val makeAccessorsPublic by extraInput(makeAccessorsPublic)
     private val shouldGenerateCode by extraInput(shouldGenerateCode)
+    private val resClassName by extraInput(resClassName)
 
     private val codeDir by KotlinJavaSourceDirArtifact(
         buildOutputRoot,
@@ -41,6 +43,7 @@ class GenerateExpectResourceCollectorsTask(
                 packageName = packageName,
                 makeAccessorsPublic = makeAccessorsPublic,
                 outputSourceDirectory = codeDir.path.createDirectory(),
+                resClassName = resClassName,
             )
         }
     }

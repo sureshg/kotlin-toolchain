@@ -33,6 +33,14 @@ class ComposeResourcesTest : AmperCliTestBase() {
     }
 
     @Test
+    fun `compose resources custom res class name build`() = runSlowTest {
+        runCli(
+            projectDir = testProject("compose-resources-custom-res-class"),
+            "build",
+        )
+    }
+
+    @Test
     @MacOnly
     fun `compose resources demo build (ios)`() = runSlowTest {
         runCli(

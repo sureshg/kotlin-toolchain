@@ -26,6 +26,7 @@ settings@android:
     resources:
       enabled: false  # default
       exposedAccessors: false  # default
+      nameOfResClass: Res  # default
       packageName:   # default
     version: 1.10.3  # default
   java:
@@ -125,6 +126,7 @@ settings@jvm:
     resources:
       enabled: false  # default
       exposedAccessors: false  # default
+      nameOfResClass: Res  # default
       packageName:   # default
     version: 1.10.3  # default
   java:
@@ -238,6 +240,7 @@ settings@jvm+android:
     resources:
       enabled: false  # default
       exposedAccessors: false  # default
+      nameOfResClass: Res  # default
       packageName:   # default
     version: 1.10.3  # default
   java:
@@ -343,6 +346,7 @@ settings@jvm:
     resources:
       enabled: false  # default
       exposedAccessors: false  # default
+      nameOfResClass: Res  # default
       packageName:   # default
     version: 1.10.3  # default
   java:
@@ -456,6 +460,7 @@ settings@android:
     resources:
       enabled: false  # default
       exposedAccessors: false  # default
+      nameOfResClass: Res  # default
       packageName:   # default
     version: 1.10.3  # default
   java:

@@ -332,10 +332,11 @@ framework. Read more about [Compose configuration](../user-guide/builtin-tech/co
 
 `settings.compose.resources` configures Compose Resources settings.
 
-| Attribute                   | Default | Description                                                                                                                                                 |
-|-----------------------------|---------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `packageName: string`       | `""`    | A unique identifier for the resources in the current module. Used as package for the generated Res class and for isolating resources in the final artifact. |
-| `exposedAccessors: boolean` | `false` | Whether the generated resources accessors should be exposed to other modules (public) or internal.                                                          |
+| Attribute                   | Default | Description                                                                                                                                                                                     |
+|-----------------------------|---------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `packageName: string`       | `""`    | A unique identifier for the resources in the current module. Used as package for the generated Res class and for isolating resources in the final artifact.                                     |
+| `exposedAccessors: boolean` | `false` | Whether the generated resources accessors should be exposed to other modules (public) or internal.                                                                                              |
+| `nameOfResClass: string`    | `"Res"` | The name of the Kotlin object on which all the resource accessors are generated. `Res` by default. Can be customized to avoid name clashes when using resources from multiple modules. |
 
 `settings.compose.experimental` configures experimental Compose features.
 

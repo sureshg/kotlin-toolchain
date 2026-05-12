@@ -30,11 +30,13 @@ fun generateResClass(
     packagingDir: String,
     isPublic: Boolean,
     outputSourceDirectory: Path,
+    resClassName: String,
 ) {
     getResFileSpec(
         packageName = packageName,
         moduleDir = packagingDir,
         isPublic = isPublic,
+        resClassName = resClassName,
     ).writeTo(outputSourceDirectory)
 }
 
@@ -42,15 +44,16 @@ private fun getResFileSpec(
     packageName: String,
     moduleDir: String,
     isPublic: Boolean,
+    resClassName: String,
 ): FileSpec {
     val resModifier = if (isPublic) KModifier.PUBLIC else KModifier.INTERNAL
-    return FileSpec.builder(packageName, "Res").also { file ->
+    return FileSpec.builder(packageName, resClassName).also { file ->
         file.addAnnotation(
             AnnotationSpec.builder(ClassName("kotlin", "OptIn"))
                 .addMember("org.jetbrains.compose.resources.InternalResourceApi::class")
                 .build()
         )
-        file.addType(TypeSpec.objectBuilder("Res").also { resObject ->
+        file.addType(TypeSpec.objectBuilder(resClassName).also { resObject ->
             resObject.addModifiers(resModifier)
 
             //readFileBytes

@@ -25,11 +25,13 @@ class GenerateResClassTask(
     makeAccessorsPublic: Boolean,
     packagingDir: String,
     shouldGenerateCode: Boolean,
+    resClassName: String,
 ) : PureArtifactTaskBase(buildOutputRoot, incrementalCache) {
     private val packageName by extraInput(packageName)
     private val makeAccessorsPublic by extraInput(makeAccessorsPublic)
     private val packagingDir by extraInput(packagingDir)
     private val shouldGenerateCode by extraInput(shouldGenerateCode)
+    private val resClassName by extraInput(resClassName)
 
     private val codeDir by KotlinJavaSourceDirArtifact(
         buildOutputRoot = buildOutputRoot,
@@ -44,6 +46,7 @@ class GenerateResClassTask(
                 packagingDir = packagingDir,
                 isPublic = makeAccessorsPublic,
                 outputSourceDirectory = codeDir.path.createDirectory(),
+                resClassName = resClassName,
             )
         }
     }

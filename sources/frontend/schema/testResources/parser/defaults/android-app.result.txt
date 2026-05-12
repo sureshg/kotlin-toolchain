@@ -45,6 +45,7 @@ Fragments:
         resources: <default> {
           enabled: <default> false
           exposedAccessors: <default> false
+          nameOfResClass: <default> Res
           packageName: <default>
         }
         version: <default> 1.10.3
@@ -234,6 +235,7 @@ Fragments:
         resources: <default> {
           enabled: <default> false
           exposedAccessors: <default> false
+          nameOfResClass: <default> Res
           packageName: <default>
         }
         version: <default> 1.10.3

@@ -46,6 +46,7 @@ fun generateResourceAccessors(
     makeAccessorsPublic: Boolean,
     preparedResourcesDirectory: Path,
     outputSourceDirectory: Path,
+    resClassName: String,
 ) {
     val dirs = preparedResourcesDirectory.toFile().listNotHiddenFiles()
 
@@ -72,6 +73,7 @@ fun generateResourceAccessors(
         sourceSetName = qualifier,
         moduleDir = packagingDir,
         isPublic = makeAccessorsPublic,
+        resClassName = resClassName,
     ).forEach { it.writeTo(outputSourceDirectory) }
 }
 
@@ -91,7 +93,8 @@ private fun getAccessorsSpecs(
     packageName: String,
     sourceSetName: String,
     moduleDir: String,
-    isPublic: Boolean
+    isPublic: Boolean,
+    resClassName: String,
 ): List<FileSpec> {
     val resModifier = if (isPublic) KModifier.PUBLIC else KModifier.INTERNAL
     val files = mutableListOf<FileSpec>()
@@ -109,7 +112,8 @@ private fun getAccessorsSpecs(
                     packageName,
                     moduleDir,
                     resModifier,
-                    idToResources.subMap(ids.first(), true, ids.last(), true)
+                    idToResources.subMap(ids.first(), true, ids.last(), true),
+                    resClassName,
                 )
             )
         }
@@ -125,7 +129,8 @@ private fun getChunkFileSpec(
     packageName: String,
     moduleDir: String,
     resModifier: KModifier,
-    idToResources: Map<String, List<ResourceItem>>
+    idToResources: Map<String, List<ResourceItem>>,
+    resClassName: String,
 ): FileSpec {
     return FileSpec.builder(packageName, fileName).also { chunkFile ->
         chunkFile.addAnnotation(
@@ -164,7 +169,7 @@ private fun getChunkFileSpec(
 
         idToResources.forEach { (resName, items) ->
             val accessor = PropertySpec.builder(resName, type.getClassName(), resModifier)
-                .receiver(ClassName(packageName, "Res", type.accessorName))
+                .receiver(ClassName(packageName, resClassName, type.accessorName))
                 .getter(FunSpec.getterBuilder().addStatement("return $chunkClassName.%N", resName).build())
                 .build()
             chunkFile.addProperty(accessor)

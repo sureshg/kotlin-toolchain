@@ -26,10 +26,12 @@ class GenerateResourceAccessorsTask(
     packageName: String,
     packagingDir: String,
     makeAccessorsPublic: Boolean,
+    resClassName: String,
 ) : PureArtifactTaskBase(buildOutputRoot, incrementalCache) {
     private val packageName by extraInput(packageName)
     private val makeAccessorsPublic by extraInput(makeAccessorsPublic)
     private val packagingDir by extraInput(packagingDir)
+    private val resClassName by extraInput(resClassName)
 
     private val prepared by Selectors.fromFragment(
         type = PreparedComposeResourcesDirArtifact::class,
@@ -51,6 +53,7 @@ class GenerateResourceAccessorsTask(
                 packagingDir = packagingDir,
                 preparedResourcesDirectory = prepared.path,
                 outputSourceDirectory = codeDir.path.createDirectory(),
+                resClassName = resClassName,
             )
         }
     }
