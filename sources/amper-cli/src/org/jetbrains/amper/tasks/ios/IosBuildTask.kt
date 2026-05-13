@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.tasks.ios
@@ -82,7 +82,7 @@ class IosBuildTask(
             this += "-sdk"; this += platform.sdk
             this += "${BuildSettingNames.OBJROOT}=${objRootPath.pathString}"
             this += "${BuildSettingNames.SYMROOT}=${symRootPath.pathString}"
-            this += "AMPER_WRAPPER_PATH=${CliContext.wrapperScriptPath.absolutePathString()}"
+            this += "KOTLIN_CLI_WRAPPER_PATH=${CliContext.wrapperScriptPath.absolutePathString()}"
             if (!platform.isIosSimulator && !xcodeSettings.hasTeamId && !xcodeSettings.isSigningDisabled) {
                 logger.warn("`DEVELOPMENT_TEAM` build setting is not detected in the Xcode project. " +
                         "Adding `CODE_SIGNING_ALLOWED=NO` to disable signing. " +

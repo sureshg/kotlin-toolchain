@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.wrapper
@@ -46,20 +46,20 @@ object AmperWrappers {
 
         return listOfNotNull(
             AmperScript(
-                fileName = "amper",
-                templateName = "amper.template.sh",
+                fileName = "kotlin",
+                templateName = "wrapper.template.sh",
                 executable = true,
             ).takeIf { includePosix },
             AmperScript(
-                fileName = "amper.bat",
-                templateName = "amper.template.bat",
+                fileName = "kotlin.bat",
+                templateName = "wrapper.template.bat",
             ).takeIf { includeWindows },
         ).map {
             it.generate(
                 targetDir = targetDir,
                 macroSubstitutions = mapOf(
-                    "AMPER_VERSION" to amperVersion,
-                    "AMPER_DIST_TGZ_SHA256" to amperDistTgzSha256,
+                    "KOTLIN_TOOLCHAIN_VERSION" to amperVersion,
+                    "KOTLIN_TOOLCHAIN_DIST_TGZ_SHA256" to amperDistTgzSha256,
                 )
             )
         }

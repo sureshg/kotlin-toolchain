@@ -15,6 +15,7 @@ import kotlin.io.path.readText
 data class AmperWrapperData private constructor(
     val version: String,
     val sha256: String,
+    val path: Path,
 ) {
     companion object {
         /**
@@ -25,11 +26,10 @@ data class AmperWrapperData private constructor(
         fun parseFromProjectRoot(
             projectRoot: Path,
         ): AmperWrapperData? {
-            val platform = currentPlatform()
-            val wrapperPath = projectRoot / platform.wrapperFileName
-            if (!wrapperPath.isRegularFile()) {
-                return null
-            }
+            val wrapperPath = wrapperTypesForCurrentPlatform()
+                .map { projectRoot / it.wrapperFileName }
+                .find { it.isRegularFile() }
+                ?: return null
             return parse(wrapperPath = wrapperPath)
         }
 
@@ -39,42 +39,55 @@ data class AmperWrapperData private constructor(
         fun parse(
             wrapperPath: Path,
         ): AmperWrapperData {
-            val platform = if (wrapperPath.name == WrapperPlatform.Windows.wrapperFileName)
-                WrapperPlatform.Windows else WrapperPlatform.Posix
-            val amperWrapperText = wrapperPath.readText()
+            val type = WrapperType.entries.first { it.wrapperFileName == wrapperPath.name }
+            val wrapperText = wrapperPath.readText()
 
             // If any error arises from here, that means the wrapper format has changed and things need to be adjusted.
             return AmperWrapperData(
-                version = checkNotNull(platform.versionRegex.find(amperWrapperText)) {
-                    "Missing amper_version in the $wrapperPath"
+                version = checkNotNull(type.versionRegex.find(wrapperText)) {
+                    "Missing kotlin_cli_version in the $wrapperPath"
                 }.groupValues[1],
-                sha256 = checkNotNull(platform.checkSumRegex.find(amperWrapperText)){
-                    "Missing amper_sha256 in the $wrapperPath"
+                sha256 = checkNotNull(type.checkSumRegex.find(wrapperText)){
+                    "Missing kotlin_cli_sha256 in the $wrapperPath"
                 }.groupValues[1],
+                path = wrapperPath,
             )
         }
 
-        private fun currentPlatform() = when (SystemInfo.CurrentHost.family) {
-            OsFamily.Windows -> WrapperPlatform.Windows
-            else -> WrapperPlatform.Posix
+        private fun wrapperTypesForCurrentPlatform() = when (SystemInfo.CurrentHost.family) {
+            OsFamily.Windows -> setOf(WrapperType.KotlinBatch, WrapperType.AmperBatch)
+            OsFamily.Linux,
+            OsFamily.MacOs,
+            OsFamily.FreeBSD,
+            OsFamily.Solaris -> setOf(WrapperType.KotlinSh, WrapperType.AmperSh)
         }
 
-        private enum class WrapperPlatform(
+        // TODO AMPER-5342 remove old wrapper names once example projects and amper itself are migrated
+        private enum class WrapperType(
             val versionRegex: Regex,
             val checkSumRegex: Regex,
             val wrapperFileName: String,
         ) {
-            Windows(
+            KotlinBatch(
+                versionRegex = "^set kotlin_cli_version=(.*)$".toRegex(RegexOption.MULTILINE),
+                checkSumRegex = "^set kotlin_cli_sha256=(.*)$".toRegex(RegexOption.MULTILINE),
+                wrapperFileName = "kotlin.bat"
+            ),
+            KotlinSh(
+                versionRegex = "^kotlin_cli_version=(.*)$".toRegex(RegexOption.MULTILINE),
+                checkSumRegex = "^kotlin_cli_sha256=(.*)$".toRegex(RegexOption.MULTILINE),
+                wrapperFileName = "kotlin"
+            ),
+            AmperBatch(
                 versionRegex = "^set amper_version=(.*)$".toRegex(RegexOption.MULTILINE),
                 checkSumRegex = "^set amper_sha256=(.*)$".toRegex(RegexOption.MULTILINE),
                 wrapperFileName = "amper.bat"
             ),
-            Posix(
+            AmperSh(
                 versionRegex = "^amper_version=(.*)$".toRegex(RegexOption.MULTILINE),
                 checkSumRegex = "^amper_sha256=(.*)$".toRegex(RegexOption.MULTILINE),
                 wrapperFileName = "amper"
             ),
-            ;
         }
     }
 }

@@ -162,7 +162,7 @@ class JdkProvider(
                 // We don't cache failures persistently, otherwise we can never recover from them.
                 // We cache successful results indefinitely for maximum reproducibility. We could argue that we
                 // should get patch versions ASAP, but it's better that the user controls when that happens (not in
-                // the middle of a git bisect) - they can do `./amper clean` to clean the cache.
+                // the middle of a git bisect) - they can do `./kotlin clean` to clean the cache.
                 expirationTime = if (result is JdkResult.Failure) Clock.System.now() else null,
             )
         }.outputValue

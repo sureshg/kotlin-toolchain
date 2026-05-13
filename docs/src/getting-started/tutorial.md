@@ -58,8 +58,8 @@ Your project should now look like this:
 ``` hl_lines="3 4"
 ├─ src/
 │  ╰─ main.kt
-├─ amper
-├─ amper.bat
+├─ kotlin
+├─ kotlin.bat
 ╰─ module.yaml
 ```
 
@@ -72,12 +72,12 @@ no need to create separate Maven-like `java/` and `kotlin/` folders:
 ├─ src/
 │  ├─ main.kt
 │  ╰─ JavaClass.java
-├─ amper
-├─ amper.bat
+├─ kotlin
+├─ kotlin.bat
 ╰─ module.yaml
 ```
 
-You can now build your application using `./amper build`, or run it using `./amper run`.
+You can now build your application using `./kotlin build`, or run it using `./kotlin run`.
 
 ??? info "Run it directly from IntelliJ IDEA"
 
@@ -134,8 +134,8 @@ we only need to add some test code into the `test/` folder:
 │  ╰─ ...
 ├─ test/
 │  ╰─ MyTest.kt
-├─ amper
-├─ amper.bat
+├─ kotlin
+├─ kotlin.bat
 ╰─ module.yaml
 ‎
 ```
@@ -263,8 +263,8 @@ following structure:
 ├─ shared/
 │  ├─ ...
 │  ╰─ module.yaml
-├─ amper
-├─ amper.bat
+├─ kotlin
+├─ kotlin.bat
 ╰─ project.yaml
 ```
 
@@ -276,11 +276,11 @@ First let's move our current `src`, `test` and `module.yaml` files into a new `j
 │  ├─ test/
 │  │  ╰─ ...
 │  ╰─ module.yaml
-├─ amper
-╰─ amper.bat
+├─ kotlin
+╰─ kotlin.bat
 ```
 
-Add a `project.yaml` file in the root, next to the existing `amper` and `amper.bat` files, with the following content:
+Add a `project.yaml` file in the root, next to the existing `kotlin` and `kotlin.bat` files, with the following content:
 
 ```yaml title="project.yaml"
 modules:
@@ -508,10 +508,10 @@ Make sure that your project structure looks like this:
 
 Now you can build and run both apps using the corresponding IntelliJ IDEA run configurations, or use the CLI commands:
 ```shell
-./amper run -m android-app
+./kotlin run -m android-app
 ```
 ```shell
-./amper run -m ios-app
+./kotlin run -m ios-app
 ```
 
 !!! note

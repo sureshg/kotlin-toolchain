@@ -47,7 +47,8 @@ abstract class AmperCliWithWrapperTestBase {
     private val httpServer = HttpServerExtension(
         wwwRoot = Dirs.m2repository,
         wwwInterceptor = { urlPath ->
-            val amperCliDistRegex = Regex("org/jetbrains/amper/(amper-)?cli/(?<version>[^/]+)/.*")
+            // TODO AMPER-5342 simplify the regex once we use 'kotlin' wrappers everywhere (including external projects)
+            val amperCliDistRegex = Regex("org/jetbrains/(kotlin|amper)/(kotlin-|amper-)?cli/(?<version>[^/]+)/.*")
             val match = amperCliDistRegex.matchEntire(urlPath)
             if (match != null && match.groups["version"]!!.value != "1.0-SNAPSHOT") {
                 // we only want to serve 1.0-SNAPSHOT from local m2 (and serve other versions from the real maven)
@@ -70,7 +71,7 @@ abstract class AmperCliWithWrapperTestBase {
     protected val requestedFiles: List<Path>
         get() = httpServer.requestedFiles
 
-    protected val scriptNameForCurrentOs: String = if (OsFamily.current.isWindows) "amper.bat" else "amper"
+    protected val scriptNameForCurrentOs: String = if (OsFamily.current.isWindows) "kotlin.bat" else "kotlin"
 
     companion object {
 
@@ -87,9 +88,9 @@ abstract class AmperCliWithWrapperTestBase {
 
     protected fun baseEnvironmentForWrapper(): Map<String, String> = buildMap {
         // tells the wrapper to download the distribution and JRE through our local HTTP server
-        this["AMPER_DOWNLOAD_ROOT"] = httpServer.wwwRootUrl
-        this["AMPER_JRE_DOWNLOAD_ROOT"] = httpServer.cacheRootUrl
-        this["AMPER_BOOTSTRAP_CACHE_DIR"] = Dirs.userCacheRoot.pathString
+        this["KOTLIN_CLI_DOWNLOAD_ROOT"] = httpServer.wwwRootUrl
+        this["KOTLIN_CLI_JRE_DOWNLOAD_ROOT"] = httpServer.cacheRootUrl
+        this["KOTLIN_CLI_BOOTSTRAP_CACHE_DIR"] = Dirs.userCacheRoot.pathString
     }
 
     /**
@@ -120,13 +121,16 @@ abstract class AmperCliWithWrapperTestBase {
         check(workingDir.isDirectory()) { "Cannot run Kotlin CLI: the specified working directory $workingDir is not a directory." }
 
         val isWindows = OsFamily.current.isWindows
-        val amperScript = customAmperScriptPath ?: workingDir.resolve(if (isWindows) "amper.bat" else "amper")
-        check(amperScript.exists()) {
-            "Kotlin wrapper script not found at $amperScript\n" +
+        val wrapper = customAmperScriptPath
+            ?: workingDir.resolve(if (isWindows) "kotlin.bat" else "kotlin").takeIf { it.exists() }
+            // TODO AMPER-5342 remove when external projects have migrated
+            ?: workingDir.resolve(if (isWindows) "amper.bat" else "amper")
+        check(wrapper.exists()) {
+            "Kotlin wrapper script not found at $wrapper\n" +
                     "You can use LocalAmperPublication.setupWrappersIn(dir) to copy wrappers into the test project dir."
         }
-        check(amperScript.isExecutable()) { "Cannot run Kotlin wrapper script because it is not executable: $amperScript" }
-        check(amperScript.isRegularFile()) { "Cannot run Kotlin wrapper script because it is not a file: $amperScript" }
+        check(wrapper.isExecutable()) { "Cannot run Kotlin wrapper script because it is not executable: $wrapper" }
+        check(wrapper.isRegularFile()) { "Cannot run Kotlin wrapper script because it is not a file: $wrapper" }
 
         val isDebuggingTest = ManagementFactory.getRuntimeMXBean().inputArguments.any { it.startsWith("-agentlib:") }
         val extraJvmArgs = buildList {
@@ -143,13 +147,13 @@ abstract class AmperCliWithWrapperTestBase {
             runProcessAndCaptureOutput(
                 workingDir = workingDir,
                 // proper quotes/escaping, workaround for the time-old bug https://bugs.openjdk.org/browse/JDK-8131908
-                command = CommandLineUtil.toCommandLine(amperScript.absolutePathString(), args, currentPlatformForIJ),
+                command = CommandLineUtil.toCommandLine(wrapper.absolutePathString(), args, currentPlatformForIJ),
                 environment = buildMap {
                     putAll(baseEnvironmentForWrapper())
 
                     // Override (and add to) the base env
                     bootstrapCacheDir?.let {
-                        this["AMPER_BOOTSTRAP_CACHE_DIR"] = it.pathString
+                        this["KOTLIN_CLI_BOOTSTRAP_CACHE_DIR"] = it.pathString
                     }
 
                     when (javaHomeMode) {
@@ -162,11 +166,11 @@ abstract class AmperCliWithWrapperTestBase {
                     when (amperJavaHomeMode) {
                         is JavaHomeMode.Inherit -> {} // do nothing and just get whatever is there
                         // explicit reset (cannot call remove because we don't have the actual env from ProcessBuilder here)
-                        is JavaHomeMode.ForceUnset -> this["AMPER_JAVA_HOME"] = ""
-                        is JavaHomeMode.Custom -> this["AMPER_JAVA_HOME"] = amperJavaHomeMode.jreHomePath.pathString
+                        is JavaHomeMode.ForceUnset -> this["KOTLIN_CLI_JAVA_HOME"] = ""
+                        is JavaHomeMode.Custom -> this["KOTLIN_CLI_JAVA_HOME"] = amperJavaHomeMode.jreHomePath.pathString
                     }
 
-                    this["AMPER_JAVA_OPTIONS"] = extraJvmArgs.joinToString(" ")
+                    this["KOTLIN_CLI_JAVA_OPTIONS"] = extraJvmArgs.joinToString(" ")
                     putAll(environment)
                 },
                 input = stdin,
@@ -191,8 +195,8 @@ abstract class AmperCliWithWrapperTestBase {
                     expected = expectedExitCode,
                     actual = result.exitCode,
                     message = """
-                        Exit code must be $expectedExitCode, but got ${result.exitCode} for the Kotlin Toolchain call (PID ${result.pid}):
-                        $amperScript ${args.joinToString(" ")}
+                        Exit code must be $expectedExitCode, but got ${result.exitCode} for the Kotlin CLI call (PID ${result.pid}):
+                        $wrapper ${args.joinToString(" ")}
                         Output:
                         ${result.relevantOutput(expectedExitCode).prependIndent("                    ")}
                     """.trimMargin(),
@@ -202,8 +206,8 @@ abstract class AmperCliWithWrapperTestBase {
                 assertTrue(
                     actual = result.stderr.isBlank(),
                     message = """
-                        Process stderr must be empty for the Kotlin Toolchain call (PID ${result.pid}):
-                        $amperScript ${args.joinToString(" ")}
+                        Process stderr must be empty for the Kotlin CLI call (PID ${result.pid}):
+                        $wrapper ${args.joinToString(" ")}
                         Kotlin Toolchain STDERR:
                         ${result.stderr.prependIndent("                    ")}
                     """.trimMargin(),
@@ -281,14 +285,14 @@ private fun Path.isLogsDirFor(amperWrapperPid: Long): Boolean {
  */
 sealed class JavaHomeMode {
     /**
-     * Inherit `JAVA_HOME`/`AMPER_JAVA_HOME` from the caller's environment.
+     * Inherit `JAVA_HOME`/`KOTLIN_CLI_JAVA_HOME` from the caller's environment.
      * When tests are run by Amper, the test Amper process will use the same JRE as the Amper process running the tests.
      */
     data object Inherit : JavaHomeMode()
     /**
-     * Explicitly reset `JAVA_HOME`/`AMPER_JAVA_HOME` (make it empty) even if the caller's environment contains it
+     * Explicitly reset `JAVA_HOME`/`KOTLIN_CLI_JAVA_HOME` (make it empty) even if the caller's environment contains it
      * (for example, when running tests with Amper itself).
-     * This forces the test Amper process to download the JRE to the `AMPER_BOOTSTRAP_CACHE_DIR` if not present there.
+     * This forces the test Amper process to download the JRE to the `KOTLIN_CLI_BOOTSTRAP_CACHE_DIR` if not present there.
      */
     data object ForceUnset : JavaHomeMode()
     /**
@@ -344,10 +348,10 @@ private fun String.prependIndentWithEmptyMark(indent: String): String =
     trim().ifEmpty { "<empty>" }.prependIndent(indent)
 
 private val sporadicWrapperBootstrapMessagePrefixes = setOf(
-    "Another Amper instance",
+    "Another Kotlin CLI instance",
     "Awaiting the result",
-    "Downloading Amper distribution",
-    "Downloading Amper runtime",
+    "Downloading Kotlin Toolchain distribution",
+    "Downloading Kotlin CLI runtime",
     "Download complete",
 )
 

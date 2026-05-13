@@ -348,7 +348,7 @@ If the task needs to serve as an entry point to the build, then, currently,
 it needs to be run manually via the Kotlin CLI using the task's [internal name](#internal-name):
 
 ```shell
-$ ./amper task :moduleName:taskName@pluginId
+$ ./kotlin task :moduleName:taskName@pluginId
 ```
 
 We are working on providing a proper UX for calling plugin tasks.

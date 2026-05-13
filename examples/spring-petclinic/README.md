@@ -7,23 +7,23 @@ Here are a few commands you can try to experiment with the Amper CLI.
 Compile the project:
 
 ```shell
-./amper build
+./kotlin build
 ```
 
 Run tests:
 
 ```shell
-./amper test
+./kotlin test
 ```
 
 Run the application:
 
 ```shell
-./amper run
+./kotlin run
 ```
 
 For more information about what you can do with the CLI, use:
 
 ```shell
-./amper --help
+./kotlin --help
 ```

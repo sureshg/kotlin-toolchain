@@ -1,6 +1,6 @@
 product: jvm/lib
 
-description: Contains template definitions that can be used to generate Amper projects (e.g. in `./amper init`).
+description: Contains template definitions that can be used to generate Amper projects (e.g. in `./kotlin init`).
 
 apply:
   - ../common.module-template.yaml

@@ -127,7 +127,7 @@ class AmperShellScriptsTest : AmperCliWithWrapperTestBase() {
             bootstrapCacheDir = bootstrapCacheDir,
             // We want to test the proper download of the JRE to the bootstrap dir, so we have to unset this
             amperJavaHomeMode = JavaHomeMode.ForceUnset,
-            environment = mapOf("AMPER_NO_WELCOME_BANNER" to "1"),
+            environment = mapOf("KOTLIN_CLI_NO_WELCOME_BANNER" to "1"),
         )
         assertFalse("Process output must NOT contain welcome banner even the first time when disabled. Output:\n${result1.stdout}") {
             result1.stdout.contains("Welcome")
@@ -190,7 +190,7 @@ class AmperShellScriptsTest : AmperCliWithWrapperTestBase() {
         }
         assertTrue("Bootstrap cache dir should now have the CLI distribution, but got:\n" +
                 bootstrapCacheDir.listDirectoryEntries().joinToString("\n")) {
-            bootstrapCacheDir.listDirectoryEntries("amper-cli-*").isNotEmpty()
+            bootstrapCacheDir.listDirectoryEntries("kotlin-cli-*").isNotEmpty()
         }
         assertTrue("Bootstrap cache dir should now have the JRE, but got:\n" +
                 bootstrapCacheDir.listDirectoryEntries().joinToString("\n")) {
@@ -202,7 +202,8 @@ class AmperShellScriptsTest : AmperCliWithWrapperTestBase() {
     fun `custom java home`() = runBlocking {
         val jdkHome = provisionZulu25()
 
-        val expectedAmperVersion = AmperWrapperData.parseFromProjectRoot(tempDir)!!.version
+        val expectedAmperVersion = AmperWrapperData.parseFromProjectRoot(tempDir)?.version
+            ?: error("Test setup is broken, no wrapper file found in the temp directory")
 
         val result = runAmper(
             workingDir = tempDir,
@@ -282,8 +283,8 @@ class AmperShellScriptsTest : AmperCliWithWrapperTestBase() {
         )
 
         // Step 2: Find the launcher script inside the extracted distribution and corrupt jre_sha256
-        val amperDistDirs = bootstrapCacheDir.listDirectoryEntries("amper-cli-*")
-        assertEquals(1, amperDistDirs.size, "Expected exactly one amper-cli distribution dir in $bootstrapCacheDir")
+        val amperDistDirs = bootstrapCacheDir.listDirectoryEntries("kotlin-cli-*")
+        assertEquals(1, amperDistDirs.size, "Expected exactly one kotlin-cli distribution dir in $bootstrapCacheDir")
         val launcherScriptName = "launcher.sh"
         val launcherScript = amperDistDirs.single() / "bin" / launcherScriptName
         assertTrue(launcherScript.exists(), "Launcher script not found at $launcherScript")
@@ -299,7 +300,7 @@ class AmperShellScriptsTest : AmperCliWithWrapperTestBase() {
         // Step 3: Remove any already-provisioned JRE directories and their .flag files so the launcher re-downloads
         bootstrapCacheDir.listDirectoryEntries("zulu*").forEach { it.toFile().deleteRecursively() }
 
-        // Step 4: Run again without AMPER_JAVA_HOME, expecting a checksum failure from the launcher
+        // Step 4: Run again without KOTLIN_CLI_JAVA_HOME, expecting a checksum failure from the launcher
         val result = runAmper(
             workingDir = tempDir,
             args = listOf("--version"),

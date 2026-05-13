@@ -162,7 +162,7 @@ feedback loop during UI development.
     `--compose-hot-reload-mode` flag:
     
     ```shell
-    ./amper run --compose-hot-reload-mode
+    ./kotlin run --compose-hot-reload-mode
     ```
 
     !!! warning "No file-system watch"

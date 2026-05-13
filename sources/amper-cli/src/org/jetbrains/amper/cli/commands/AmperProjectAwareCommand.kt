@@ -46,7 +46,7 @@ internal abstract class AmperProjectAwareCommand(name: String) : AmperSubcommand
 
         if (projectWrapperVersion != AmperBuild.mavenVersion) {
             logger.warn(
-                "Running Amper version (${AmperBuild.mavenVersion}) is different from " +
+                "Running Kotlin CLI version (${AmperBuild.mavenVersion}) is different from " +
                         "the project wrapper version (${projectWrapperVersion}). " +
                         "NOTE: If you are using the global wrapper, make sure you run it inside the project directory."
             )

@@ -326,7 +326,8 @@ class AmperProjectStructureTest {
                 }
             }
             onVisitFile { file, _ ->
-                if (file.name in setOf("amper", "amper.bat")) {
+                // TODO AMPER-5342 remove amper variants once we migrate to kotlin(.bat)
+                if (file.name in setOf("amper", "amper.bat", "kotlin", "kotlin.bat")) {
                     filesWithWrappers.add(file)
                 }
                 FileVisitResult.CONTINUE
@@ -341,8 +342,11 @@ class AmperProjectStructureTest {
 
         val amperVersion = run {
             val versionPattern = when (file.name) {
+                // TODO AMPER-5342 remove amper variants once we migrate to kotlin(.bat)
                 "amper" -> Regex("amper_version=(.+)")
                 "amper.bat" -> Regex("set amper_version=(.+)")
+                "kotlin" -> Regex("kotlin_cli_version=(.+)")
+                "kotlin.bat" -> Regex("set kotlin_cli_version=(.+)")
                 else -> error("Unsupported file: $file")
             }
 

@@ -16,11 +16,11 @@ import kotlin.io.path.readText
  * Helpers to run the locally published Amper CLI distribution.
  */
 object LocalAmperPublication {
-    private val rootPublicationDir = Dirs.m2repository.resolve("org/jetbrains/amper/amper-cli/${AmperBuild.mavenVersion}")
+    private val rootPublicationDir = Dirs.m2repository.resolve("org/jetbrains/kotlin/kotlin-cli/${AmperBuild.mavenVersion}")
 
-    val distTgz: Path = rootPublicationDir.resolve("amper-cli-${AmperBuild.mavenVersion}-dist.tgz")
-    val wrapperBat: Path = rootPublicationDir.resolve("amper-cli-${AmperBuild.mavenVersion}-wrapper.bat")
-    val wrapperSh: Path = rootPublicationDir.resolve("amper-cli-${AmperBuild.mavenVersion}-wrapper")
+    val distTgz: Path = rootPublicationDir.resolve("kotlin-cli-${AmperBuild.mavenVersion}-dist.tgz")
+    val wrapperBat: Path = rootPublicationDir.resolve("kotlin-cli-${AmperBuild.mavenVersion}-wrapper.bat")
+    val wrapperSh: Path = rootPublicationDir.resolve("kotlin-cli-${AmperBuild.mavenVersion}-wrapper")
 
     /**
      * Checks that the Amper distribution and scripts were correctly published to maven local.
@@ -40,15 +40,15 @@ object LocalAmperPublication {
     }
 
     /**
-     * Copies the locally-published CLI scripts (`amper` / `amper.bat`) to the given [targetDir].
+     * Copies the locally-published CLI scripts (`kotlin` / `kotlin.bat`) to the given [targetDir].
      */
     fun setupWrappersIn(targetDir: Path) {
         checkPublicationIntegrity()
         check(targetDir.exists()) { "Cannot setup wrapper scripts in non-existing directory: $targetDir" }
 
-        wrapperBat.copyTo(targetDir.resolve("amper.bat"), REPLACE_EXISTING)
+        wrapperBat.copyTo(targetDir.resolve("kotlin.bat"), REPLACE_EXISTING)
 
-        val targetSh = targetDir.resolve("amper")
+        val targetSh = targetDir.resolve("kotlin")
         wrapperSh.copyTo(targetSh, REPLACE_EXISTING)
         targetSh.toFile().setExecutable(true)
     }

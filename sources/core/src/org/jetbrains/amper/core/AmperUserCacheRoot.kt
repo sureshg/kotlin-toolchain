@@ -22,13 +22,13 @@ sealed interface AmperUserCacheInitializationFailure : AmperUserCacheInitializat
 
     class InvalidPath(val rawBasePath: String, val source: String) : AmperUserCacheInitializationFailure {
         override val defaultMessage: String
-            get() = "Kotlin Toolchain cache path failed to resolve because $source contained an invalid path: \"$rawBasePath\". Configure it as a valid absolute path instead."
+            get() = "Kotlin cache path failed to resolve because $source contained an invalid path: \"$rawBasePath\". Configure it as a valid absolute path instead."
     }
 
     class NonAbsolutePath(val path: Path, val source: String) : AmperUserCacheInitializationFailure {
         override val defaultMessage: String
-            get() = "Kotlin Toolchain cache path is set via the $source to a non-absolute path: \"${path.pathString}\". " +
-                    "This could affect where the cache is located based on the current directory Kotlin Toolchain is run from. Configure it as an absolute path instead."
+            get() = "Kotlin cache path is set via the $source to a non-absolute path: \"${path.pathString}\". " +
+                    "This could affect where the cache is located based on the current directory the Kotlin CLI is run from. Configure it as an absolute path instead."
     }
 }
 
@@ -48,7 +48,7 @@ data class AmperUserCacheRoot(val path: Path) : AmperUserCacheInitializationResu
     override fun toString(): String = path.pathString
 
     companion object {
-        private const val AMPER_CACHE_SUBFOLDER = "JetBrains/Amper"
+        private const val KOTLIN_CACHE_SUBFOLDER = "JetBrains/Kotlin"
 
         private val logger = LoggerFactory.getLogger(AmperUserCacheRoot::class.java)
 
@@ -67,14 +67,14 @@ data class AmperUserCacheRoot(val path: Path) : AmperUserCacheInitializationResu
                 }
 
         private fun getFromSystemSettings(): AmperUserCacheInitializationResult? {
-            val systemPropertyPath = System.getProperty("amper.shared.cache.dir")?.takeIf { it.isNotBlank() } ?: return null
-            return systemPropertyPath.buildAmperCacheRoot(source = "\"amper.shared.cache.dir\" system property")
+            val systemPropertyPath = System.getProperty("kotlin.shared.cache.dir")?.takeIf { it.isNotBlank() } ?: return null
+            return systemPropertyPath.buildAmperCacheRoot(source = "\"kotlin.shared.cache.dir\" system property")
         }
 
         private fun getFromEnvSettings(): AmperUserCacheInitializationResult? =
-            getFromEnvVar("AMPER_SHARED_CACHE_DIR")
-                ?: getFromEnvVar("AMPER_CACHE_ROOT")?.also {
-                    logger.warn("AMPER_CACHE_ROOT is deprecated, use AMPER_SHARED_CACHE_DIR instead.")
+            getFromEnvVar("KOTLIN_SHARED_CACHE_DIR")
+                ?: getFromEnvVar("AMPER_SHARED_CACHE_DIR")?.also {
+                    logger.warn("AMPER_SHARED_CACHE_DIR is deprecated, use KOTLIN_SHARED_CACHE_DIR instead.")
                 }
 
         private fun getFromEnvVar(envVarName: String): AmperUserCacheInitializationResult? {
@@ -87,7 +87,7 @@ data class AmperUserCacheRoot(val path: Path) : AmperUserCacheInitializationResu
             val localAppDataFromEnv = System.getenv("LOCALAPPDATA")?.takeIf { it.isNotBlank() }
             if (localAppDataFromEnv != null) {
                 val localAppDataFolder =
-                    localAppDataFromEnv.buildAmperCacheRoot(source = "\"LOCALAPPDATA\" environment variable") { this / AMPER_CACHE_SUBFOLDER }
+                    localAppDataFromEnv.buildAmperCacheRoot(source = "\"LOCALAPPDATA\" environment variable") { this / KOTLIN_CACHE_SUBFOLDER }
                 /**
                  * If the LOCALAPPDATA environment variable is corrupted in some way, we'll try retrieving
                  * the cache folder via the Known Folders system.
@@ -98,19 +98,19 @@ data class AmperUserCacheRoot(val path: Path) : AmperUserCacheInitializationResu
             }
 
             return Shell32Util.getKnownFolderPath(KnownFolders.FOLDERID_LocalAppData)
-                .buildAmperCacheRoot(source = "Windows Known Folders system (FOLDERID_LocalAppData property)") { this / AMPER_CACHE_SUBFOLDER }
+                .buildAmperCacheRoot(source = "Windows Known Folders system (FOLDERID_LocalAppData property)") { this / KOTLIN_CACHE_SUBFOLDER }
         }
 
         private fun getMacOsCacheFolder(): AmperUserCacheInitializationResult {
             return System.getProperty("user.home")
-                .buildAmperCacheRoot(source = "user home system property") { this / "Library" / "Caches" / AMPER_CACHE_SUBFOLDER }
+                .buildAmperCacheRoot(source = "user home system property") { this / "Library" / "Caches" / KOTLIN_CACHE_SUBFOLDER }
         }
 
         private fun getGenericUnixCacheFolder(): AmperUserCacheInitializationResult {
             val xdgCacheHome = System.getenv("XDG_CACHE_HOME")?.takeIf { it.isNotBlank() }
             if (xdgCacheHome != null) {
                 val xdgCacheFolder =
-                    xdgCacheHome.buildAmperCacheRoot(source = "\"XDG_CACHE_HOME\" environment variable") { this / AMPER_CACHE_SUBFOLDER }
+                    xdgCacheHome.buildAmperCacheRoot(source = "\"XDG_CACHE_HOME\" environment variable") { this / KOTLIN_CACHE_SUBFOLDER }
                 /**
                  * If XDG_CACHE_HOME wasn't pointing to a proper path, the XDG specification suggests ignoring it:
                  * > If an implementation encounters a relative path in any of these variables
@@ -126,7 +126,7 @@ data class AmperUserCacheRoot(val path: Path) : AmperUserCacheInitializationResu
             }
 
             return System.getProperty("user.home")
-                .buildAmperCacheRoot(source = "user home system property") { this / ".cache" / AMPER_CACHE_SUBFOLDER }
+                .buildAmperCacheRoot(source = "user home system property") { this / ".cache" / KOTLIN_CACHE_SUBFOLDER }
         }
 
         private inline fun String.buildAmperCacheRoot(

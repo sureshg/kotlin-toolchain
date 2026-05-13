@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 import org.apache.maven.model.Model
@@ -26,11 +26,10 @@ fun uploadDist(
     @Input distribution: Distribution,
     repository: Repository,
 ) {
-    // we still publish both for backwards compatibility
     val tempDirectory = createTempDirectory() // TODO: Expose such facility via Amper
     try {
         val artifacts = context(tempDirectory) {
-            distribution.artifacts("amper-cli") + distribution.artifacts("cli")
+            distribution.artifacts("kotlin-cli")
         }
 
         val localMavenRepoPath = LocalM2RepositoryFinder.findPath()
@@ -54,10 +53,10 @@ fun uploadDist(
 context(tempDirectory: Path)
 private fun Distribution.artifacts(artifactId: String): List<Artifact> {
     val wrapperArtifacts = wrappersDir.listDirectoryEntries()
-        .map { amperArtifact(artifactId, classifier = "wrapper", file = it) }
-    val tarGzDistArtifact = amperArtifact(artifactId, classifier = "dist", file = cliTgz)
+        .map { kotlinToolchainArtifact(artifactId, classifier = "wrapper", file = it) }
+    val tarGzDistArtifact = kotlinToolchainArtifact(artifactId, classifier = "dist", file = cliTgz)
     // we also generate a POM file to please maven and ensure maven-metadata.xml is properly updated
-    val pomArtifact = amperArtifact(artifactId, classifier = null, file =
+    val pomArtifact = kotlinToolchainArtifact(artifactId, classifier = null, file =
         createSimplePom(artifactId, AmperBuild.mavenVersion))
     return wrapperArtifacts + tarGzDistArtifact + pomArtifact
 }
@@ -67,21 +66,21 @@ private fun createSimplePom(artifactId: String, version: String): Path {
     val model = Model()
     model.modelVersion = "4.0.0"
     model.name = artifactId
-    model.groupId = AmperGroupId
+    model.groupId = KotlinGroupId
     model.artifactId = artifactId
     model.version = version
     return tempDirectory.resolve("$artifactId.pom").apply { writePom(model) }
 }
 
-private fun amperArtifact(artifactId: String, classifier: String?, file: Path): Artifact = DefaultArtifact(
-    AmperGroupId,
+private fun kotlinToolchainArtifact(artifactId: String, classifier: String?, file: Path): Artifact = DefaultArtifact(
+    KotlinGroupId,
     artifactId,
     classifier,
     file.extension,
     AmperBuild.mavenVersion,
 ).setFile(file.toFile())
 
-private const val AmperGroupId = "org.jetbrains.amper"
+private const val KotlinGroupId = "org.jetbrains.kotlin"
 
 private val JetBrainsTeamAmperRepository by lazy {
     val username = System.getenv("JETBRAINS_TEAM_AMPER_USERNAME")

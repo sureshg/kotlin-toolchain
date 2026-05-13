@@ -66,7 +66,7 @@ class AmperRecompiler() : Recompiler, AutoCloseable {
     private val amperBuildRoot = System.getenv()[ENV_AMPER_BUILD_ROOT]
         ?.let { Path(it) } ?: error("AMPER_BUILD_ROOT env variable is not set")
 
-    private val amperCommand = if (OsFamily.current.isWindows) "amper.bat" else "./amper"
+    private val kotlinCliCommand = if (OsFamily.current.isWindows) "kotlin.bat" else "./kotlin"
 
     override val name: String = "Kotlin Toolchain Recompiler"
 
@@ -131,7 +131,7 @@ class AmperRecompiler() : Recompiler, AutoCloseable {
         coroutineScope.launch {
             val exitCode = runProcess(
                 workingDir = amperBuildRoot,
-                command = listOf(amperCommand, "server", "--compose-hot-reload-mode", "--port", amperServerPort),
+                command = listOf(kotlinCliCommand, "server", "--compose-hot-reload-mode", "--port", amperServerPort),
                 environment = mapOf(ENV_COMPOSE_HOT_RELOAD_ORCHESTRATION_PORT to orchestrationPort.toString()),
                 outputListener = streamingOutputListener
             )

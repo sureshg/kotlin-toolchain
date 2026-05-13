@@ -113,7 +113,7 @@ You have several options:
 * Kick-start your project using one of the [examples]({{ examples_base_url }})
 
 * Download Kotlin CLI by following the [CLI instructions](cli/index.md), and generate a project 
-  from a template using the `./amper init` command.
+  from a template using the `./kotlin init` command.
 
 ### How do I create a multi-module project in the Kotlin Toolchain?
 

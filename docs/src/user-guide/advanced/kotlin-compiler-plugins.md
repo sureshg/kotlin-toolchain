@@ -243,7 +243,7 @@ compiler is not compatible with the compiler plugins you want to use. This is wh
 [Install the KEFS IDE plugin](https://plugins.jetbrains.com/plugin/26480-kotlin-external-fir-support){ .md-button .md-button--primary }
 
 This IDE plugin allows you to teach the IDE how to find the correct version of the compiler plugin for each compiler 
-version, and thus find the one it needs to use instead of the one used by the CLI (e.g. `./amper build`).
+version, and thus find the one it needs to use instead of the one used by the CLI (e.g. `./kotlin build`).
 You can learn how to configure this plugin in the 
 [KEFS user guide](https://github.com/Mr3zee/kotlin-external-fir-support/blob/main/GUIDE.md).
 

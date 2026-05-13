@@ -4,7 +4,6 @@
 
 package org.jetbrains.amper.cli.test
 
-import org.apache.maven.artifact.versioning.ComparableVersion
 import org.jetbrains.amper.processes.ProcessInput
 import org.jetbrains.amper.processes.ProcessResult
 import org.jetbrains.amper.processes.runProcessAndCaptureOutput
@@ -21,7 +20,6 @@ import org.junit.jupiter.api.extension.RegisterExtension
 import java.nio.file.Path
 import java.util.*
 import kotlin.io.path.absolutePathString
-import kotlin.io.path.copyTo
 import kotlin.io.path.copyToRecursively
 import kotlin.io.path.createDirectories
 import kotlin.io.path.div
@@ -104,17 +102,17 @@ abstract class AmperCliTestBase : AmperCliWithWrapperTestBase() {
 
         val buildOutputRoot = tempRoot.resolve("build")
 
-        val amperWrapperPath = (if (wrapperMode.isGlobal) tempWrappersDir else projectDir) / scriptNameForCurrentOs
+        val kotlinWrapperPath = if (wrapperMode.isGlobal) {
+            tempWrappersDir / scriptNameForCurrentOs
+        } else {
+            // TODO AMPER-5342 Simplify this once we know all wrappers are 'kotlin' or 'kotlin.bat'
+            // This is to handle the different possible wrappers in the project root (amper vs kotlin)
+            AmperWrapperData.parseFromProjectRoot(projectDir)?.path
+                ?: error("Using project-local wrapper mode, but the wrapper is missing in $projectDir")
+        }
 
-        val amperVersion = findAmperVersion(amperWrapperPath)
-        val useNewArgs = amperVersion.knowsAboutNewRootAndBuildArgs()
         val effectiveArgs = buildList {
-            if (useNewArgs) {
-                add("--shared-cache-dir=${Dirs.userCacheRoot.absolutePathString()}")
-            } else {
-                add("--build-output=$buildOutputRoot")
-                add("--shared-caches-root=${Dirs.userCacheRoot.absolutePathString()}")
-            }
+            add("--shared-cache-dir=${Dirs.userCacheRoot.absolutePathString()}")
             addAll(args)
         }
 
@@ -125,12 +123,10 @@ abstract class AmperCliTestBase : AmperCliWithWrapperTestBase() {
                 if (configureAndroidHome) {
                     putAll(AndroidTools.getOrInstallForTests().environment())
                 }
-                if (useNewArgs) {
-                    put("AMPER_BUILD_DIR", buildOutputRoot.pathString)
-                }
+                put("AMPER_BUILD_DIR", buildOutputRoot.pathString)
                 put("AMPER_NO_GRADLE_DAEMON", "1")
                 if (wrapperMode == WrapperMode.GlobalIntrinsicVersion) {
-                    put("AMPER_WRAPPER_ALWAYS_USE_INTRINSIC_VERSION", "1")
+                    put("KOTLIN_CLI_WRAPPER_ALWAYS_USE_INTRINSIC_VERSION", "1")
                 }
                 putAll(environment)
             },
@@ -140,7 +136,7 @@ abstract class AmperCliTestBase : AmperCliWithWrapperTestBase() {
             stdin = stdin,
             amperJvmArgs = amperJvmArgs,
             amperJavaHomeMode = amperJavaHomeMode,
-            customAmperScriptPath = amperWrapperPath,
+            customAmperScriptPath = kotlinWrapperPath,
         )
 
         testReporter.publishEntry("Kotlin CLI[${result.pid}] arguments", args.joinToString(" "))
@@ -152,20 +148,6 @@ abstract class AmperCliTestBase : AmperCliWithWrapperTestBase() {
         }
 
         return result
-    }
-
-    private fun ComparableVersion.knowsAboutNewRootAndBuildArgs(): Boolean {
-        // We want our dev versions to be considered less than release versions (0.10.0-dev-123 < 0.10.0).
-        // ComparableVersion hardcodes the known modifiers (alpha, beta, etc.), so the best we can do is consider dev
-        // versions alpha (we don't use alpha anyway in Amper, so this is an acceptable workaround).
-        val adjustedVersion = ComparableVersion(canonical.replace("-dev-", "-alpha-"))
-
-        // happens to work fine with 1.0-SNAPSHOT too :D
-        return adjustedVersion >= ComparableVersion("0.10.0-dev-3701")
-    }
-
-    private fun findAmperVersion(customAmperScriptPath: Path): ComparableVersion {
-        return ComparableVersion(AmperWrapperData.parse(customAmperScriptPath).version)
     }
 
     protected suspend fun runXcodebuild(

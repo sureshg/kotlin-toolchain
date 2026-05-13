@@ -113,8 +113,8 @@ class CliContext(
          * An absolute path to the wrapper script that the process currently runs under.
          */
         val wrapperScriptPath: Path by lazy {
-            System.getenv("AMPER_WRAPPER_PATH")?.takeIf { it.isNotBlank() }?.let(::Path)
-                ?: error("Missing `AMPER_WRAPPER_PATH` env var. Is your Kotlin Toolchain distribution intact?")
+            System.getenv("KOTLIN_CLI_WRAPPER_PATH")?.takeIf { it.isNotBlank() }?.let(::Path)
+                ?: error("Missing `KOTLIN_CLI_WRAPPER_PATH` env var. Is your Kotlin Toolchain distribution intact?")
         }
     }
 }

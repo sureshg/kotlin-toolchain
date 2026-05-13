@@ -30,7 +30,7 @@ The application's entry point is specified in the `AndroidManifest.xml` file acc
 </manifest>
 ```
 
-You can run your application using the `./amper run` command.
+You can run your application using the `./kotlin run` command.
 
 ??? tip "Run in IntelliJ IDEA"
 
@@ -103,7 +103,7 @@ settings:
       propertiesFile: ./keystore.properties # default value
 ```
 
-You can use `./amper tool generate-keystore` to generate a new keystore if you don't have one yet.
+You can use `./kotlin tool generate-keystore` to generate a new keystore if you don't have one yet.
 This will create a new self-signed certificate, using the details in the `keystore.properties` file.
 
 !!! note

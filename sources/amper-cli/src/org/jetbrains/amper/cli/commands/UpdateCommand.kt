@@ -72,9 +72,9 @@ internal class UpdateCommand : AmperSubcommand(name = "update") {
     ).path(mustExist = true, canBeFile = false, canBeDir = true)
         /*
         We could also decide that the default is to update the currently running wrapper.
-        (it can be implemented using the `AMPER_WRAPPER_PATH` env variable),
+        (it can be implemented using the `KOTLIN_CLI_WRAPPER_PATH` env variable),
         but the benefit would be marginal, and it would break amper-from-sources.
-        Let's not do anything until we handle the global Amper installation / version in
+        Let's not do anything until we handle the global Kotlin Toolchain installation / version in
         project.yaml story. See AMPER-5156 and AMPER-4104.
         */
         .default(Path("."))
@@ -88,7 +88,7 @@ internal class UpdateCommand : AmperSubcommand(name = "update") {
         option("--dev", help = "Use the latest development version instead of the official release")
             .flag()
             .convert { DesiredVersion.Latest(includeDevVersions = it) },
-        // avoid --version to avoid confusion with the "./amper --version" command
+        // avoid --version to avoid confusion with the "./kotlin --version" command
         option("--target-version", help = "The specific version to update to. By default, the latest version is used.")
             .convert { DesiredVersion.SpecificVersion(it) },
     )
@@ -103,33 +103,33 @@ internal class UpdateCommand : AmperSubcommand(name = "update") {
     override fun helpEpilog(context: Context): String =
         "This command can also be used to create Kotlin wrapper scripts in a directory if they don't exist yet."
 
-    private val runningWrapper by lazy { Path(System.getenv("AMPER_WRAPPER_PATH")).absolute() }
+    private val runningWrapper by lazy { Path(System.getenv("KOTLIN_CLI_WRAPPER_PATH")).absolute() }
 
     @OptIn(ProcessLeak::class)
     override suspend fun run() {
-        val amperBashPath = targetDir.resolve("amper")
-        val amperBatPath = targetDir.resolve("amper.bat")
-        checkNotDirectories(amperBashPath, amperBatPath)
+        val bashWrapperPath = targetDir.resolve("kotlin")
+        val batWrapperPath = targetDir.resolve("kotlin.bat")
+        checkNotDirectories(bashWrapperPath, batWrapperPath)
         if (!create) {
-            confirmCreateIfMissingWrappers(amperBashPath, amperBatPath)
+            confirmCreateIfMissingWrappers(bashWrapperPath, batWrapperPath)
         }
 
         val version = desiredVersion.resolve()
 
-        terminal.println("Downloading Kotlin Toolchain scripts...")
-        val newBashPath = downloadWrapper(version = version, extension = "").apply { setReadExecPermissions() }
-        val newBatPath = downloadWrapper(version = version, extension = ".bat").apply { setReadExecPermissions() }
+        terminal.println("Downloading Kotlin wrapper scripts...")
+        val newBashWrapperPath = downloadWrapper(version = version, extension = "").apply { setReadExecPermissions() }
+        val newBatWrapperPath = downloadWrapper(version = version, extension = ".bat").apply { setReadExecPermissions() }
         terminal.println("Download complete.")
 
-        if (amperBashPath.exists() && newBashPath.readText() == amperBashPath.readText() &&
-            amperBatPath.exists() && newBatPath.readText() == amperBatPath.readText()) {
+        if (bashWrapperPath.exists() && newBashWrapperPath.readText() == bashWrapperPath.readText() &&
+            batWrapperPath.exists() && newBatWrapperPath.readText() == batWrapperPath.readText()) {
             terminal.println("The Kotlin Toolchain is already in version $version, nothing to update")
             return
         }
 
-        // Test the new script and download the Amper distribution and JRE
+        // Test the new script and download the Kotlin Toolchain distribution and JRE
         val exitCode = spanBuilder("New version first run").use {
-            runAmperVersionFirstRun(newBatPath, newBashPath)
+            runKotlinToolchainVersionFirstRun(newBatWrapperPath, newBashWrapperPath)
         }
         if (exitCode != 0) {
             userReadableError("Couldn't run the new Kotlin Toolchain version. Please check the errors above.")
@@ -138,8 +138,8 @@ internal class UpdateCommand : AmperSubcommand(name = "update") {
         // Replacing a bash script while it's running is possible. We use move commands to ensure the physical file on
         // disk is not modified, thus we can write a new physical file to the old location. Bash will keep loading the
         // old file incrementally from the old physical file using its old file descriptor, which is good.
-        spanBuilder("Replace 'amper' script (bash)").use {
-            copyAndReplaceSafely(source = newBashPath, target = amperBashPath)
+        spanBuilder("Replace 'kotlin' script (bash)").use {
+            copyAndReplaceSafely(source = newBashWrapperPath, target = bashWrapperPath)
         }
 
         // Batch files are different. When running, cmd.exe reloads the file after each command and tries to resume at
@@ -153,36 +153,36 @@ internal class UpdateCommand : AmperSubcommand(name = "update") {
         // The offset of the exit command is where the script would normally resume (given the characters we use in our
         // scripts, the UTF-8 byte offset should correspond to the character offset).
         val runningWrapperResumeOffset = runningWrapper.readText().lastIndexOf("exit /B %ERRORLEVEL%")
-        val batUpdateInPlaceWouldBreak = amperBatPath.exists()
-                && amperBatPath.isSameFileAs(runningWrapper)
-                && newBatPath.fileSize() > runningWrapperResumeOffset
-        spanBuilder("Replace 'amper.bat' script").use { span ->
+        val batUpdateInPlaceWouldBreak = batWrapperPath.exists()
+                && batWrapperPath.isSameFileAs(runningWrapper)
+                && newBatWrapperPath.fileSize() > runningWrapperResumeOffset
+        spanBuilder("Replace 'kotlin.bat' script").use { span ->
             if (batUpdateInPlaceWouldBreak) {
-                copyAndReplaceLaterWindows(source = newBatPath, target = amperBatPath)
-                span.addEvent("amper.bat script copy scheduled for after JVM shutdown")
+                copyAndReplaceLaterWindows(source = newBatWrapperPath, target = batWrapperPath)
+                span.addEvent("kotlin.bat script copy scheduled for after JVM shutdown")
             } else {
-                copyAndReplaceSafely(source = newBatPath, target = amperBatPath)
+                copyAndReplaceSafely(source = newBatWrapperPath, target = batWrapperPath)
             }
         }
         terminal.success("Update successful")
     }
 
-    private fun checkNotDirectories(vararg amperScriptPaths: Path) {
-        val clashingDirs = amperScriptPaths.filter { it.exists() && it.isDirectory() }
+    private fun checkNotDirectories(vararg wrapperPaths: Path) {
+        val clashingDirs = wrapperPaths.filter { it.exists() && it.isDirectory() }
         if (clashingDirs.isNotEmpty()) {
-            userReadableError("Kotlin CLI scripts cannot be updated because a directory with a conflicting name exists: " +
+            userReadableError("Kotlin wrapper scripts cannot be updated because a directory with a conflicting name exists: " +
                     clashingDirs.first().normalize().absolutePathString()
             )
         }
     }
 
-    private fun confirmCreateIfMissingWrappers(vararg amperScriptPaths: Path) {
-        val missingScripts = amperScriptPaths.filterNot { it.exists() }
+    private fun confirmCreateIfMissingWrappers(vararg wrapperPaths: Path) {
+        val missingScripts = wrapperPaths.filterNot { it.exists() }
         if (missingScripts.isEmpty()) {
             return
         }
         val targetDirRef = targetDir.pathString.takeIf { it != "." } ?: "the current directory"
-        val prompt = if (missingScripts.size == amperScriptPaths.size) {
+        val prompt = if (missingScripts.size == wrapperPaths.size) {
             "Kotlin wrappers were not found in $targetDirRef.\nWould you like to create them from scratch? (Y/n)"
         } else {
             "A Kotlin wrapper is missing: ${missingScripts.first().normalize().absolutePathString()}.\nUpdating will create it. Would you like to continue? (Y/n)"
@@ -209,10 +209,9 @@ internal class UpdateCommand : AmperSubcommand(name = "update") {
         spanBuilder("Fetch latest Kotlin Toolchain version").use {
             terminal.println("Fetching latest Kotlin Toolchain version info...")
             // TODO use the latest-version.txt file instead when we update it from our builds
-            val oldMetadataXml = fetchMavenMetadataXml("cli")
-            val newMetadataXml = fetchMavenMetadataXml("amper-cli")
-            (xmlVersionElementRegex.findAll(oldMetadataXml) + xmlVersionElementRegex.findAll(newMetadataXml))
-                .mapNotNull { parseAmperVersion(it.groupValues[1]) }
+            val metadataXml = fetchMavenMetadataXml()
+            xmlVersionElementRegex.findAll(metadataXml)
+                .mapNotNull { parseKotlinCliVersion(it.groupValues[1]) }
                 .filter { !it.isDevVersion || (includeDevVersions && !it.isSpecialBranchVersion) }
                 .maxByOrNull { ComparableVersion(it.fullMavenVersion) }
                 ?.fullMavenVersion
@@ -220,24 +219,18 @@ internal class UpdateCommand : AmperSubcommand(name = "update") {
                     val versionMoniker = if (includeDevVersions) "dev version of the Kotlin Toolchain" else "Kotlin Toolchain version"
                     terminal.println("Latest $versionMoniker is ${terminal.theme.info(it)}")
                 }
-                ?: userReadableError("Couldn't read Kotlin Toolchain versions from maven-metadata.xml:\n\n$newMetadataXml\n\n$oldMetadataXml")
+                ?: userReadableError("Couldn't read Kotlin Toolchain versions from maven-metadata.xml:\n\n$metadataXml")
         }
 
-    private suspend fun fetchMavenMetadataXml(artifactId: String): String = try {
-        amperHttpClient.get("$repository/org/jetbrains/amper/$artifactId/maven-metadata.xml").bodyAsText()
+    private suspend fun fetchMavenMetadataXml(): String = try {
+        amperHttpClient.get("$repository/org/jetbrains/kotlin/kotlin-cli/maven-metadata.xml").bodyAsText()
     } catch (e: Exception) {
         userReadableError("Couldn't fetch the latest Kotlin Toolchain version:\n$e")
     }
 
-    private val firstVersionWithNewArtifact = ComparableVersion("0.7.0-dev-2809")
-
     private suspend fun downloadWrapper(version: String, extension: String): Path = try {
-        spanBuilder("Download wrapper script (amper$extension)").use {
-            val url = if (ComparableVersion(version) < firstVersionWithNewArtifact) {
-                "$repository/org/jetbrains/amper/cli/$version/cli-$version-wrapper$extension"
-            } else {
-                "$repository/org/jetbrains/amper/amper-cli/$version/amper-cli-$version-wrapper$extension"
-            }
+        spanBuilder("Download wrapper script (kotlin$extension)").use {
+            val url = "$repository/org/jetbrains/kotlin/kotlin-cli/$version/kotlin-cli-$version-wrapper$extension"
             Downloader.downloadFileToCacheLocation(
                 url = url,
                 userCacheRoot = commonOptions.sharedCachesRoot,
@@ -245,10 +238,10 @@ internal class UpdateCommand : AmperSubcommand(name = "update") {
             )
         }
     } catch (e: Exception) {
-        userReadableError("Couldn't fetch Kotlin wrapper version $version:\n$e")
+        userReadableError("Couldn't fetch Kotlin wrapper script version $version:\n$e")
     }
 
-    private suspend fun runAmperVersionFirstRun(batWrapper: Path, bashWrapper: Path): Int {
+    private suspend fun runKotlinToolchainVersionFirstRun(batWrapper: Path, bashWrapper: Path): Int {
         val command = when (OsFamily.current) {
             OsFamily.Windows -> if (runningWrapper.extension == "bat") {
                 listOf(batWrapper.absolutePathString(), "--version")
@@ -264,7 +257,7 @@ internal class UpdateCommand : AmperSubcommand(name = "update") {
             OsFamily.FreeBSD,
             OsFamily.Solaris -> listOf(bashWrapper.absolutePathString(), "--version")
         }
-        // This working dir is intentional to support a plain `./amper` in Windows Git bash (without paths shenanigans)
+        // This working dir is intentional to support a plain `./kotlin` in Windows Git bash (without paths shenanigans)
         return runProcessWithInheritedIO(
             workingDir = bashWrapper.absolute().parent,
             command = command,
@@ -320,7 +313,7 @@ internal class UpdateCommand : AmperSubcommand(name = "update") {
     @OptIn(ProcessLeak::class)
     private fun copyAndReplaceLaterWindows(source: Path, target: Path) {
         // If some cleanup at the end of the update command takes unusually long, we don't want to risk a race and try
-        // to replace amper.bat while it's still running. For this reason, we try to schedule this external process as
+        // to replace kotlin.bat while it's still running. For this reason, we try to schedule this external process as
         // close as possible to the termination of the update command's JVM, which is why we do it in a shutdown hook.
         Runtime.getRuntime().addShutdownHook(Thread {
             startLongLivedProcess(
@@ -341,7 +334,7 @@ internal class UpdateCommand : AmperSubcommand(name = "update") {
 
 private val xmlVersionElementRegex = Regex("<version>(.+?)</version>")
 
-private data class AmperVersion(
+private data class KotlinToolchainVersion(
     val versionTriplet: String,
     val devBuildNumber: String?,
     val branchSuffix: String?,
@@ -353,9 +346,9 @@ private data class AmperVersion(
 
 private val versionRegex = Regex("""(?<versionTriplet>[^-]+)(-dev-(?<build>\d+)(-(?<branchSuffix>.*))?)?""")
 
-private fun parseAmperVersion(version: String): AmperVersion? {
+private fun parseKotlinCliVersion(version: String): KotlinToolchainVersion? {
     val versionMatch = versionRegex.matchEntire(version) ?: return null
-    return AmperVersion(
+    return KotlinToolchainVersion(
         versionTriplet = versionMatch.groups["versionTriplet"]?.value ?: error("versionTriplet is mandatory"),
         devBuildNumber = versionMatch.groups["build"]?.value,
         branchSuffix = versionMatch.groups["branchSuffix"]?.value,

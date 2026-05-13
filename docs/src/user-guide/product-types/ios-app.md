@@ -57,13 +57,13 @@ If you want to migrate an existing Xcode project so it has Kotlin Toolchain supp
 
 1. it is named `module.xcodeproj` and is located in the root of the `ios/app` module
 2. it has a single iOS application target
-3. the target has `Debug` & `Release` build configurations, each containing `AMPER_WRAPPER_PATH = <relative path to amper wrapper script>`.
+3. the target has `Debug` & `Release` build configurations, each containing `KOTLIN_CLI_WRAPPER_PATH = <relative path to amper wrapper script>`.
    The path is relative to the Kotlin module root.
 4. the target has a script build phase called `Build Kotlin with Amper` with the code:
    ```bash
     # !AMPER KMP INTEGRATION STEP!
     # This script is managed by the Kotlin Toolchain, do not edit manually!
-    "${AMPER_WRAPPER_PATH}" tool xcode-integration
+    "${KOTLIN_CLI_WRAPPER_PATH}" tool xcode-integration
    ```
 5. The _Framework Search Paths_ (`FRAMEWORK_SEARCH_PATHS`) option contains the `$(TARGET_BUILD_DIR)/AmperFrameworks` value
 

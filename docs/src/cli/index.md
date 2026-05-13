@@ -22,7 +22,7 @@ Use the following command in your project directory to download the script and s
 
 --8<-- "includes/cli-install.md"
 
-The `./amper update -c` command following the download is not strictly necessary, but it will automatically get the 
+The `./kotlin update -c` command following the download is not strictly necessary, but it will automatically get the 
 wrapper script for the other OS. It is good practice to check them both into your VCS so your team can build and run 
 your project without any installation, on any OS.
 
@@ -31,15 +31,15 @@ your project without any installation, on any OS.
     The first time you run the Kotlin wrapper script, it will take some time to download the Kotlin CLI distribution.
     Subsequent runs will be faster, as the downloaded files will be cached locally.
 
-    The `./amper update` call that is part of the above installation command will actually do this first run for you.
+    The `./kotlin update` call that is part of the above installation command will actually do this first run for you.
 
 ## Exploring Kotlin CLI commands
 
-The root `./amper` command and all subcommands support the `-h` (or `--help`) option to explore what is possible:
+The root `./kotlin` command and all subcommands support the `-h` (or `--help`) option to explore what is possible:
 
 ```shell
-./amper --help       # shows the available commands and general options
-./amper build --help # shows the options for the 'build' command specifically
+./kotlin --help       # shows the available commands and general options
+./kotlin build --help # shows the options for the 'build' command specifically
 ```
 
 Useful commands:
@@ -53,9 +53,9 @@ Useful commands:
 
 !!! example "Try it out!"
 
-    Create a new project using the `./amper init` command and select the *JVM console application* template.
+    Create a new project using the `./kotlin init` command and select the *JVM console application* template.
 
-    Then build and run the application using `./amper run`.
+    Then build and run the application using `./kotlin run`.
 
 
 ## Tab-completion
@@ -68,19 +68,19 @@ First, generate the completion script using the `generate-completion` command, s
 === "bash"
 
     ```shell
-    ./amper generate-completion bash > ~/amper-completion.sh
+    ./kotlin generate-completion bash > ~/amper-completion.sh
     ```
 
 === "zsh"
 
     ```shell
-    ./amper generate-completion zsh > ~/amper-completion.sh
+    ./kotlin generate-completion zsh > ~/amper-completion.sh
     ```
 
 === "fish"
 
     ```shell
-    ./amper generate-completion fish > ~/amper-completion.sh
+    ./kotlin generate-completion fish > ~/amper-completion.sh
     ```
 
 Then load the script in your shell (this can be added to `.bashrc`, `.zshrc`, or similar configuration files to load it
@@ -94,9 +94,9 @@ You should now have tab completion available for Kotlin CLI subcommands, options
 
 ## Updating the Kotlin Toolchain to a newer version
 
-Run `./amper update` to update the Kotlin CLI scripts and the toolchain distribution to the latest released version.
+Run `./kotlin update` to update the Kotlin CLI scripts and the toolchain distribution to the latest released version.
 Use the `--dev` option if you want to try the bleeding edge dev build of the Kotlin Toolchain (no guarantees are made on these builds).
 
-See `./amper update -h` for more information about the available options.
+See `./kotlin update -h` for more information about the available options.
 
 !!! tip "Don't forget to regenerate your tab-completion script, if you have one."

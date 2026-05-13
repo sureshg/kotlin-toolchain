@@ -27,7 +27,7 @@ Download the [Kotlin wrapper script](../cli/provisioning.md/#whats-the-wrapper-s
 and then run:
 
 ```bash
-./amper tool convert-project
+./kotlin tool convert-project
 ```
 
 The path to your `pom.xml` can be provided explicitly via `--pom` argument. The `pom.xml` file is a starting point.
@@ -172,7 +172,7 @@ Read more about [Dependencies](../user-guide/dependencies.md).
 
 After the converter finishes, consider the following steps:
 
-1. **Build and test.** Run `./amper build` and `./amper test` to verify the conversion.
+1. **Build and test.** Run `./kotlin build` and `./kotlin test` to verify the conversion.
 
 2. **Review generated files.** Check `project.yaml` and each `module.yaml` for correctness.
 

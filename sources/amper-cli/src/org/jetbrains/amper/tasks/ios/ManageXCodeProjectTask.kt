@@ -223,7 +223,7 @@ class ManageXCodeProjectTask(
             this[BuildSettingNames.FRAMEWORK_SEARCH_PATHS] =
                 "$(inherited) $(TARGET_BUILD_DIR)/${IosConventions.FRAMEWORKS_DIR_NAME}"
             // TODO: Move to the XConfig. For now generated a single time and is not managed anymore.
-            this[AMPER_WRAPPER_PATH_CONF] = CliContext.wrapperScriptPath.relativeTo(baseDir).let {
+            this[KOTLIN_CLI_WRAPPER_PATH_CONF] = CliContext.wrapperScriptPath.relativeTo(baseDir).let {
                 if (it.parent == null) Path(".") / it else it
             }.pathString
 
@@ -341,7 +341,7 @@ class ManageXCodeProjectTask(
             "shellScript" to """
                 |# $AMPER_PHASE_MAGIC
                 |# This script is managed by the Kotlin Toolchain, do not edit manually!
-                |"${'$'}{$AMPER_WRAPPER_PATH_CONF}" tool xcode-integration
+                |"${'$'}{$KOTLIN_CLI_WRAPPER_PATH_CONF}" tool xcode-integration
                 |
             """.trimMargin(),
             "alwaysOutOfDate" to "1", // TODO: Maybe track inputs/outputs properly if that's possible
@@ -378,7 +378,7 @@ class ManageXCodeProjectTask(
         private const val PRODUCT_MODULE_NAME = DEFAULT_TARGET_NAME
         private const val XCODE_PROJECT_DIR_NAME = "module.xcodeproj"
 
-        private const val AMPER_WRAPPER_PATH_CONF = "AMPER_WRAPPER_PATH"
+        private const val KOTLIN_CLI_WRAPPER_PATH_CONF = "KOTLIN_CLI_WRAPPER_PATH"
 
         private const val AMPER_PHASE_MAGIC = "!AMPER KMP INTEGRATION STEP!"
 

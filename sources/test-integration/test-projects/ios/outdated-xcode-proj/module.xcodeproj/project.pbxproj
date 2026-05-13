@@ -110,7 +110,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# !AMPER KMP INTEGRATION STEP!\n# This script is managed by the Kotlin Toolchain, do not edit manually!\n\"${AMPER_WRAPPER_PATH}\" tool FOO xcode-integration --module=\"interop\"\n";
+			shellScript = "# !AMPER KMP INTEGRATION STEP!\n# This script is managed by the Kotlin Toolchain, do not edit manually!\n\"${KOTLIN_CLI_WRAPPER_PATH}\" tool FOO xcode-integration --module=\"interop\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -132,7 +132,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				AMPER_WRAPPER_PATH = "./amper";
+				KOTLIN_CLI_WRAPPER_PATH = "./kotlin";
 				ARCHS = arm64;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -164,7 +164,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				AMPER_WRAPPER_PATH = "./amper";
+				KOTLIN_CLI_WRAPPER_PATH = "./kotlin";
 				ARCHS = "arm64 x86_64";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;

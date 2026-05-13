@@ -10,7 +10,7 @@ You can check them out right here on GitHub, or download a zipped version to ope
 > [IntelliJ IDEA EAP](https://www.jetbrains.com/idea/nextversion/) with the 
 > [Amper plugin](https://plugins.jetbrains.com/plugin/23076-amper).
 > 
-> If you don't use IntelliJ IDEA, explore the CLI commands you can run using `./amper -h` or `./amper <command> -h`.
+> If you don't use IntelliJ IDEA, explore the CLI commands you can run using `./kotlin -h` or `./kotlin <command> -h`.
 
 | Example                 | Download                                                                                                                     |
 |-------------------------|------------------------------------------------------------------------------------------------------------------------------|

@@ -21,68 +21,68 @@ class AmperUserCacheRootTest {
 
     @Test
     @ExtendWith(SystemStubsExtension::class)
-    fun `check Amper user cache is resolved from system settings`(
+    fun `check Kotlin user cache is resolved from system settings`(
         systemProperties: SystemProperties, environmentVariables: EnvironmentVariables
     ) {
-        clearLocalAmperCacheOverrides(systemProperties, environmentVariables)
-        systemProperties.set("amper.shared.cache.dir", tempRoot.pathString)
+        clearLocalKotlinCacheOverrides(systemProperties, environmentVariables)
+        systemProperties.set("kotlin.shared.cache.dir", tempRoot.pathString)
 
         val userCacheRoot = AmperUserCacheRoot.fromCurrentUserResult()
-        assertIs<AmperUserCacheRoot>(userCacheRoot, "Amper user cache root should be resolved from system settings")
+        assertIs<AmperUserCacheRoot>(userCacheRoot, "Kotlin user cache root should be resolved from system settings")
         assertEquals(userCacheRoot.path, tempRoot)
     }
 
     @Test
     @ExtendWith(SystemStubsExtension::class)
-    fun `check Amper user cache is resolved from env variable`(
+    fun `check Kotlin user cache is resolved from env variable`(
         systemProperties: SystemProperties, environmentVariables: EnvironmentVariables
     ) {
-        clearLocalAmperCacheOverrides(systemProperties, environmentVariables)
-        environmentVariables.set("AMPER_SHARED_CACHE_DIR", tempRoot.pathString)
+        clearLocalKotlinCacheOverrides(systemProperties, environmentVariables)
+        environmentVariables.set("KOTLIN_SHARED_CACHE_DIR", tempRoot.pathString)
 
         val userCacheRoot = AmperUserCacheRoot.fromCurrentUserResult()
-        assertIs<AmperUserCacheRoot>(userCacheRoot, "Amper user cache root should be resolved from env variable")
+        assertIs<AmperUserCacheRoot>(userCacheRoot, "Kotlin user cache root should be resolved from env variable")
         assertEquals(userCacheRoot.path, tempRoot)
     }
 
     @Test
     @ExtendWith(SystemStubsExtension::class)
-    fun `check Amper user cache fails to resolve from system settings`(
+    fun `check Kotlin user cache fails to resolve from system settings`(
         systemProperties: SystemProperties, environmentVariables: EnvironmentVariables
     ) {
-        clearLocalAmperCacheOverrides(systemProperties, environmentVariables)
-        systemProperties.set("amper.shared.cache.dir", "my-home/.cache")
+        clearLocalKotlinCacheOverrides(systemProperties, environmentVariables)
+        systemProperties.set("kotlin.shared.cache.dir", "my-home/.cache")
 
         val userCacheRoot = AmperUserCacheRoot.fromCurrentUserResult()
         assertIs<AmperUserCacheInitializationFailure.NonAbsolutePath>(
             userCacheRoot,
-            "Amper user cache root should fail to resolve from system properties"
+            "Kotlin user cache root should fail to resolve from system properties"
         )
     }
 
     @Test
     @ExtendWith(SystemStubsExtension::class)
-    fun `check Amper user cache fails to resolve from environment variable`(
+    fun `check Kotlin user cache fails to resolve from environment variable`(
         systemProperties: SystemProperties, environmentVariables: EnvironmentVariables
     ) {
-        clearLocalAmperCacheOverrides(systemProperties, environmentVariables)
-        environmentVariables.set("AMPER_SHARED_CACHE_DIR", "my-home/.cache")
+        clearLocalKotlinCacheOverrides(systemProperties, environmentVariables)
+        environmentVariables.set("KOTLIN_SHARED_CACHE_DIR", "my-home/.cache")
 
         val userCacheRoot = AmperUserCacheRoot.fromCurrentUserResult()
         assertIs<AmperUserCacheInitializationFailure.NonAbsolutePath>(
             userCacheRoot,
-            "Amper user cache root should fail to resolve from env variable"
+            "Kotlin user cache root should fail to resolve from env variable"
         )
     }
 
     /**
-     * Temporarily resets custom amper settings of the local machine to control the test configuration completely.
+     * Temporarily resets custom Kotlin cache settings of the local machine to control the test configuration completely.
      */
-    private fun clearLocalAmperCacheOverrides(
+    private fun clearLocalKotlinCacheOverrides(
         systemProperties: SystemProperties,
         environmentVariables: EnvironmentVariables
     ) {
-        systemProperties.remove("amper.shared.cache.dir")
-        environmentVariables.remove("AMPER_SHARED_CACHE_DIR")
+        systemProperties.remove("kotlin.shared.cache.dir")
+        environmentVariables.remove("KOTLIN_SHARED_CACHE_DIR")
     }
 }

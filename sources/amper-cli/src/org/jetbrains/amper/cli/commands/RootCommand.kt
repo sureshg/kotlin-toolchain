@@ -48,7 +48,7 @@ import java.io.PrintStream
 import java.nio.file.Path
 import kotlin.io.path.Path
 
-internal class RootCommand : SuspendingCliktCommand(name = "amper") {
+internal class RootCommand : SuspendingCliktCommand(name = "kotlin") {
 
     init {
         versionOption(

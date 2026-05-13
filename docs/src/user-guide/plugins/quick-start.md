@@ -431,7 +431,7 @@ Unlike the `generate` task, it doesn't declare any outputs that are contributed 
 So, to [run](topics/tasks.md#run-a-task) a task manually, one must use the following CLI command:
 
 ```shell
-./amper task :app:print@build-config
+./kotlin task :app:print@build-config
 ```
 
 That's it for this tutorial!

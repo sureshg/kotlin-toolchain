@@ -62,6 +62,6 @@ There is no extra packaging facilities at the moment, and the `package` command 
 To run your application, you need to:
 
 1. Install a JavaScript runtime that supports WebAssembly (e.g., Node.js, D8, a browser, ...).
-2. Build your module with `./amper build`
+2. Build your module with `./kotlin build`
 3. Using your JS runtime, run the `.mjs` wrapper file that calls the `.wasm` code produced by your module.
    See the [Packaging](#packaging) section above to know where this file is located.

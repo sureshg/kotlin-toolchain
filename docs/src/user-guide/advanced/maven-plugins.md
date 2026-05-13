@@ -156,9 +156,9 @@ For instance, the `generate-sources` phase and respective `protobuf-maven-plugin
 Use the `task` command with the fully qualified maven mojo goal task name `:moduleName:pluginArtifactId.goal`. For example:
 
 ```
-./amper task :app:maven-surefire-plugin.test
-./amper task :app:maven-checkstyle-plugin.checkstyle
-./amper task :app:jacoco-maven-plugin.report
+./kotlin task :app:maven-surefire-plugin.test
+./kotlin task :app:maven-checkstyle-plugin.checkstyle
+./kotlin task :app:jacoco-maven-plugin.report
 ```
 
 # Getting results from Maven Mojo executions

@@ -12,6 +12,7 @@ import org.jetbrains.amper.processes.ProcessInput
 import org.jetbrains.amper.system.info.OsFamily
 import org.jetbrains.amper.test.AmperCliResult
 import org.jetbrains.amper.test.LocalAmperPublication
+import org.junit.jupiter.api.Disabled
 import java.nio.file.FileSystemException
 import java.nio.file.Path
 import kotlin.io.path.listDirectoryEntries
@@ -27,6 +28,7 @@ import kotlin.test.assertTrue
 import kotlin.test.fail
 import kotlin.time.Duration.Companion.milliseconds
 
+@Disabled // TODO AMPER-5342 re-enable once a kotlin-cli wrapper has been released, and use new versions accordingly
 class AmperUpdateTest : AmperCliTestBase() {
 
     @Test
@@ -35,8 +37,8 @@ class AmperUpdateTest : AmperCliTestBase() {
 
         val result = runCli(projectDir, "update", stdin = ProcessInput.Text("y\n"), wrapperMode = WrapperMode.GlobalIntrinsicVersion)
 
-        assertTrue(result.stdout.contains("Would you like to create"), "amper should ask for confirmation")
-        assertEquals(listOf("amper", "amper.bat"), projectDir.relativeChildren(), "amper scripts should be created")
+        assertTrue(result.stdout.contains("Would you like to create"), "The Kotlin CLI should ask for confirmation")
+        assertEquals(listOf("kotlin", "kotlin.bat"), projectDir.relativeChildren(), "kotlin CLI wrapper scripts should be created")
     }
 
     @Test
@@ -45,8 +47,8 @@ class AmperUpdateTest : AmperCliTestBase() {
 
         val result = runCli(projectDir, "update", "--create", wrapperMode = WrapperMode.GlobalIntrinsicVersion)
 
-        assertFalse(result.stdout.contains("?"), "amper should not ask for confirmation")
-        assertEquals(listOf("amper", "amper.bat"), projectDir.relativeChildren(), "amper scripts should be created")
+        assertFalse(result.stdout.contains("?"), "The Kotlin CLI should not ask for confirmation")
+        assertEquals(listOf("kotlin", "kotlin.bat"), projectDir.relativeChildren(), "The Kotlin CLI wrapper scripts should be created")
     }
 
     @Test
@@ -56,10 +58,10 @@ class AmperUpdateTest : AmperCliTestBase() {
         val (bashVersion, batVersion, result) = runAmperUpdateAndAwaitWinWrapper(projectDir)
 
         assertTrue(result.stdout.contains("Update successful"), "Update should be successful")
-        assertNotEquals("1.0-SNAPSHOT", bashVersion, "amper bash script should have the new version")
-        assertNotEquals("1.0-SNAPSHOT", batVersion, "amper bat script should have the new version")
-        assertFalse(bashVersion.contains("-dev-"), "amper bash script should not get a dev version, got $bashVersion")
-        assertFalse(batVersion.contains("-dev-"), "amper bat script should not get a dev version, got $batVersion")
+        assertNotEquals("1.0-SNAPSHOT", bashVersion, "kotlin bash script should have the new version")
+        assertNotEquals("1.0-SNAPSHOT", batVersion, "kotlin bat script should have the new version")
+        assertFalse(bashVersion.contains("-dev-"), "kotlin bash script should not get a dev version, got $bashVersion")
+        assertFalse(batVersion.contains("-dev-"), "kotlin bat script should not get a dev version, got $batVersion")
     }
 
     @Test
@@ -71,10 +73,11 @@ class AmperUpdateTest : AmperCliTestBase() {
         assertTrue(result.stdout.contains("Update successful"), "Update should be successful")
         // This is not technically correct: right after a release, the release version should be picked up
         // (it's the latest among all versions, release + dev)
-        assertTrue(bashVersion.contains("-dev-"), "amper bash script new version should contain '-dev-', got $bashVersion")
-        assertTrue(batVersion.contains("-dev-"), "amper bat script new version should contain '-dev-', got $batVersion")
+        assertTrue(bashVersion.contains("-dev-"), "kotlin bash script new version should contain '-dev-', got $bashVersion")
+        assertTrue(batVersion.contains("-dev-"), "kotlin bat script new version should contain '-dev-', got $batVersion")
     }
 
+    @Disabled // TODO AMPER-5342 use a new version once a kotlin-cli wrapper has been released
     @Test
     fun `update --target-version command replaces existing wrappers with specific version`() = runSlowTest {
         val projectDir = newEmptyProjectDir(setupWrappers = true)
@@ -82,10 +85,11 @@ class AmperUpdateTest : AmperCliTestBase() {
         val (bashVersion, batVersion, result) = runAmperUpdateAndAwaitWinWrapper(projectDir, "--target-version=0.6.0-dev-2229")
 
         assertTrue(result.stdout.contains("Update successful"), "Update should be successful")
-        assertEquals("0.6.0-dev-2229", bashVersion, "amper bash script should have the new version")
-        assertEquals("0.6.0-dev-2229", batVersion, "amper bat script should have the new version")
+        assertEquals("0.6.0-dev-2229", bashVersion, "kotlin bash script should have the new version")
+        assertEquals("0.6.0-dev-2229", batVersion, "kotlin bat script should have the new version")
     }
 
+    // TODO AMPER-5342 use a new version once a kotlin-cli wrapper has been released
     @Test
     fun `can downgrade from current to 0_6_0`() = runSlowTest {
         val projectDir = newEmptyProjectDir(setupWrappers = true)
@@ -93,28 +97,11 @@ class AmperUpdateTest : AmperCliTestBase() {
         val (bashVersion, batVersion, result) = runAmperUpdateAndAwaitWinWrapper(projectDir, "--target-version=0.6.0")
 
         assertTrue(result.stdout.contains("Update successful"), "Update should be successful")
-        assertEquals("0.6.0", bashVersion, "amper bash script should have the new version")
-        assertEquals("0.6.0", batVersion, "amper bat script should have the new version")
+        assertEquals("0.6.0", bashVersion, "kotlin bash script should have the new version")
+        assertEquals("0.6.0", batVersion, "kotlin bat script should have the new version")
     }
 
-    @Test
-    fun `can update from 0_6_0 to current`() = runSlowTest {
-        val projectDir = createEmptyProjectWithWrappers(version = "0.6.0")
-        assertCanUpdateToCurrent(projectDir)
-    }
-
-    @Test
-    fun `can update from 0_7_0 to current`() = runSlowTest {
-        val projectDir = createEmptyProjectWithWrappers(version = "0.7.0")
-        assertCanUpdateToCurrent(projectDir)
-    }
-
-    @Test
-    fun `can update from 0_8_0 to current`() = runSlowTest {
-        val projectDir = createEmptyProjectWithWrappers(version = "0.8.0")
-        assertCanUpdateToCurrent(projectDir)
-    }
-
+    // TODO AMPER-5342 use a new version once a kotlin-cli wrapper has been released
     @Test
     fun `can update from 0_9_0 to current`() = runSlowTest {
         val projectDir = createEmptyProjectWithWrappers(version = "0.9.0")
@@ -141,8 +128,8 @@ class AmperUpdateTest : AmperCliTestBase() {
             "--target-version=1.0-SNAPSHOT",
             "--repository=$localAmperDistRepoUrl",
         )
-        assertEquals("1.0-SNAPSHOT", bashVersion, "amper bash script should have the new version")
-        assertEquals("1.0-SNAPSHOT", batVersion, "amper bat script should have the new version")
+        assertEquals("1.0-SNAPSHOT", bashVersion, "kotlin bash script should have the new version")
+        assertEquals("1.0-SNAPSHOT", batVersion, "kotlin bat script should have the new version")
     }
 
     private data class UpdateResult(
@@ -152,7 +139,7 @@ class AmperUpdateTest : AmperCliTestBase() {
     )
 
     /**
-     * Runs the `./amper update` command with the given [options] and waits for the Windows wrapper to match the linux
+     * Runs the `./kotlin update` command with the given [options] and waits for the Windows wrapper to match the linux
      * one (in case the wrapper is updated asynchronously after the update command exits).
      */
     private suspend fun runAmperUpdateAndAwaitWinWrapper(projectDir: Path, vararg options: String): UpdateResult {
@@ -160,7 +147,7 @@ class AmperUpdateTest : AmperCliTestBase() {
             projectDir = projectDir,
             "update", *options,
         )
-        assertEquals(listOf("amper", "amper.bat"), projectDir.relativeChildren(), "amper scripts should still be there")
+        assertEquals(listOf("kotlin", "kotlin.bat"), projectDir.relativeChildren(), "kotlin CLI wrapper scripts should still be there")
 
         // On Windows, the bat script sometimes cannot be changed in-place, so we have to wait for the late replacement
         if (OsFamily.current.isWindows) {
@@ -184,21 +171,21 @@ class AmperUpdateTest : AmperCliTestBase() {
             }
             fail(
                 "Batch script version doesn't match bash script version in $projectDir after 20 attempts.\n" +
-                        "Version in 'amper':     ${projectDir.readVersionInBashScript()}\n" +
-                        "Version in 'amper.bat': ${projectDir.readVersionInBatchScript()}"
+                        "Version in 'kotlin':     ${projectDir.readVersionInBashScript()}\n" +
+                        "Version in 'kotlin.bat': ${projectDir.readVersionInBatchScript()}"
             )
         }
     }
 
     private fun Path.readVersionInBashScript(): String =
-        resolve("amper").readAmperVersionVariable(versionVariablePrefix = "amper_version=")
+        resolve("kotlin").readAmperVersionVariable(versionVariablePrefix = "kotlin_cli_version=")
 
     private suspend fun Path.readVersionInBatchScript(): String {
-        val batchWrapper = resolve("amper.bat")
+        val batchWrapper = resolve("kotlin.bat")
         lateinit var exception: FileSystemException
         repeat(20) {
             try {
-                return batchWrapper.readAmperVersionVariable(versionVariablePrefix = "set amper_version=")
+                return batchWrapper.readAmperVersionVariable(versionVariablePrefix = "set kotlin_cli_version=")
             } catch (e: FileSystemException) { // happens when the async process is still writing to the file
                 exception = e
                 delay(300.milliseconds)

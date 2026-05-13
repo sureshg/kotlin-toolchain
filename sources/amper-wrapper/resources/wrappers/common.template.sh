@@ -30,7 +30,7 @@ download_and_extract() {
     lock_owner=$(cat "$download_lock_file" 2>/dev/null || true)
     # We use `kill -0` instead of `ps -p` as the first one is more portable
     if [ -n "$lock_owner" ] && kill -0 "$lock_owner" >/dev/null; then
-      echo "Another Amper instance (pid $lock_owner) is downloading $moniker. Awaiting the result..."
+      echo "Another Kotlin CLI instance (pid $lock_owner) is downloading $moniker. Awaiting the result..."
       sleep 1
     elif [ -n "$lock_owner" ] && [ "$(cat "$download_lock_file" 2>/dev/null)" = "$lock_owner" ]; then
       rm -f "$download_lock_file"
@@ -38,7 +38,7 @@ download_and_extract() {
       # which means the 'rm' command above from another script could delete our new valid lock file. Instead, we just
       # ask the user to try again. This doesn't 100% eliminate the race, but the probability of issues is drastically
       # reduced because it would involve 4 processes with perfect timing. We can revisit this later.
-      die "Another Amper instance (pid $lock_owner) locked the download of $moniker, but is no longer running. The lock file is now removed, please try again."
+      die "Another Kotlin CLI instance (pid $lock_owner) locked the download of $moniker, but is no longer running. The lock file is now removed, please try again."
     fi
   done
 
@@ -58,7 +58,7 @@ download_and_extract() {
     return 0;
   fi
 
-  if [ "$show_banner_on_cache_miss" = "true" ] && [ -z "${AMPER_NO_WELCOME_BANNER:-}" ]; then
+  if [ "$show_banner_on_cache_miss" = "true" ] && [ -z "${KOTLIN_CLI_NO_WELCOME_BANNER:-}" ]; then
       echo
       echo '        _____  Welcome to                                  '
       echo '       /:::::|  ____   ___     ____      ____    __  ___   '
@@ -68,9 +68,9 @@ download_and_extract() {
       echo '   /:::::::::| |::| |::| |::| |::|/::/ \::\__   |::|       '
       echo '  /::/    |::| |::| |::| |::| |:::::/   \::::|  |::|       '
       echo '                              |::|                         '
-      echo "                              |::|  v.$amper_version       "
+      echo "                              |::|  v.$kotlin_cli_version       "
       echo
-      echo "This is the first run of this version, so we need to download the actual Amper distribution."
+      echo "This is the first run of the Kotlin CLI v$kotlin_cli_version, so we need to download the Kotlin Toolchain."
       echo "Please give us a few seconds, subsequent runs will be faster."
       echo
   fi
@@ -87,7 +87,7 @@ download_and_extract() {
     if [ -t 1 ]; then WGET_PROGRESS=""; else WGET_PROGRESS="-nv"; fi
     wget $WGET_PROGRESS --tries=5 --connect-timeout=30 --read-timeout=120 -O "${temp_file}" "$file_url"
   else
-    die "ERROR: Please install 'wget' or 'curl', as Amper needs one of them to download $moniker"
+    die "ERROR: Please install 'wget' or 'curl', as one of them is required to download $moniker"
   fi
 
   check_sha "$file_url" "$temp_file" "$file_sha" "$sha_size"
@@ -100,13 +100,13 @@ download_and_extract() {
       if command -v unzip >/dev/null 2>&1; then
         unzip -q "$temp_file" -d "$extract_dir"
       else
-        die "ERROR: Please install 'unzip', as Amper needs it to extract $moniker"
+        die "ERROR: Please install 'unzip', which is required to extract $moniker"
       fi ;;
     *)
       if command -v tar >/dev/null 2>&1; then
         tar -x -f "$temp_file" -C "$extract_dir"
       else
-        die "ERROR: Please install 'tar', as Amper needs it to extract $moniker"
+        die "ERROR: Please install 'tar', which is required to extract $moniker"
       fi ;;
   esac
 

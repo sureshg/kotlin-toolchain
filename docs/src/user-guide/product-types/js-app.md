@@ -64,6 +64,6 @@ There is no extra packaging facilities at the moment, and the `package` command 
 To run your application, you need to:
 
 1. Install a JavaScript runtime (e.g., Node.js or a browser)
-2. Build your module with `./amper build`
+2. Build your module with `./kotlin build`
 3. Run the `.mjs` file produced by your module using your JavaScript runtime. 
    See the [Packaging](#packaging) section above to know where this file is located.

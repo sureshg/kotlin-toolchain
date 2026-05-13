@@ -26,9 +26,9 @@ class AmperInitTest : AmperCliTestBase() {
         runCli(newRoot, "init", "multiplatform-cli", wrapperMode = WrapperMode.GlobalIntrinsicVersion)
 
         newRoot.assertContainsRelativeFiles(
-            "amper",
-            "amper.bat",
             "jvm-cli/module.yaml",
+            "kotlin",
+            "kotlin.bat",
             "linux-cli/module.yaml",
             "macos-cli/module.yaml",
             "project.yaml",
@@ -48,8 +48,8 @@ class AmperInitTest : AmperCliTestBase() {
     fun `init overwrites existing wrapper scripts`() = runSlowTest {
         val newRoot = newEmptyProjectDir()
 
-        val bashWrapper = newRoot.resolve("amper")
-        val batWrapper = newRoot.resolve("amper.bat")
+        val bashWrapper = newRoot.resolve("kotlin")
+        val batWrapper = newRoot.resolve("kotlin.bat")
 
         bashWrapper.writeText("w1")
         batWrapper.writeText("w2")

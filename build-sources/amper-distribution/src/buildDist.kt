@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 @file:Suppress("ReplacePrintlnWithLogging")
@@ -71,7 +71,7 @@ private fun Path.writeDistTarGz(
     mergeFrom: List<Path>,
 ) {
     TarArchiveOutputStream(GZIPOutputStream(outputStream().buffered())).use { tarStream ->
-        tarStream.writeFile(contents = argFileContents(), pathInTar = "amper.args")
+        tarStream.writeFile(contents = argFileContents(), pathInTar = "kotlin-cli.args")
         tarStream.writeDir(cliRuntimeClasspath, targetDirName = "lib")
         extraClasspaths.forEach { (name, paths) ->
             tarStream.writeDir(paths, targetDirName = name)

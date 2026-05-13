@@ -17,6 +17,7 @@ import org.jetbrains.amper.test.TempDirExtension
 import org.jetbrains.amper.wrapper.AmperWrapperData
 import org.jetbrains.amper.wrapper.AmperWrappers
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
 import java.nio.file.Path
@@ -24,6 +25,7 @@ import kotlin.io.path.absolutePathString
 import kotlin.io.path.createDirectory
 import kotlin.io.path.createParentDirectories
 import kotlin.io.path.div
+import kotlin.io.path.name
 import kotlin.io.path.writeText
 
 class GlobalWrapperTest : AmperCliTestBase() {
@@ -39,12 +41,15 @@ class GlobalWrapperTest : AmperCliTestBase() {
 
     @BeforeEach
     fun setUp() {
-        hostWrapperInfo = AmperWrapperData.parseFromProjectRoot(Dirs.amperCheckoutRoot)!!
+        hostWrapperInfo = AmperWrapperData.parseFromProjectRoot(Dirs.amperCheckoutRoot)
+            ?: error("Couldn't parse wrapper info from the Amper project")
+
         check(hostWrapperInfo.version != AmperBuild.mavenVersion) {
             "host: ${hostWrapperInfo.version} must not be equal to ${AmperBuild.mavenVersion}"
         }
     }
 
+    @Disabled // FIXME AMPER-5342 restore this test once we migrate the project to the new wrappers
     @Test
     fun `global wrapper properly detects local version at root`() = runSlowTest {
         AmperWrappers.generate(
@@ -83,6 +88,7 @@ class GlobalWrapperTest : AmperCliTestBase() {
         result.assertStdoutDoesNotContain(hostWrapperInfo.version)
     }
 
+    @Disabled // FIXME AMPER-5342 restore this test once we migrate the project to the new wrappers
     @Test
     fun `global wrapper properly detects local version at nested dir`() = runSlowTest {
         AmperWrappers.generate(
@@ -115,8 +121,7 @@ class GlobalWrapperTest : AmperCliTestBase() {
             amperDistTgzSha256 = hostWrapperInfo.sha256,
         )
         val activeScriptPath = scriptPaths.first {
-            if (OsFamily.current == OsFamily.Windows) it.endsWith("amper.bat")
-            else it.endsWith("amper")
+            it.name == if (OsFamily.current == OsFamily.Windows) "kotlin.bat" else "kotlin"
         }
 
         val result = runCli(
@@ -157,7 +162,7 @@ class GlobalWrapperTest : AmperCliTestBase() {
             assertEmptyStdErr = false,
         )
         result.assertWarnings(
-            "Running Amper version (${AmperBuild.mavenVersion}) is different from the project wrapper version (${hostWrapperInfo.version}). " +
+            "Running Kotlin CLI version (${AmperBuild.mavenVersion}) is different from the project wrapper version (${hostWrapperInfo.version}). " +
                     "NOTE: If you are using the global wrapper, make sure you run it inside the project directory."
         )
     }

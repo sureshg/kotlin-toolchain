@@ -17,7 +17,7 @@ import org.jetbrains.amper.frontend.tree.StringNode
 
 class PublishingSettings : SchemaNode() {
 
-    @SchemaDoc("Enables the publication of the module to Maven repositories (via `./amper publish`)")
+    @SchemaDoc("Enables the publication of the module to Maven repositories (via `./kotlin publish`)")
     val enabled by value(default = false)
 
     @SchemaDoc("Group ID of the published Maven artifact")

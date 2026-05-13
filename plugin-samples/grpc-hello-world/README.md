@@ -10,14 +10,14 @@ You can launch `HelloWorldServer.main` and `HelloWorldClient.main` using the IDE
 
 To run the example manually:
 ```bash
-./amper run -m grpc-hello-world --main-class io.grpc.examples.helloworld.HelloWorldServer
+./kotlin run -m grpc-hello-world --main-class io.grpc.examples.helloworld.HelloWorldServer
 ```
 And then in a separate shell:
 ```bash
-./amper run -m grpc-hello-world --main-class io.grpc.examples.helloworld.HelloWorldClient
+./kotlin run -m grpc-hello-world --main-class io.grpc.examples.helloworld.HelloWorldClient
 ```
 
 To run tests manually:
 ```bash
-./amper test -m grpc-hello-world
+./kotlin test -m grpc-hello-world
 ```

@@ -7,11 +7,11 @@ Docs are located in the `docs/` folder.
 
 ## Usage
 
-Build the project: `./amper build`
-Test the project: `./amper test`
-Test a module use: `./amper test -m <module_name>`
-Test a class or method use: `./amper test -m <module_name> --include-test <test_fqn>` where `<module_name>` is the name of the folder regardless of where it is located in the project.
-You can get additional help via `./amper --help` or for the specific command `./amper <command> --help`
+Build the project: `./kotlin build`
+Test the project: `./kotlin test`
+Test a module use: `./kotlin test -m <module_name>`
+Test a class or method use: `./kotlin test -m <module_name> --include-test <test_fqn>` where `<module_name>` is the name of the folder regardless of where it is located in the project.
+You can get additional help via `./kotlin --help` or for the specific command `./kotlin <command> --help`
 When changing anything in the frontend schema, to update golden files that are used for tests: `updateGoldFiles.main.kts`
 
 ## Specific instructions
@@ -23,7 +23,7 @@ When changing anything in the frontend schema, to update golden files that are u
 - To get the basic project structure, you can do the following:
       - use README.md of the specific module
       - use `description` field of `module.yaml`
-      - use `./amper show modules` or more specific with `--fields=name,type,platforms,description` for additional info
+      - use `./kotlin show modules` or more specific with `--fields=name,type,platforms,description` for additional info
 - Strictly follow TDD practice, don't proceed further until you make sure the test is red
 - Running the whole test suite is very time- and token-consuming, so avoid it. Instead, run only tests you think are relevant.
 - When you are in a branch with the YouTrack ID, like AMPER-XXXX, go to the YouTrack and get issue details if YouTrack MCP is available.

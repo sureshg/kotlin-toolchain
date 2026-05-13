@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 import java.nio.file.Path
@@ -11,6 +11,7 @@ val amperRootDir: Path = __FILE__.toPath().absolute().parent // __FILE__ is this
 @Suppress("PROCESS_BUILDER_START_LEAK")
 fun runAmperCli(vararg args: String): Int {
     val isWindows = System.getProperty("os.name").startsWith("Win", ignoreCase = true)
+    // TODO AMPER-5342 change the script names once we migrate to kotlin(.bat)
     val amperScript = amperRootDir.resolve(if (isWindows) "amper.bat" else "amper")
     return ProcessBuilder(amperScript.pathString, *args).inheritIO().start().waitFor()
 }

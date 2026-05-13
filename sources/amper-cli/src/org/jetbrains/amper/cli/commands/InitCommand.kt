@@ -53,7 +53,9 @@ internal class InitCommand : AmperSubcommand(name = "init") {
 
         if (wrappersGenerated) {
             terminal.println()
-            val buildCommand = if (OsFamily.current.isWindows) "amper.bat build" else "./amper build"
+            // On Windows, we don't need the .bat extension when calling the command. Even ./kotlin works in PowerShell.
+            // Calling .\kotlin works both in PowerShell and cmd.exe, so we use this on Windows.
+            val buildCommand = if (OsFamily.current.isWindows) ".\\kotlin build" else "./kotlin build"
             terminal.println(
                 "Now you may build your project with ${terminal.theme.info(buildCommand)} or open this folder in an " +
                         "IDE with the Kotlin Toolchain plugin"
@@ -78,7 +80,7 @@ internal class InitCommand : AmperSubcommand(name = "init") {
     }
 
     private fun generateWrapperScripts(targetRootDir: Path): Boolean {
-        val distributionPath = System.getenv("AMPER_DISTRIBUTION_DIR")
+        val distributionPath = System.getenv("KOTLIN_TOOLCHAIN_DISTRIBUTION_DIR")
         if (distributionPath.isNullOrEmpty()) {
             logger.warn("Kotlin CLI was not run from kotlin wrapper, skipping generating wrappers for $targetRootDir")
             return false
