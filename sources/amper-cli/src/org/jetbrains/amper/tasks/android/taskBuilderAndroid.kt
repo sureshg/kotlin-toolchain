@@ -192,7 +192,7 @@ fun ProjectTasksBuilder.setupAndroidTasks() {
                 ),
                 dependsOn = buildList {
                     add(AndroidTaskType.InstallPlatform.getTaskName(module, platform, isTest))
-                    add(CommonTaskType.TransformDependencies.getTaskName(module, platform))
+                    add(CommonTaskType.TransformDependencies.getTaskName(module, platform, isTest))
                     add(CommonTaskType.Dependencies.getTaskName(module, Platform.ANDROID, isTest))
                     if (module.type != ProductType.KMP_LIB && !isTest) {
                         add(AndroidTaskType.Prepare.getTaskName(module, platform, isTest, buildType))

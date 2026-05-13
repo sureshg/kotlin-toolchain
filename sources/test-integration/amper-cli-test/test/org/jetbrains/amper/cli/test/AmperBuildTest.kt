@@ -278,6 +278,13 @@ class AmperBuildTest : AmperCliTestBase() {
         """.trimIndent())
     }
 
+    // AMPER-5259
+    @Test
+    fun `AARs in test dependencies are properly processed`() = runSlowTest {
+        val projectContext = testProject("android-test-dependency")
+        runCli(projectDir = projectContext, "build", configureAndroidHome = true)
+    }
+
     private suspend fun runCliWithOrWithoutJps(
         projectRoot: Path,
         vararg args: String,
