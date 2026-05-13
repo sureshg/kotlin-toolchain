@@ -113,8 +113,12 @@ class ExecuteMavenMojoTask(
             // Set artifact repositories that are usually being set within the model building listener.
             remoteArtifactRepositories = request.remoteRepositories
 
+            val pluginRepo = plexus.repoSystem.createDefaultRemoteRepository(request)
+            // Inject mirrors so the ArtifactRepository URL gets rewritten to the mirror URL
+            plexus.repoSystem.injectMirror(listOf(pluginRepo), request.mirrors)
+
             // Set plugin repositories to the maven central.
-            this@apply.pluginArtifactRepositories = listOf(plexus.repoSystem.createDefaultRemoteRepository(request))
+            this@apply.pluginArtifactRepositories = listOf(pluginRepo)
         }
 
         val configDom = Xpp3DomBuilder.build(configString.reader())

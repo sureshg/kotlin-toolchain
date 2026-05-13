@@ -8,6 +8,7 @@ import org.apache.maven.bridge.MavenRepositorySystem
 import org.apache.maven.execution.DefaultMavenExecutionRequest
 import org.apache.maven.execution.MavenExecutionRequest
 import org.apache.maven.internal.aether.DefaultRepositorySystemSessionFactory
+import org.apache.maven.settings.Mirror
 import org.codehaus.plexus.DefaultContainerConfiguration
 import org.codehaus.plexus.DefaultPlexusContainer
 import org.codehaus.plexus.PlexusConstants
@@ -96,9 +97,26 @@ fun PlexusContainer.createRepositorySession(localRepositoryPath: Path): Reposito
 }
 
 fun MavenRepositorySystem.createMavenExecutionRequest(localRepositoryPath: Path): MavenExecutionRequest {
-    val request = DefaultMavenExecutionRequest()
+    val request = createDefaultMavenExecutionRequest()
+
     request.localRepository = createLocalRepository(request, localRepositoryPath.toFile())
     request.systemProperties = System.getProperties()
+
+    return request
+}
+
+private fun createDefaultMavenExecutionRequest(): DefaultMavenExecutionRequest {
+    val request = DefaultMavenExecutionRequest()
+    if (System.getenv("AMPER_OVERRIDE_MAVEN_CENTRAL_URL_TO_CACHE_REDIRECTOR")?.toBooleanStrictOrNull() == true) {
+        request.addMirror(
+            Mirror().also {
+                it.id = "central-mirror"
+                it.name = "Maven Central Mirror"
+                it.url = "https://cache-redirector.jetbrains.com/repo1.maven.org/maven2/"
+                it.mirrorOf = "central"
+            }
+        )
+    }
     return request
 }
 

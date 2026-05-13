@@ -11,6 +11,7 @@ import org.apache.maven.internal.aether.DefaultRepositorySystemSessionFactory
 import org.apache.maven.project.MavenProject
 import org.apache.maven.project.ProjectBuilder
 import org.apache.maven.properties.internal.EnvironmentUtils
+import org.apache.maven.settings.Mirror
 import org.apache.maven.settings.building.DefaultSettingsBuildingRequest
 import org.apache.maven.settings.building.SettingsBuilder
 import org.codehaus.plexus.DefaultContainerConfiguration
@@ -36,7 +37,7 @@ internal object MavenModelReader {
         val container = DefaultPlexusContainer(containerConfiguration)
         val builder = container.lookup(ProjectBuilder::class.java)
 
-        val mavenExecutionRequest = DefaultMavenExecutionRequest().apply {
+        val mavenExecutionRequest = createDefaultMavenExecutionRequest().apply {
             val settingsBuilder = container.lookup(SettingsBuilder::class.java)
             val settingsRequest = DefaultSettingsBuildingRequest().apply {
                 userSettingsFile = File(System.getProperty("user.home"), ".m2/settings.xml")
@@ -77,4 +78,19 @@ internal object MavenModelReader {
             addAll(allProjects.map { it.project })
         }
     }
+}
+
+fun createDefaultMavenExecutionRequest(): DefaultMavenExecutionRequest {
+    val request = DefaultMavenExecutionRequest()
+    if (System.getenv("AMPER_OVERRIDE_MAVEN_CENTRAL_URL_TO_CACHE_REDIRECTOR")?.toBooleanStrictOrNull() == true) {
+        request.addMirror(
+            Mirror().also {
+                it.id = "central-mirror"
+                it.name = "Maven Central Mirror"
+                it.url = "https://cache-redirector.jetbrains.com/repo1.maven.org/maven2/"
+                it.mirrorOf = "central"
+            }
+        )
+    }
+    return request
 }

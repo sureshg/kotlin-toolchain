@@ -34,6 +34,7 @@ internal fun ProjectTreeBuilder.contributeRepositories(jarProjects: Set<MavenPro
                     // inherited from all parent POMs, so parent repos are already covered here.
                     project.remoteProjectRepositories.forEach { repo ->
                         if (repo.id == "central") return@forEach
+                        if (repo.id == "central-mirror" && repo.url == "https://cache-redirector.jetbrains.com/repo1.maven.org/maven2/") return@forEach
                         add {
                             id(repo.id)
                             url(repo.url)
