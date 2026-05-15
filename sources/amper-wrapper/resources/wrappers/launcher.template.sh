@@ -8,7 +8,7 @@ set -e -u
 
 KOTLIN_CLI_JRE_DOWNLOAD_ROOT="${KOTLIN_CLI_JRE_DOWNLOAD_ROOT:-https:/}"
 
-@include:common.template.sh@
+{{include:common.template.sh}}
 
 # ********** System detection **********
 

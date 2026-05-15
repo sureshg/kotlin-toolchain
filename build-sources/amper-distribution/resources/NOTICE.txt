@@ -32,7 +32,7 @@ Source repositories:
     https://github.com/rmyorston/busybox-w32
 
 Upstream version:
-    busybox-w32 @BUSYBOX_W32_VERSION@
+    busybox-w32 {{BUSYBOX_W32_VERSION}}
 
 Copyright:
     Copyright (C) the respective BusyBox and busybox-w32 authors and
@@ -66,10 +66,10 @@ Modifications:
 Corresponding source code (GPLv2 §3(a)):
     Pursuant to GNU GPL version 2, section 3(a), the complete corresponding
     source code for the above binaries is included in this distribution at:
-        third-party-sources/busybox-w32-@BUSYBOX_W32_VERSION@.tgz
+        third-party-sources/busybox-w32-{{BUSYBOX_W32_VERSION}}.tgz
 
     Additionally, the source code along with the git tag can be found at:
-        https://github.com/rmyorston/busybox-w32/releases/tag/@BUSYBOX_W32_VERSION@
+        https://github.com/rmyorston/busybox-w32/releases/tag/{{BUSYBOX_W32_VERSION}}
 
     This tarball is the upstream busybox-w32 source tree at the revision
     that corresponds to the included binaries. It contains the full source

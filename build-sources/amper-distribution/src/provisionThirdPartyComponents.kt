@@ -89,7 +89,7 @@ fun provisionThirdPartyComponents(
 }
 
 private const val BUSYBOX_W32_DOWNLOAD_ROOT = "https://frippery.org/files/busybox"
-private const val BUSYBOX_W32_VERSION_PLACEHOLDER = "@BUSYBOX_W32_VERSION@"
+private const val BUSYBOX_W32_VERSION_PLACEHOLDER = "{{BUSYBOX_W32_VERSION}}"
 
 private data class DownloadableResource(
     val url: String,

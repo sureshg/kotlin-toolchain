@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.wrapper
@@ -21,7 +21,7 @@ internal fun Template.substitute(
         val macro = match.groupValues[1]
         if (':' in macro) {
             check(macro.startsWith("include:", ignoreCase = true)) {
-                "invalid macro directive: `${match.value}`; only `@include:<name>@` is supported"
+                "invalid macro directive: `${match.value}`; only `{{include:<name>}}` is supported"
             }
             val name = macro.removePrefix("include:")
             val nestedTemplate = checkNotNull(templateProvider.getTemplate(name)) {
@@ -37,4 +37,4 @@ internal fun Template.substitute(
     }
 }
 
-private val MacroRegex = """@(\S+)@""".toRegex()
+private val MacroRegex = """\{\{([\w:.]+)}}""".toRegex()
