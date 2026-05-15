@@ -50,7 +50,6 @@ as possible, such as:
 - The steps to reproduce the issue
 
 ## Running Amper CLI from sources
-<!-- TODO AMPER-5342 replace script names -->
 
 It is possible to use Amper CLI built from sources, please check out the Amper project and use 
-`./amper-from-sources` instead of `./amper` (or `./amper-from-sources.bat` instead of `./amper.bat`).
+`./amper-from-sources` instead of `./kotlin` (or `./amper-from-sources.bat` instead of `./kotlin.bat`).

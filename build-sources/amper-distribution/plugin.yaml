@@ -46,9 +46,9 @@ tasks:
 
   generateLocalDemoBrewFormula:
     action: !generateLocalDemoBrewFormula
-      hostWrapperScript: ${project.rootDir}/amper
-      formula: ${taskOutputDir}/amper.rb
-      archive: ${taskOutputDir}/amper.zip
+      hostWrapperScript: ${project.rootDir}/kotlin
+      formula: ${taskOutputDir}/kotlin.rb
+      archive: ${taskOutputDir}/kotlin.zip
 
   installLocalDemoBrewFormula:
     action: !installBrewFormula

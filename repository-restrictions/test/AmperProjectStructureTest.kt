@@ -19,6 +19,7 @@ import org.jetbrains.amper.frontend.schema.Repository.Companion.SpecialMavenLoca
 import org.jetbrains.amper.problems.reporting.NoopProblemReporter
 import org.jetbrains.amper.test.Dirs
 import org.jetbrains.amper.test.runTestWithMdc
+import org.jetbrains.amper.wrapper.AmperWrapperData
 import java.nio.file.FileVisitResult
 import java.nio.file.Path
 import kotlin.io.path.absolute
@@ -26,7 +27,6 @@ import kotlin.io.path.absolutePathString
 import kotlin.io.path.inputStream
 import kotlin.io.path.name
 import kotlin.io.path.readLines
-import kotlin.io.path.readText
 import kotlin.io.path.relativeTo
 import kotlin.io.path.visitFileTree
 import kotlin.io.path.walk
@@ -302,7 +302,7 @@ class AmperProjectStructureTest {
     @Test
     fun sameVersionInEveryWrapper() {
         val versionToFiles = Dirs.amperCheckoutRoot.findWrapperFiles()
-            .map { it to extractAmperVersion(it) }
+            .map { it to AmperWrapperData.parse(it).version }
             .groupBy({ it.second }, { it.first })
             .toList()
             .map { it.first to it.second.sorted() }
@@ -326,47 +326,12 @@ class AmperProjectStructureTest {
                 }
             }
             onVisitFile { file, _ ->
-                // TODO AMPER-5342 remove amper variants once we migrate to kotlin(.bat)
-                if (file.name in setOf("amper", "amper.bat", "kotlin", "kotlin.bat")) {
+                if (file.name in setOf("kotlin", "kotlin.bat")) {
                     filesWithWrappers.add(file)
                 }
                 FileVisitResult.CONTINUE
             }
         }
         return filesWithWrappers
-    }
-
-    private fun extractAmperVersion(file: Path): String {
-        val text = file.readText()
-        val lines = text.lines()
-
-        val amperVersion = run {
-            val versionPattern = when (file.name) {
-                // TODO AMPER-5342 remove amper variants once we migrate to kotlin(.bat)
-                "amper" -> Regex("amper_version=(.+)")
-                "amper.bat" -> Regex("set amper_version=(.+)")
-                "kotlin" -> Regex("kotlin_cli_version=(.+)")
-                "kotlin.bat" -> Regex("set kotlin_cli_version=(.+)")
-                else -> error("Unsupported file: $file")
-            }
-
-            val matches = lines.mapNotNull { line -> versionPattern.matchEntire(line) }
-            check(matches.size == 1) {
-                "Expect one and only one match of '${versionPattern.pattern}' in $file, but got ${matches.size} matches"
-            }
-            val match = matches.single()
-
-            match.groupValues[1]
-        }
-
-        // check for some unmatched dev versions
-        val split = text.split(Regex("[\\s:+,*#\"!?`'()=%~<>_]"))
-            .filter { Regex("[0-9.]+-dev-[0-9.]+").matches(it) }
-            .filter { it != amperVersion }
-        if (split.isNotEmpty()) {
-            error("Some strings look like an Amper version in $file:\n${split.joinToString("\n")}")
-        }
-
-        return amperVersion
     }
 }

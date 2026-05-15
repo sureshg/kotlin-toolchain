@@ -6,9 +6,10 @@ apply:
   - ../sources/common.module-template.yaml
 
 test-dependencies:
-  - ../sources/test-base
+  - ../sources/amper-wrapper
   - ../sources/core
   - ../sources/frontend/schema
+  - ../sources/test-base
   - $libs.charleskorn.kaml
   - $libs.maven.artifact
 

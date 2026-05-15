@@ -52,9 +52,8 @@ fun provisionThirdPartyComponents(
 
     // FIXME(inhatkevich, AMPER-5156): Remove this workaround
     // We just copy the busybox binaries and sources from the host Amper distribution
-    // TODO AMPER-5342 Replace with KOTLIN_TOOLCHAIN_DISTRIBUTION_DIR once we switch to the new wrappers
-    val currentAmperDistribution = checkNotNull(System.getenv("AMPER_DISTRIBUTION_DIR")) {
-        "AMPER_DISTRIBUTION_DIR environment variable is not set"
+    val currentAmperDistribution = checkNotNull(System.getenv("KOTLIN_TOOLCHAIN_DISTRIBUTION_DIR")) {
+        "KOTLIN_TOOLCHAIN_DISTRIBUTION_DIR environment variable is not set"
     }.let(::Path)
     val sourcesArchiveName = "busybox-w32-${versions.busyboxW32Version}.tgz"
     currentAmperDistribution.resolve("third-party-sources").resolve(sourcesArchiveName)

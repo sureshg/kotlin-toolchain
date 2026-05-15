@@ -62,7 +62,7 @@ data class AmperWrapperData private constructor(
             OsFamily.Solaris -> setOf(WrapperType.KotlinSh, WrapperType.AmperSh)
         }
 
-        // TODO AMPER-5342 remove old wrapper names once example projects and amper itself are migrated
+        // TODO AMPER-5342 remove old wrapper names once external projects are migrated
         private enum class WrapperType(
             val versionRegex: Regex,
             val checkSumRegex: Regex,

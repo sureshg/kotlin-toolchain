@@ -128,8 +128,7 @@ private class AmperGoldUpdater(
 
     private suspend fun runAmperCli(amperRootDir: Path, vararg args: String): Int {
         val isWindows = System.getProperty("os.name").startsWith("Win", ignoreCase = true)
-        // TODO AMPER-5342 change the script names once we migrate to kotlin(.bat)
-        val amperScript = amperRootDir.resolve(if (isWindows) "amper.bat" else "amper")
+        val amperScript = amperRootDir.resolve(if (isWindows) "kotlin.bat" else "kotlin")
         return runProcessWithInheritedIO(command = listOf(amperScript.pathString) + args)
     }
 

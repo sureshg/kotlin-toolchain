@@ -35,7 +35,7 @@ fun generateLocalDemoBrewFormula(
     archive.deleteIfExists()
 
     val (version, sha256) = AmperWrapperData.parse(hostWrapperScript)
-    println("Using host Amper version $version ($sha256) for the global script")
+    println("Using host Kotlin CLI version $version ($sha256) for the global script")
 
     val options = mapOf(
         "create" to "true",
@@ -45,7 +45,7 @@ fun generateLocalDemoBrewFormula(
         AmperWrappers.generate(
             amperVersion = version,
             amperDistTgzSha256 = sha256,
-            targetDir = zipFs.getPath("amper").createDirectory(),
+            targetDir = zipFs.getPath("kotlin").createDirectory(),
             includeWindows = false,
         )
     }
@@ -53,16 +53,16 @@ fun generateLocalDemoBrewFormula(
     formula.writeText(
         """
         # Local formula for debug purposes. Can be installed without a tap.
-        class Amper < Formula
-          desc "Global Amper wrapper script"
-          homepage "https://amper.org"
+        class Kotlin < Formula
+          desc "Global Kotlin wrapper script"
+          homepage "https://kotlin-toolchain.org"
           url "file:///${archive.absolutePathString()}"
           sha256 "${archive.readBytes().sha256String()}"
           version "${version}+debug-${System.currentTimeMillis()}"
           license "Apache-2.0"
 
           def install
-            bin.install "amper"
+            bin.install "kotlin"
           end
         end
     """.trimIndent()

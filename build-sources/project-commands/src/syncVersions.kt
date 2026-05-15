@@ -37,7 +37,6 @@ class VersionUpdater(val amperRootDir: Path) {
         println("Making sure user-visible versions are aligned in Amper, docs, and examples...")
         updateVersionsCatalog(versions)
         updateDefaultVersionsKt(versions.defaultsForUsers)
-        updateAmperWrappers(versions)
         updateKotlinCliWrappers(versions)
         updateWrapperTemplates(versions)
         println("Done.")
@@ -85,21 +84,6 @@ class VersionUpdater(val amperRootDir: Path) {
         replacement = newValue,
     )
 
-    // TODO AMPER-5342 remove once we migrate to kotlin(.bat)
-    private fun updateAmperWrappers(versions: Versions) {
-        val shellWrapperText =
-            fetchContent("$amperMavenRepoUrl/org/jetbrains/amper/amper-cli/${versions.bootstrapAmperVersion}/amper-cli-${versions.bootstrapAmperVersion}-wrapper")
-        val batchWrapperText =
-            fetchContent("$amperMavenRepoUrl/org/jetbrains/amper/amper-cli/${versions.bootstrapAmperVersion}/amper-cli-${versions.bootstrapAmperVersion}-wrapper.bat")
-
-        amperRootDir.forEachWrapperFile { path ->
-            when (path.name) {
-                "amper" -> path.replaceFileText { shellWrapperText }
-                "amper.bat" -> path.replaceFileText { batchWrapperText }
-            }
-        }
-    }
-
     private fun updateKotlinCliWrappers(versions: Versions) {
         val shellWrapperText =
             fetchContent("$amperMavenRepoUrl/org/jetbrains/kotlin/kotlin-cli/${versions.bootstrapAmperVersion}/kotlin-cli-${versions.bootstrapAmperVersion}-wrapper")
@@ -126,8 +110,7 @@ class VersionUpdater(val amperRootDir: Path) {
                 }
             }
             onVisitFile { file, _ ->
-                // TODO AMPER-5342 remove amper scripts once we migrate to kotlin(.bat)
-                if (file.name in setOf("amper", "amper.bat", "kotlin", "kotlin.bat")) {
+                if (file.name in setOf("kotlin", "kotlin.bat")) {
                     action(file)
                 }
                 FileVisitResult.CONTINUE
