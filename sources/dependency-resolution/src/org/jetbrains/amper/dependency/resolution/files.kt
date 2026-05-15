@@ -79,6 +79,7 @@ import kotlin.io.path.isDirectory
 import kotlin.io.path.moveTo
 import kotlin.io.path.name
 import kotlin.io.path.readText
+import kotlin.io.path.toPath
 import kotlin.io.path.writeText
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
@@ -995,9 +996,11 @@ open class DependencyFileImpl(
                     .use {
                         val request = HttpRequest.newBuilder()
                             .uri(URI.create(url))
-                            // Without a user agent header, we don't get snapshot versions in maven-metadata.xml.
-                            // I hope this blows your mind.
-//                            .header(HttpHeaders.UserAgent, "JetBrains Amper")
+                            // User-agent header helps the repository provider to distinguish clients
+                            // and give them a way to contact client authors if they ould like to report misuse or any other issue.
+                            // It is explicitly required by Maven Central, see
+                            // https://central.sonatype.org/faq/429-tooling-provider/#identify-your-tool-in-the-user-agent
+                            .header("User-Agent", "JetBrains Amper DR / ${resolveLibraryMajorAndMinorVersion()} (+mailto:alexey.barsov@jetbrains.com)")
                             .withBasicAuth(repository)
                             .timeout(Duration.ofMinutes(2))
                             .GET()
@@ -1223,6 +1226,27 @@ open class DependencyFileImpl(
             val result = checkHash(actualHash, expectedHash)
             return result == VerificationResult.PASSED
         }
+
+        /**
+         * Resolve a major version from the library file name taken from the runtime classpath.
+         * I.e., "dependency-resolution-0.11.0-dev-3924.jar" -> "0.11"
+          */
+        private fun resolveLibraryMajorAndMinorVersion(): String {
+            val fileName = getJarFileForClass(this::class.java) ?: return ""
+            return fileName.removePrefix("dependency-resolution-").extractMajorAndMinorVersion()
+        }
+
+        private fun getJarFileForClass(clazz: Class<*>): String? {
+            return clazz.protectionDomain
+                ?.codeSource
+                ?.location
+                ?.toURI()
+                ?.toPath()
+                ?.fileName?.toString()
+        }
+
+        private fun String.extractMajorAndMinorVersion(): String =
+            split("-")[0].split(".").take(2).joinToString(".")
     }
 }
 
