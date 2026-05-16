@@ -19,12 +19,13 @@ import kotlin.io.path.exists
 import kotlin.io.path.readBytes
 import kotlin.io.path.writeBytes
 
-private const val PACKAGE_NAME = "org.jetbrains.amper.buildinfo"
-
 @TaskAction(ExecutionAvoidance.Disabled)
 fun generateBuildProperties(
     @Output taskOutputDirectory: Path,
     version: String?,
+    classSimpleName: String,
+    classPackage: String,
+    addDocumentationUrl: Boolean,
 ) {
     checkNotNull(version) {
         "`settings.publishing.version` is required to be set for build properties"
@@ -56,11 +57,11 @@ fun generateBuildProperties(
         }
     }
 
-    val fileSpec = generateBuildInfoFile(version, commitHash, commitShortHash, commitDate)
+    val fileSpec = generateBuildInfoFile(version, commitHash, commitShortHash, commitDate, classSimpleName, classPackage, addDocumentationUrl)
     val content = fileSpec.toString().toByteArray()
-    val outputDir = taskOutputDirectory.resolve(PACKAGE_NAME.replace('.', '/'))
+    val outputDir = taskOutputDirectory.resolve(classPackage.replace('.', '/'))
     outputDir.createDirectories()
-    writeContentIfChanged(outputDir.resolve("AmperBuild.kt"), content)
+    writeContentIfChanged(outputDir.resolve("$classSimpleName.kt"), content)
 }
 
 private fun generateBuildInfoFile(
@@ -68,6 +69,9 @@ private fun generateBuildInfoFile(
     commitHash: String,
     commitShortHash: String,
     commitDate: String,
+    classSimpleName: String,
+    classPackage: String,
+    addDocumentationUrl: Boolean,
 ): FileSpec {
     val instantClass = ClassName("kotlin.time", "Instant")
 
@@ -76,7 +80,7 @@ private fun generateBuildInfoFile(
     val majorAndMinorVersion = extractMajorAndMinorVersion(version)
     val docUrl = documentationUrl(version)
 
-    val buildInfoObject = TypeSpec.objectBuilder("AmperBuild")
+    val buildInfoObject = TypeSpec.objectBuilder(classSimpleName)
         .addProperty(
             PropertySpec.builder("mavenVersion", String::class)
                 .addModifiers(KModifier.CONST)
@@ -103,22 +107,24 @@ private fun generateBuildInfoFile(
                 .initializer("%L", isDevVersion)
                 .addKdoc("Whether current build is a development one.")
                 .build()
-        )
-        .addProperty(
-            PropertySpec.builder("documentationUrl", String::class)
-                .addModifiers(KModifier.CONST)
-                .initializer("%S", docUrl)
-                .addKdoc(
-                    """
+        ).apply {
+            if (addDocumentationUrl) {
+                addProperty(
+                    PropertySpec.builder("documentationUrl", String::class)
+                        .addModifiers(KModifier.CONST)
+                        .initializer("%S", docUrl)
+                        .addKdoc(
+                            """
                     URL to the Kotlin Toolchain documentation for this version.
 
                     Note: For dev versions, this always points to the latest dev documentation
                     even if a corresponding stable version has been released.
                     """.trimIndent()
+                        )
+                        .build()
                 )
-                .build()
-        )
-        .addProperty(
+            }
+        }.addProperty(
             PropertySpec.builder("commitHash", String::class)
                 .addModifiers(KModifier.CONST)
                 .initializer("%S", commitHash)
@@ -137,7 +143,7 @@ private fun generateBuildInfoFile(
         )
         .build()
 
-    return FileSpec.builder(PACKAGE_NAME, "AmperBuild")
+    return FileSpec.builder(classPackage, classSimpleName)
         .addFileComment("THIS FILE IS AUTO-GENERATED. DO NOT EDIT MANUALLY.")
         .addType(buildInfoObject)
         .addAnnotation(

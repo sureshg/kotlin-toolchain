@@ -35,3 +35,10 @@ settings:
   kotlin:
     serialization:
       format: json
+
+plugins:
+  generate-build-properties:
+    enabled: true
+    classSimpleName: DependencyResolutionBuild
+    classPackage: org.jetbrains.amper.dependency.resolution.buildinfo
+    addDocumentationUrl: false

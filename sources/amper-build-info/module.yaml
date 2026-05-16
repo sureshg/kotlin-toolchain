@@ -15,4 +15,7 @@ settings:
     release: 16
 
 plugins:
-  generate-build-properties: enabled
+  generate-build-properties:
+    enabled: true
+    classSimpleName: AmperBuild
+    classPackage: org.jetbrains.amper.buildinfo
