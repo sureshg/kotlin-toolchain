@@ -138,7 +138,7 @@ class AmperBuildTest : AmperCliTestBase() {
               Unable to download checksums of file junit-jupiter-api-9999.pom
               Unable to download checksums of file junit-jupiter-api-9999.module
             Repositories used for resolution:
-              - https://repo1.maven.org/maven2
+              - https://cache-redirector.jetbrains.com/kotlin/repo1.maven.org/maven2
               - https://maven.google.com
             """.trimIndent()
         
