@@ -24,8 +24,18 @@ import kotlin.io.path.exists
 // Parts should be replaced with schema model nodes in the future.
 
 private val defaultMavenRepositories = listOf(
-    "https://repo1.maven.org/maven2",
-    "https://maven.google.com",
+    RepositoriesModulePart.Repository(
+        id = "mavenCentral",
+        url = "https://repo1.maven.org/maven2",
+        publish = false,
+        resolve = true,
+    ),
+    RepositoriesModulePart.Repository(
+        id = "mavenGoogle",
+        url = "https://maven.google.com",
+        publish = false,
+        resolve = true,
+    ),
 )
 
 // FIXME Need to get rid of this `ModulePart` convention and 
@@ -36,15 +46,6 @@ fun Module.convertModuleParts(): ClassBasedSet<ModulePart<*>> {
 
     parts += RepositoriesModulePart(
         mavenRepositories = run {
-            val defaultRepositories = defaultMavenRepositories.map { url ->
-                RepositoriesModulePart.Repository(
-                    id = url,
-                    url = url,
-                    publish = false,
-                    resolve = true,
-                )
-            }
-
             val customRepositories = repositories?.map { repository ->
                 // FIXME Access to the file in a more safe way.
                 val credPair = repository.credentials?.let { credentials ->
@@ -88,7 +89,11 @@ fun Module.convertModuleParts(): ClassBasedSet<ModulePart<*>> {
                     password = credPair?.second,
                 )
             } ?: emptyList()
-            defaultRepositories + customRepositories
+            (defaultMavenRepositories + customRepositories)
+                // deduplicating repository list by repository ID, taking the last entry corresponding to the id only.
+                .asReversed()
+                .distinctBy { it.id }
+                .asReversed()
         }
     )
 

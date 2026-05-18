@@ -98,13 +98,13 @@ Artifacts:
       androidTest
       jvmTest
 Repositories:
-  - id: https://repo1.maven.org/maven2
+  - id: mavenCentral
     url: https://repo1.maven.org/maven2
     publish: false
     resolve: true
     username: null
     password: null
-  - id: https://maven.google.com
+  - id: mavenGoogle
     url: https://maven.google.com
     publish: false
     resolve: true
