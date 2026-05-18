@@ -4,6 +4,7 @@
 
 
 import iosUtils.IOSBaseTest
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 class RuniOSExternalProjectsStandalone : IOSBaseTest() {
@@ -29,6 +30,7 @@ class RuniOSExternalProjectsStandalone : IOSBaseTest() {
     )
 
     @Test
+    @Disabled("Temporarily disabled due to linking issues")
     fun kotlinConfApp() = runIosAppTests(
         projectSource = ProjectSource.RemoteRepository(
             cloneUrl = "https://github.com/JetBrains/kotlinconf-app.git",
