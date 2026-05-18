@@ -207,6 +207,7 @@ class DeveloperInfo : SchemaNode() {
     @SchemaDoc("Some unique ID for this developer across an organization or in the SCM.")
     val id by nullableValue<String>()
 
+    @Shorthand // this is the only requirement for Maven Central, so it's worth it as a shorthand
     @SchemaDoc("The full name of this developer. Required for Maven Central publication.")
     val name by value<String>()
 

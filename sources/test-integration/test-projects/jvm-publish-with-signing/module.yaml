@@ -1,5 +1,7 @@
 product: jvm/lib
 
+description: A test library
+
 repositories:
   - id: mavenLocal
     url: mavenLocal
@@ -14,5 +16,12 @@ settings:
     name: artifactName
     signArtifacts: true
     publishSources: true
-    mavenCentral:
-      enabled: true
+    mavenCentral: enabled
+    pom:
+      url: https://example.org
+      scm: https://git.example.org
+      licenses:
+        - name: MIT
+          url: https://opensource.org/licenses/MIT
+      developers:
+        - John Doe

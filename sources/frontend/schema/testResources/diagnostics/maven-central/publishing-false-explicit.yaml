@@ -1,0 +1,21 @@
+product: jvm/lib
+
+description: My nice module
+
+settings:
+  publishing:
+    enabled: <![Warning] Maven Central publishing is enabled, but publishing itself is disabled!>false<!>
+    group: com.example
+    artifactId: my-library
+    version: 1.0.0
+    mavenCentral: <![Warning] Maven Central publishing is enabled, but publishing itself is disabled!>enabled<!>
+    publishSources: true
+    signArtifacts: true
+    pom:
+      url: https://example.org
+      scm: https://git.example.org
+      licenses:
+        - name: MIT
+          url: https://opensource.org/licenses/MIT
+      developers:
+        - John Doe
