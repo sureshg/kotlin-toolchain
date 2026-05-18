@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 
@@ -29,7 +29,7 @@ class RunAndroidExternalProjectsStandalone : AndroidBaseTest() {
     )
 
     @Test
-    fun kotlinConfApp2025() = runInstrumentedTests(
+    fun kotlinConfApp() = runInstrumentedTests(
         projectSource = ProjectSource.RemoteRepository(
             cloneUrl = "https://github.com/JetBrains/kotlinconf-app.git",
             cloneIntoDirName = "kotlinconf-app",
