@@ -31,13 +31,13 @@ sdk install kotlintoolchain
 === ":material-apple: macOS / :material-linux: Linux"
 
     ```shell
-    curl -fsSL https://kotl.in/need-to-decide-cli.sh | sh
+    curl -fsSL https://kotl.in/install.sh | sh
     ```
 
 === ":material-microsoft-windows: Windows"
 
     ```powershell
-    powershell -ExecutionPolicy ByPass -c "irm 'https://kotl.in/need-to-decide-cli.ps1' | iex"
+    powershell -ExecutionPolicy ByPass -c "irm 'https://kotl.in/install.ps1' | iex"
     ```
 
 <div class="card-footer" markdown>
