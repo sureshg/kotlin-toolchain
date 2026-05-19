@@ -7,10 +7,11 @@ package org.jetbrains.amper.core.downloader
 import io.ktor.client.*
 import io.ktor.client.plugins.*
 import io.ktor.client.plugins.compression.*
+import org.jetbrains.amper.buildinfo.AmperBuild
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
-private const val AmperUserAgent = "Kotlin Toolchain"
+private const val AmperUserAgent = "KotlinToolchain/${AmperBuild.majorAndMinorVersion} (mailto:alexey.barsov@jetbrains.com)"
 
 /**
  * A shared [HttpClient] instance used in various places for basic HTTP.
