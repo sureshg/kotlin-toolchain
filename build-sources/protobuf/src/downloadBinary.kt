@@ -4,6 +4,7 @@
 
 package org.jetbrains.amper.plugins.protobuf
 
+import org.jetbrains.amper.mavencentral.MavenCentralDefaultConfiguration
 import java.io.IOException
 import java.net.URI
 import java.nio.file.Path
@@ -27,7 +28,7 @@ fun downloadBinary(
         add(name)
     }.joinToString("/")
 
-    val url = "https://repo1.maven.org/maven2/$path/$version/$name-$version-" +
+    val url = "${MavenCentralDefaultConfiguration.url}/$path/$version/$name-$version-" +
             "${systemInfo.os.string}-${systemInfo.arch.string}.exe"
     try {
         URI(url).toURL().openStream().buffered(64 * 1024).use { input ->
