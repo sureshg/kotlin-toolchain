@@ -7,10 +7,12 @@ package org.jetbrains.amper.tasks.ios
 import org.jetbrains.amper.frontend.Platform
 import org.jetbrains.amper.frontend.schema.ProductType
 import org.jetbrains.amper.tasks.CommonTaskType
-import org.jetbrains.amper.tasks.PlatformTaskType
+import org.jetbrains.amper.tasks.ModuleTaskTypes
 import org.jetbrains.amper.tasks.ProjectTasksBuilder
 import org.jetbrains.amper.tasks.ProjectTasksBuilder.Companion.getTaskOutputPath
+import org.jetbrains.amper.tasks.TaskNameFactory
 import org.jetbrains.amper.tasks.compose.isComposeEnabledFor
+import org.jetbrains.amper.tasks.getTaskName
 import org.jetbrains.amper.tasks.native.NativeTaskType
 
 /**
@@ -45,6 +47,7 @@ fun ProjectTasksBuilder.setupIosTasks() {
         .withEach {
             tasks.registerTask(
                 task = ManageXCodeProjectTask(
+                    taskName = ModuleTaskTypes.ManageXCodeProject.getTaskName(module),
                     module = module,
                 ),
             )
@@ -102,7 +105,7 @@ fun ProjectTasksBuilder.setupIosTasks() {
                     preBuildTaskName,
                     // This goes here instead of pre-build because if the build is run from xcode, then managing the
                     // project won't help much anyway.
-                    ManageXCodeProjectTask.taskName(module),
+                    ModuleTaskTypes.ManageXCodeProject.getTaskName(module)
                 ),
             )
 
@@ -122,10 +125,13 @@ fun ProjectTasksBuilder.setupIosTasks() {
         }
 }
 
-internal enum class IosTaskType(override val prefix: String) : PlatformTaskType {
-    Framework("framework"),
-    BuildIosApp("buildIosApp"),
-    RunIosApp("runIosApp"),
-    PrepareComposeResources("prepareComposeResourcesForIos"),
-    PreBuildIosApp("preBuildIosApp")
+internal enum class IosTaskType(
+    override val internalName: String,
+    override val operationMoniker: String,
+) : TaskNameFactory.LeafPlatform {
+    Framework("framework", "linking iOS framework"),
+    BuildIosApp("buildIosApp", "building iOS app"),
+    RunIosApp("runIosApp", "running iOS app"),
+    PrepareComposeResources("prepareComposeResourcesForIos", "copying iOS compose resources"),
+    PreBuildIosApp("preBuildIosApp", "preparing for xcodebuild")
 }

@@ -14,9 +14,9 @@ import org.jetbrains.amper.compilation.downloadNativeCompiler
 import org.jetbrains.amper.core.AmperUserCacheRoot
 import org.jetbrains.amper.engine.Task
 import org.jetbrains.amper.engine.TaskGraphExecutionContext
+import org.jetbrains.amper.engine.TaskName
 import org.jetbrains.amper.frontend.Model
 import org.jetbrains.amper.frontend.Platform
-import org.jetbrains.amper.frontend.TaskName
 import org.jetbrains.amper.frontend.isDescendantOf
 import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.jdk.provisioning.JdkProvider
@@ -44,7 +44,7 @@ class CommonizeNativeDistributionTask(
     private val processRunner: ProcessRunner,
 ) : Task {
     companion object {
-        val TASK_NAME = TaskName("commonizeNativeDistribution")
+        val TASK_NAME = TaskName("commonizeNativeDistribution", "commonize native distribution")
     }
 
     override val taskName = TASK_NAME

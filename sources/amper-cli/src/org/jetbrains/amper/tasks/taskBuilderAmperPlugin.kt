@@ -4,14 +4,10 @@
 
 package org.jetbrains.amper.tasks
 
-import org.jetbrains.amper.frontend.TaskName
+import org.jetbrains.amper.engine.TaskName
 import org.jetbrains.amper.frontend.schema.ProductType
 import org.jetbrains.amper.tasks.plugins.meta.BuildAmperPluginInfoTask
 import org.jetbrains.amper.tasks.plugins.meta.PreProcessAmperPluginsTask
-
-internal enum class AmperPluginTaskType(override val prefix: String) : TaskType {
-    BuildAmperPluginInfo("buildAmperPluginInfo"),
-}
 
 fun ProjectTasksBuilder.setupAmperPluginTasks() {
     val allPluginModules = model.modules.filter { it.type == ProductType.JVM_AMPER_PLUGIN }
@@ -26,7 +22,9 @@ fun ProjectTasksBuilder.setupAmperPluginTasks() {
     }
 
     // We process unregistered plugins separately in a "global task", in batch, as it's more efficient.
-    val preProcessUnregisteredPluginsTaskName = TaskName("preProcessUnregisteredPlugins")
+    val preProcessUnregisteredPluginsTaskName = TaskName(
+        "preProcessUnregisteredPlugins", "pre-processing unregistered plugins",
+    )
     if (unregisteredPluginModules.isNotEmpty()) {
         tasks.registerTask(
             PreProcessAmperPluginsTask(
@@ -41,7 +39,7 @@ fun ProjectTasksBuilder.setupAmperPluginTasks() {
 
     for (module in allPluginModules) {
         val isRegistered = module in registeredPluginModules
-        val taskName = TaskName.moduleTask(module, AmperPluginTaskType.BuildAmperPluginInfo.prefix)
+        val taskName = ModuleTaskTypes.BuildAmperPluginInfo.getTaskName(module)
         tasks.registerTask(
             BuildAmperPluginInfoTask(
                 projectContext = context.projectContext,

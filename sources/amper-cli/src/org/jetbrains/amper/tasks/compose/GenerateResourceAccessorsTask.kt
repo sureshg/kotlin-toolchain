@@ -27,7 +27,7 @@ class GenerateResourceAccessorsTask(
     packagingDir: String,
     makeAccessorsPublic: Boolean,
     resClassName: String,
-) : PureArtifactTaskBase(buildOutputRoot, incrementalCache) {
+) : PureArtifactTaskBase(buildOutputRoot, incrementalCache, "compose resources > generating code > accessors") {
     private val packageName by extraInput(packageName)
     private val makeAccessorsPublic by extraInput(makeAccessorsPublic)
     private val packagingDir by extraInput(packagingDir)

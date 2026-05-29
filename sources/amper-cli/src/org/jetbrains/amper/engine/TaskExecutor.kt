@@ -7,7 +7,6 @@ package org.jetbrains.amper.engine
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -17,7 +16,7 @@ import kotlinx.coroutines.slf4j.MDCContext
 import kotlinx.coroutines.withContext
 import org.jetbrains.amper.cli.UserReadableError
 import org.jetbrains.amper.cli.userReadableError
-import org.jetbrains.amper.frontend.TaskName
+import org.jetbrains.amper.frontend.TaskId
 import org.jetbrains.amper.stdlib.graphs.depthFirstNodeSequence
 import org.jetbrains.amper.tasks.TaskResult
 import org.jetbrains.amper.telemetry.spanBuilder
@@ -37,7 +36,6 @@ class TaskExecutor(
 
     private val availableProcessors = Runtime.getRuntime().availableProcessors()
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     // TODO Should be configurable
     private val tasksDispatcher = Dispatchers.IO.limitedParallelism(availableProcessors.coerceAtLeast(3))
 
@@ -52,18 +50,18 @@ class TaskExecutor(
      * fails with a [UserReadableError] in [FAIL_FAST][Mode.FAIL_FAST] mode.
      */
     // Dispatch on default dispatcher, execute on tasks dispatcher
-    suspend fun run(tasksToRun: Set<TaskName>): Map<TaskName, ExecutionResult> = withContext(Dispatchers.Default) {
+    suspend fun run(tasksToRun: Set<TaskId>): Map<TaskId, ExecutionResult> = withContext(Dispatchers.Default) {
         require(tasksToRun.isNotEmpty()) { "tasksToRun cannot be empty" }
         spanBuilder("Run tasks")
-            .setAttribute("root-tasks", tasksToRun.joinToString { it.name })
+            .setAttribute("root-tasks", tasksToRun.joinToString { it.value })
             .use {
                 val executionPlan = buildExecutionPlan(tasksToRun)
                 val listener = listenerProvider.createListener(executionPlan)
                 val executionContext = DefaultTaskGraphExecutionContext()
                 try {
-                    val results = ConcurrentHashMap<TaskName, Deferred<ExecutionResult>>()
+                    val results = ConcurrentHashMap<TaskId, Deferred<ExecutionResult>>()
                     context(listener, executionContext) {
-                        runTasks(tasksToRun, currentPath = emptyList(), results)
+                        runTasks(tasksToRun, currentPath = emptyList(), results); Unit
                     }
 
                     // this is just to unpack results (by that point, all tasks must have finished executing already)
@@ -77,36 +75,36 @@ class TaskExecutor(
             }
     }
 
-    private fun assertTaskIsKnown(taskName: TaskName) {
-        if (taskName !in graph.nameToTask.keys) {
-            val similarNames = findSimilarTaskNames(taskName).sorted()
+    private fun assertTaskIsKnown(taskId: TaskId) {
+        if (taskId !in graph.nameToTask.keys) {
+            val similarNames = findSimilarTaskNames(taskId).sorted()
             val extraInfo = if (similarNames.isEmpty()) "" else ", maybe you meant one of:\n${similarNames.joinToString("\n").prependIndent("   ")}"
-            userReadableError("Task '${taskName.name}' was not found in the project$extraInfo")
+            userReadableError("Task '${taskId.value}' was not found in the project$extraInfo")
         }
     }
 
-    private fun findSimilarTaskNames(taskName: TaskName): List<String> =
+    private fun findSimilarTaskNames(taskId: TaskId): List<String> =
         graph.nameToTask.keys
-            .map { it.name }
-            .filter { it.contains(taskName.name, ignoreCase = true) || taskName.name.contains(it, ignoreCase = true) }
+            .map { it.value }
+            .filter { it.contains(taskId.value, ignoreCase = true) || taskId.value.contains(it, ignoreCase = true) }
 
     /**
-     * Runs the tasks identified by [taskNames], and returns their results.
+     * Runs the tasks identified by [taskIds], and returns their results.
      * If one of the given tasks is already running, it will be awaited instead of starting a new coroutine.
      *
-     * Fails if one of the given [taskNames] is already in the graph execution's [currentPath] (which means a cycle).
+     * Fails if one of the given [taskIds] is already in the graph execution's [currentPath] (which means a cycle).
      */
     context(_: TaskGraphExecutionListener, _: TaskGraphExecutionContext)
     private suspend fun runTasks(
-        taskNames: Set<TaskName>,
-        currentPath: List<TaskName>,
-        taskResults: ConcurrentMap<TaskName, Deferred<ExecutionResult>>,
+        taskIds: Set<TaskId>,
+        currentPath: List<TaskId>,
+        taskResults: ConcurrentMap<TaskId, Deferred<ExecutionResult>>,
     ): List<ExecutionResult> = coroutineScope {
-        taskNames
-            .map { taskName ->
+        taskIds
+            .map { taskId ->
                 // NOTE: We don't need to check for cycles here, as the `TaskGraph` already ensures no cycles.
-                taskResults.computeIfAbsent(taskName) {
-                    async { runDependenciesAndTask(taskName, currentPath = currentPath, taskResults) }
+                taskResults.computeIfAbsent(taskId) {
+                    async { runDependenciesAndTask(taskId, currentPath = currentPath, taskResults) }
                 }
             }
             .awaitAll() // Note: we might be awaiting async coroutines from other scopes here
@@ -117,18 +115,18 @@ class TaskExecutor(
      */
     context(_: TaskGraphExecutionListener, _: TaskGraphExecutionContext)
     private suspend fun runDependenciesAndTask(
-        taskName: TaskName,
-        currentPath: List<TaskName>,
-        taskResults: ConcurrentMap<TaskName, Deferred<ExecutionResult>>,
+        taskId: TaskId,
+        currentPath: List<TaskId>,
+        taskResults: ConcurrentMap<TaskId, Deferred<ExecutionResult>>,
     ): ExecutionResult {
-        val taskDependencies = graph.dependencies[taskName] ?: emptySet()
-        val dependencyResults = runTasks(taskDependencies, currentPath + taskName, taskResults)
+        val taskDependencies = graph.dependencies[taskId] ?: emptySet()
+        val dependencyResults = runTasks(taskDependencies, currentPath + taskId, taskResults)
         val (successful, unsuccessful) = dependencyResults.partitionDependencyResults()
         if (unsuccessful.isNotEmpty()) {
             // skip task execution since at least one dependency failed
-            return ExecutionResult.DependencyFailed(taskName, unsuccessfulDependencies = unsuccessful)
+            return ExecutionResult.DependencyFailed(taskId, unsuccessfulDependencies = unsuccessful)
         }
-        return runSingleTaskSafely(taskName, successful)
+        return runSingleTaskSafely(taskId, successful)
     }
 
     private fun List<ExecutionResult>.partitionDependencyResults(): DependencyResults {
@@ -150,36 +148,36 @@ class TaskExecutor(
     )
 
     /**
-     * Runs the task identified by [taskName], and returns its result.
+     * Runs the task identified by [taskId], and returns its result.
      */
     context(_: TaskGraphExecutionListener, _: TaskGraphExecutionContext)
     private suspend fun runSingleTaskSafely(
-        taskName: TaskName,
+        taskId: TaskId,
         dependencyResults: List<TaskResult>,
     ): ExecutionResult = try {
-        val taskResult = runSingleTask(taskName, dependencyResults)
-        ExecutionResult.Success(taskName, taskResult)
+        val taskResult = runSingleTask(taskId, dependencyResults)
+        ExecutionResult.Success(taskId, taskResult)
     } catch (e: Exception) {
         currentCoroutineContext().ensureActive() // cooperate with cancellations
         when (mode) {
-            Mode.GREEDY -> ExecutionResult.Failure(taskName, e)
+            Mode.GREEDY -> ExecutionResult.Failure(taskId, e)
             Mode.FAIL_FAST -> when (e) {
-                is UserReadableError -> userReadableError("Task '${taskName.name}' failed: ${e.message}", exitCode = e.exitCode)
-                else -> throw TaskExecutionFailed(taskName, e)
+                is UserReadableError -> userReadableError("Task '${taskId.value}' failed: ${e.message}", exitCode = e.exitCode)
+                else -> throw TaskExecutionFailed(taskId, e)
             }
         }
     }
 
     context(progressListener: TaskGraphExecutionListener, executionContext: TaskGraphExecutionContext)
     private suspend fun runSingleTask(
-        taskName: TaskName,
+        taskId: TaskId,
         dependencyResults: List<TaskResult>,
-    ): TaskResult = spanBuilder("task ${taskName.name}").use {
-        val task = graph.nameToTask[taskName] ?: error("Unable to find task by name: ${taskName.name}")
+    ): TaskResult = spanBuilder("task ${taskId.value}").use {
+        val task = graph.nameToTask[taskId] ?: error("Unable to find task by name: ${taskId.value}")
         val taskListener = progressListener.taskStarted(task)
         try {
-            val mdcWithTaskName = MDCContext(MDC.getCopyOfContextMap() + ("amper-task-name" to taskName.name))
-            withContext(tasksDispatcher + mdcWithTaskName + CoroutineName("task:${taskName.name}")) {
+            val mdcWithTaskName = MDCContext(MDC.getCopyOfContextMap() + ("amper-task-name" to taskId.value))
+            withContext(tasksDispatcher + mdcWithTaskName + CoroutineName("task:${taskId.value}")) {
                 task.run(dependencyResults, executionContext)
             }
         } finally {
@@ -189,7 +187,7 @@ class TaskExecutor(
     }
 
     private fun buildExecutionPlan(
-        initialTaskNames: Collection<TaskName>,
+        initialTaskNames: Collection<TaskId>,
     ) = ExecutionPlan(
         totalTasksCount = depthFirstNodeSequence(
             roots = initialTaskNames,
@@ -210,6 +208,6 @@ class TaskExecutor(
         FAIL_FAST,
     }
 
-    class TaskExecutionFailed(val taskName: TaskName, val exception: Throwable)
-        : Exception("Task '${taskName.name}' failed: $exception", exception)
+    class TaskExecutionFailed(val taskId: TaskId, val exception: Throwable)
+        : Exception("Task '${taskId.value}' failed: $exception", exception)
 }

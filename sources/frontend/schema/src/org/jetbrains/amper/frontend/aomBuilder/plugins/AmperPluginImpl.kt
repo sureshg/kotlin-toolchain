@@ -7,7 +7,7 @@ package org.jetbrains.amper.frontend.aomBuilder.plugins
 import org.jetbrains.amper.frontend.AmperModule
 import org.jetbrains.amper.frontend.AmperPlugin
 import org.jetbrains.amper.frontend.SchemaBundle
-import org.jetbrains.amper.frontend.TaskName
+import org.jetbrains.amper.frontend.TaskId
 import org.jetbrains.amper.frontend.aomBuilder.ModuleBuildCtx
 import org.jetbrains.amper.frontend.aomBuilder.plugins.diagnostics.IsolatedPluginYamlDiagnosticsFactories
 import org.jetbrains.amper.frontend.aomBuilder.plugins.diagnostics.PluginYamlMissing
@@ -90,7 +90,7 @@ class AmperPluginImpl(
             ?.refinedChildren
             ?.filterValues { it.value !is ErrorNode }
             ?.mapValues { (name, _) ->
-                projectContext.getTaskOutputRoot(taskNameFor(module.module, name))
+                projectContext.getTaskOutputRoot(taskIdFor(module.module, name))
             }.orEmpty()
 
         // Build a tree with computed "reference-only" values.
@@ -146,8 +146,8 @@ class AmperPluginImpl(
             .completeTree()?.instance<PluginYamlRoot>()
     }
 
-    fun taskNameFor(module: AmperModule, name: String) =
-        TaskName.moduleTask(module, "$name@${id.value}")
+    fun taskIdFor(module: AmperModule, name: String) =
+        TaskId.moduleTask(module, "$name@${id.value}")
 
     context(problemReporter: ProblemReporter)
     private fun reportExplicitValuesWhenDisabled(pluginConfiguration: RefinedMappingNode) {

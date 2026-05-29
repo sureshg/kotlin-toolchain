@@ -9,6 +9,7 @@ import com.github.ajalt.clikt.core.terminal
 import org.jetbrains.amper.cli.CliContext
 import org.jetbrains.amper.cli.commands.AmperModelAwareCommand
 import org.jetbrains.amper.cli.withBackend
+import org.jetbrains.amper.engine.id
 import org.jetbrains.amper.frontend.Model
 
 internal class ShowTasksCommand : AmperModelAwareCommand(name = "tasks") {
@@ -18,11 +19,11 @@ internal class ShowTasksCommand : AmperModelAwareCommand(name = "tasks") {
     override suspend fun run(cliContext: CliContext, model: Model) {
         val taskGraph = withBackend(cliContext, model) { backend -> backend.taskGraph }
 
-        for (taskName in taskGraph.tasks.map { it.taskName }.sortedBy { it.name }) {
+        for (taskName in taskGraph.tasks.map { it.id }.sortedBy { it.value }) {
             val taskWithDeps = buildString {
-                append("task ${taskName.name}")
+                append("task ${taskName.value}")
                 taskGraph.dependencies[taskName]?.let { taskDeps ->
-                    append(" -> ${taskDeps.joinToString { it.name }}")
+                    append(" -> ${taskDeps.joinToString { it.value }}")
                 }
             }
             terminal.println(taskWithDeps)

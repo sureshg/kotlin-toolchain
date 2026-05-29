@@ -4,7 +4,7 @@
 
 package org.jetbrains.amper.frontend.plugins
 
-import org.jetbrains.amper.frontend.TaskName
+import org.jetbrains.amper.frontend.TaskId
 import org.jetbrains.amper.plugins.schema.model.PluginData
 
 /**
@@ -18,9 +18,9 @@ class CheckFromPlugin(
     val name: String,
 
     /**
-     * The name of the task that performs this check.
+     * The id of the task that performs this check.
      */
-    val performedBy: TaskName,
+    val performedBy: TaskId,
 
     /**
      * Plugin ID that this checker belongs to.

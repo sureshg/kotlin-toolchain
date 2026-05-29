@@ -4,7 +4,7 @@
 
 package org.jetbrains.amper.engine
 
-import org.jetbrains.amper.frontend.TaskName
+import org.jetbrains.amper.frontend.TaskId
 import org.jetbrains.amper.tasks.TaskResult
 
 sealed interface ExecutionResult {
@@ -12,7 +12,7 @@ sealed interface ExecutionResult {
     /**
      * The name of the task that was executed.
      */
-    val taskName: TaskName
+    val taskId: TaskId
 
     sealed interface Unsuccessful : ExecutionResult {
         val transitiveFailures: Set<Failure>
@@ -21,12 +21,12 @@ sealed interface ExecutionResult {
     /**
      * The result of a task that ran to completion and returned a [TaskResult].
      */
-    data class Success(override val taskName: TaskName, val result: TaskResult) : ExecutionResult
+    data class Success(override val taskId: TaskId, val result: TaskResult) : ExecutionResult
 
     /**
      * The result of a task that failed with an exception.
      */
-    data class Failure(override val taskName: TaskName, val exception: Throwable) : Unsuccessful {
+    data class Failure(override val taskId: TaskId, val exception: Throwable) : Unsuccessful {
         override val transitiveFailures: Set<Failure> = setOf(this)
     }
 
@@ -35,7 +35,7 @@ sealed interface ExecutionResult {
      * failed with an exception.
      */
     data class DependencyFailed(
-        override val taskName: TaskName,
+        override val taskId: TaskId,
         val unsuccessfulDependencies: Set<Unsuccessful>,
     ) : Unsuccessful {
         override val transitiveFailures: Set<Failure> by lazy {

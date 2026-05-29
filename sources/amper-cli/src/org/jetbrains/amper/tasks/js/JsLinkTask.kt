@@ -12,10 +12,11 @@ import org.jetbrains.amper.compilation.KotlinUserSettings
 import org.jetbrains.amper.compilation.ResolvedCompilerPlugin
 import org.jetbrains.amper.compilation.kotlinJsCompilerArgs
 import org.jetbrains.amper.core.AmperUserCacheRoot
+import org.jetbrains.amper.engine.TaskName
 import org.jetbrains.amper.frontend.AmperModule
 import org.jetbrains.amper.frontend.Fragment
 import org.jetbrains.amper.frontend.Platform
-import org.jetbrains.amper.frontend.TaskName
+import org.jetbrains.amper.frontend.TaskId
 import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.jdk.provisioning.JdkProvider
 import org.jetbrains.amper.tasks.SourceRoot
@@ -36,7 +37,7 @@ internal class JsLinkTask(
     jdkProvider: JdkProvider,
     processRunner: ProcessRunner,
     buildType: BuildType? = null,
-    compileKLibTaskName: TaskName,
+    compileKLibTaskId: TaskId,
     kotlinArtifactsDownloader: KotlinArtifactsDownloader =
         KotlinArtifactsDownloader(userCacheRoot, incrementalCache),
 ) : WebLinkTask(
@@ -51,7 +52,7 @@ internal class JsLinkTask(
     isTest,
     buildType,
     processRunner,
-    compileKLibTaskName,
+    compileKLibTaskId,
     kotlinArtifactsDownloader,
 ) {
     override val expectedPlatform: Platform

@@ -5,12 +5,12 @@
 package org.jetbrains.amper.engine
 
 import org.jetbrains.amper.cli.userReadableError
-import org.jetbrains.amper.frontend.TaskName
+import org.jetbrains.amper.frontend.TaskId
 import org.jetbrains.amper.stdlib.graphs.depthFirstDetectLoops
 
 class TaskGraph(
-    val nameToTask: Map<TaskName, Task>,
-    val dependencies: Map<TaskName, Set<TaskName>>,
+    val nameToTask: Map<TaskId, Task>,
+    val dependencies: Map<TaskId, Set<TaskId>>,
 ) {
     val tasks = nameToTask.values
 
@@ -18,7 +18,7 @@ class TaskGraph(
         // verify all dependencies are resolved
         for ((name, dependsOn) in dependencies) {
             if (!nameToTask.containsKey(name)) {
-                userReadableError("Task '$name' does not exist, yet it depends on ${dependsOn.map { it.name }.sorted().joinToString()}")
+                userReadableError("Task '$name' does not exist, yet it depends on ${dependsOn.map { it.value }.sorted().joinToString()}")
             }
             for (dependency in dependsOn) {
                 if (!nameToTask.containsKey(dependency)) {
@@ -37,12 +37,12 @@ class TaskGraph(
             val loopDescriptions = loops.map { loop ->
                 buildString {
                     var indent = 0
-                    append(loop.last().name)
+                    append(loop.last().value)
                     loop.forEach { taskName ->
                         appendLine()
                         repeat(indent) { append(' ') }
                         append("╰> ")
-                        append(taskName.name)
+                        append(taskName.value)
                         indent += 3
                     }
                 }

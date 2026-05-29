@@ -14,9 +14,9 @@ import org.jetbrains.amper.concurrency.mapConcurrently
 import org.jetbrains.amper.dependency.resolution.MavenCoordinates
 import org.jetbrains.amper.engine.PackageTask
 import org.jetbrains.amper.engine.TaskGraphExecutionContext
+import org.jetbrains.amper.engine.TaskName
 import org.jetbrains.amper.frontend.AmperModule
 import org.jetbrains.amper.frontend.Platform
-import org.jetbrains.amper.frontend.TaskName
 import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.incrementalcache.ResultWithSerializable
 import org.jetbrains.amper.incrementalcache.execute

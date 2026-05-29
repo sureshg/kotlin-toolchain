@@ -18,11 +18,12 @@ import org.jetbrains.amper.engine.TaskExecutor
 import org.jetbrains.amper.engine.TaskExecutor.TaskExecutionFailed
 import org.jetbrains.amper.engine.TaskGraph
 import org.jetbrains.amper.engine.TestTask
+import org.jetbrains.amper.engine.id
 import org.jetbrains.amper.engine.runTasksAndReportOnFailure
 import org.jetbrains.amper.frontend.AmperModule
 import org.jetbrains.amper.frontend.Model
 import org.jetbrains.amper.frontend.Platform
-import org.jetbrains.amper.frontend.TaskName
+import org.jetbrains.amper.frontend.TaskId
 import org.jetbrains.amper.frontend.isDescendantOf
 import org.jetbrains.amper.frontend.mavenPublishRepositories
 import org.jetbrains.amper.frontend.plugins.CustomCommandFromPlugin
@@ -34,6 +35,7 @@ import org.jetbrains.amper.tasks.AllRunSettings
 import org.jetbrains.amper.tasks.ProjectTasksBuilder
 import org.jetbrains.amper.tasks.TaskResult
 import org.jetbrains.amper.tasks.compose.isComposeEnabledFor
+import org.jetbrains.amper.tasks.getTaskName
 import org.jetbrains.amper.tasks.ios.IosPreBuildTask
 import org.jetbrains.amper.tasks.ios.IosTaskType
 import org.jetbrains.amper.tasks.jvm.JvmHotRunTask
@@ -134,7 +136,7 @@ class AmperBackend(
         val platformsToCompile = platforms ?: possibleCompilationPlatforms
         val modulesToCompile = (modules?.map { resolveModule(it) } ?: model.modules).toSet()
 
-        val taskNames = taskGraph
+        val taskIds = taskGraph
             .tasks
             .filterIsInstance<BuildTask>()
             .filter {
@@ -144,16 +146,16 @@ class AmperBackend(
                 explicit = buildTypes,
                 default = BuildType.Debug,
             )
-            .map { it.taskName }
+            .map { it.id }
             .toSet()
-        logger.debug("Selected tasks to compile: ${formatTaskNames(taskNames)}")
+        logger.debug("Selected tasks to compile: ${formatTaskNames(taskIds)}")
 
-        if (taskNames.isEmpty()) {
+        if (taskIds.isEmpty()) {
             // TODO: Give more info on why there is nothing to build
             logger.warn("Nothing to build")
             return
         }
-        taskExecutor.runTasksAndReportOnFailure(taskNames)
+        taskExecutor.runTasksAndReportOnFailure(taskIds)
     }
 
     /**
@@ -198,7 +200,7 @@ class AmperBackend(
         val modulesToPackage = (modules?.map { resolveModule(it) } ?: model.modules).toSet()
         val formatsToPackage = formats ?: PackageTask.Format.entries.toSet()
 
-        val taskNames = taskGraph
+        val taskIds = taskGraph
             .tasks
             .filterIsInstance<PackageTask>()
             .filter {
@@ -209,15 +211,15 @@ class AmperBackend(
                 explicit = buildTypes,
                 default = BuildType.Release,
             )
-            .map { it.taskName }
+            .map { it.id }
             .toSet()
 
-        if (taskNames.isEmpty()) {
+        if (taskIds.isEmpty()) {
             userReadableError("No package tasks were found")
         }
 
-        logger.debug("Selected tasks to package: ${formatTaskNames(taskNames)}")
-        taskExecutor.runTasksAndReportOnFailure(taskNames)
+        logger.debug("Selected tasks to package: ${formatTaskNames(taskIds)}")
+        taskExecutor.runTasksAndReportOnFailure(taskIds)
     }
 
     /**
@@ -231,7 +233,7 @@ class AmperBackend(
      * @throws UserReadableError if the given [task] is not found in the current task graph, or if a task fails with a
      * [UserReadableError].
      */
-    suspend fun runTask(task: TaskName): TaskResult = taskExecutor.runTasksAndReportOnFailure(setOf(task))[task]
+    suspend fun runTask(task: TaskId): TaskResult = taskExecutor.runTasksAndReportOnFailure(setOf(task))[task]
         ?: error("Task '$task' was successfully executed but is not in the results map")
 
     /**
@@ -241,7 +243,7 @@ class AmperBackend(
      *
      * @see runTasksAndReportOnFailure
      */
-    suspend fun runTasks(tasks: Set<TaskName>): Map<TaskName, TaskResult> = taskExecutor.runTasksAndReportOnFailure(tasks)
+    suspend fun runTasks(tasks: Set<TaskId>): Map<TaskId, TaskResult> = taskExecutor.runTasksAndReportOnFailure(tasks)
 
     suspend fun publish(modules: Set<String>?, repositoryId: String) {
         require(modules == null || modules.isNotEmpty())
@@ -259,7 +261,7 @@ class AmperBackend(
             .filterIsInstance<PublishTask>()
             .filter { it.targetRepositoryId == repositoryId }
             .filter { modules == null || modules.contains(it.module.userReadableName) }
-            .map { it.taskName }
+            .map { it.id }
             .toSet()
 
         if (publishTasks.isEmpty()) {
@@ -329,7 +331,7 @@ class AmperBackend(
 
         val testTasks = includedTestTasks
             .filter { task -> !excludeModules.contains(task.module.userReadableName) }
-            .map { it.taskName }
+            .map { it.id }
             .toSet()
         if (testTasks.isEmpty()) {
             userReadableError("No test tasks were found after applying exclude filters")
@@ -370,21 +372,21 @@ class AmperBackend(
 
         val effectiveChecks = selectedChecks ?: (allChecks - skippedChecks)
 
-        val taskNamesToRun = effectiveChecks.flatMap { check ->
+        val taskIdsToRun = effectiveChecks.flatMap { check ->
             when (check) {
                 is CheckEntry.Custom -> listOf(check.custom.performedBy)
                 CheckEntry.Tests ->
                     taskGraph.tasks.filterIsInstance<TestTask>().filter {
                         it.module in selectedModules && it.platform in runnablePlatforms
-                    }.map { it.taskName }
+                    }.map { it.id }
             }
         }.toSet()
 
-        if (taskNamesToRun.isEmpty()) {
+        if (taskIdsToRun.isEmpty()) {
             userReadableError("No checks were found for the specified filters")
         }
 
-        taskExecutor.runTasksAndReportOnFailure(taskNamesToRun)
+        taskExecutor.runTasksAndReportOnFailure(taskIdsToRun)
     }
 
     /**
@@ -469,7 +471,7 @@ class AmperBackend(
             ?: error("Multiple run tasks match the selected module '${moduleToRun.userReadableName}' " +
                     "and platform '${platformToRun.pretty}'")
 
-        runTask(task.taskName)
+        runTask(task.id)
     }
 
     private fun errorNonRunnableModuleType(
@@ -712,14 +714,14 @@ class AmperBackend(
                 """.trimIndent())
         }
 
-        val taskName = IosTaskType.PreBuildIosApp.getTaskName(
+        val taskId = IosTaskType.PreBuildIosApp.getTaskName(
             module = module,
             platform = platform,
             isTest = false,
             buildType = buildType,
-        )
+        ).id
         // If this cast fails, it should be an internal error anyway, no need for special handling
-        return runTask(taskName) as IosPreBuildTask.Result
+        return runTask(taskId) as IosPreBuildTask.Result
     }
 
     private fun resolveModule(moduleName: String) = modulesByName[moduleName] ?: userReadableError(
@@ -730,8 +732,8 @@ class AmperBackend(
     private fun formatModules(modules: Collection<AmperModule>) =
         modules.map { it.userReadableName }.sorted().joinToString(" ")
 
-    private fun formatTaskNames(publishTasks: Collection<TaskName>) =
-        publishTasks.map { it.name }.sorted().joinToString(" ")
+    private fun formatTaskNames(publishTasks: Collection<TaskId>) =
+        publishTasks.map { it.value }.sorted().joinToString(" ")
 
     private fun formatPlatforms(platforms: Collection<Platform>) =
         platforms.map { it.pretty }.sorted().joinToString(" ")

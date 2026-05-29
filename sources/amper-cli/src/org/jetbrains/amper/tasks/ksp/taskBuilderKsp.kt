@@ -14,6 +14,7 @@ import org.jetbrains.amper.tasks.ProjectTasksBuilder
 import org.jetbrains.amper.tasks.ProjectTasksBuilder.Companion.getTaskOutputPath
 import org.jetbrains.amper.tasks.compilationTaskNameFor
 import org.jetbrains.amper.tasks.getModuleDependencies
+import org.jetbrains.amper.tasks.getTaskName
 import org.jetbrains.amper.util.BuildType
 
 fun ProjectTasksBuilder.setupKspTasks() {

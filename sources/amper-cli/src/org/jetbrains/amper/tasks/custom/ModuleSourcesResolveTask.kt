@@ -5,8 +5,8 @@
 package org.jetbrains.amper.tasks.custom
 
 import org.jetbrains.amper.engine.TaskGraphExecutionContext
+import org.jetbrains.amper.engine.TaskName
 import org.jetbrains.amper.frontend.Fragment
-import org.jetbrains.amper.frontend.TaskName
 import org.jetbrains.amper.frontend.plugins.TaskFromPluginDescription
 import org.jetbrains.amper.frontend.plugins.generated.ShadowSourcesKind
 import org.jetbrains.amper.tasks.EmptyTaskResult

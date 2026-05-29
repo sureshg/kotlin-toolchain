@@ -4,7 +4,7 @@
 
 package org.jetbrains.amper.frontend.plugins
 
-import org.jetbrains.amper.frontend.TaskName
+import org.jetbrains.amper.frontend.TaskId
 import org.jetbrains.amper.plugins.schema.model.PluginData
 
 /**
@@ -20,7 +20,7 @@ class CustomCommandFromPlugin(
     /**
      * The name of the task that performs this command.
      */
-    val performedBy: TaskName,
+    val performedBy: TaskId,
 
     /**
      * Plugin ID that this command belongs to.

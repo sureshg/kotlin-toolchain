@@ -21,10 +21,11 @@ import org.jetbrains.amper.core.AmperUserCacheRoot
 import org.jetbrains.amper.core.extract.cleanDirectory
 import org.jetbrains.amper.engine.BuildTask
 import org.jetbrains.amper.engine.TaskGraphExecutionContext
+import org.jetbrains.amper.engine.TaskName
 import org.jetbrains.amper.frontend.AmperModule
 import org.jetbrains.amper.frontend.Fragment
 import org.jetbrains.amper.frontend.Platform
-import org.jetbrains.amper.frontend.TaskName
+import org.jetbrains.amper.frontend.TaskId
 import org.jetbrains.amper.frontend.dr.resolver.ModuleDependencies.Companion.toRepository
 import org.jetbrains.amper.frontend.isDescendantOf
 import org.jetbrains.amper.frontend.jdkSettings
@@ -67,7 +68,7 @@ internal abstract class WebLinkTask(
     /**
      * The name of the task that produces the klib for the sources of this module.
      */
-    val compileKLibTaskName: TaskName,
+    val compileKLibTaskId: TaskId,
     /**
      * Task names that produce klibs that need to be exposed as API in the resulting artifact.
      */
@@ -102,7 +103,7 @@ internal abstract class WebLinkTask(
 
         val includeArtifact = dependenciesResult
             .filterIsInstance<WebCompileKlibTask.Result>()
-            .firstOrNull { it.taskName == compileKLibTaskName }
+            .firstOrNull { it.taskId == compileKLibTaskId }
             ?.compiledKlib
 
         if (includeArtifact == null && isTest) {
@@ -116,7 +117,7 @@ internal abstract class WebLinkTask(
 
         val compileKLibDependencies = dependenciesResult
             .filterIsInstance<WebCompileKlibTask.Result>()
-            .filter { it.taskName != compileKLibTaskName }
+            .filter { it.taskId != compileKLibTaskId }
 
         val compiledKLibs = compileKLibDependencies.mapNotNull { it.compiledKlib }
 

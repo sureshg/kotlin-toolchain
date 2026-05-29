@@ -22,10 +22,11 @@ import org.jetbrains.amper.core.AmperUserCacheRoot
 import org.jetbrains.amper.core.extract.cleanDirectory
 import org.jetbrains.amper.engine.BuildTask
 import org.jetbrains.amper.engine.TaskGraphExecutionContext
+import org.jetbrains.amper.engine.TaskName
 import org.jetbrains.amper.frontend.AmperModule
 import org.jetbrains.amper.frontend.Fragment
 import org.jetbrains.amper.frontend.Platform
-import org.jetbrains.amper.frontend.TaskName
+import org.jetbrains.amper.frontend.TaskId
 import org.jetbrains.amper.frontend.dr.resolver.ModuleDependencies.Companion.toRepository
 import org.jetbrains.amper.frontend.isDescendantOf
 import org.jetbrains.amper.frontend.jdkSettings
@@ -184,7 +185,7 @@ internal abstract class WebCompileKlibTask(
             compiledKlib = artifact?.resolve(module.kotlinModuleName(isTest) + ".klib"),
             module = module,
             isTest = isTest,
-            taskName = taskName,
+            taskId = taskName.id,
             platform = platform,
         )
     }
@@ -266,7 +267,7 @@ internal abstract class WebCompileKlibTask(
         val compiledKlib: Path?,
         val module: AmperModule,
         val isTest: Boolean,
-        val taskName: TaskName,
+        val taskId: TaskId,
         val platform: Platform,
     ) : TaskResult
 

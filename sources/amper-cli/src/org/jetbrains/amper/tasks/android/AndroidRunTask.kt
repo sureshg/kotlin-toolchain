@@ -28,10 +28,10 @@ import nl.adaptivity.xmlutil.serialization.XmlSerialName
 import org.jetbrains.amper.cli.userReadableError
 import org.jetbrains.amper.engine.RunTask
 import org.jetbrains.amper.engine.TaskGraphExecutionContext
+import org.jetbrains.amper.engine.TaskName
 import org.jetbrains.amper.frontend.AmperModule
 import org.jetbrains.amper.frontend.LeafFragment
 import org.jetbrains.amper.frontend.Platform
-import org.jetbrains.amper.frontend.TaskName
 import org.jetbrains.amper.frontend.schema.AndroidVersion.VERSION_23
 import org.jetbrains.amper.frontend.singleSourceRoot
 import org.jetbrains.amper.processes.ProcessLeak

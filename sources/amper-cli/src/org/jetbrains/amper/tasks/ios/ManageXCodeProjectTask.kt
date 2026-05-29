@@ -26,8 +26,8 @@ import org.jetbrains.amper.cli.telemetry.setAmperModule
 import org.jetbrains.amper.cli.userReadableError
 import org.jetbrains.amper.engine.Task
 import org.jetbrains.amper.engine.TaskGraphExecutionContext
+import org.jetbrains.amper.engine.TaskName
 import org.jetbrains.amper.frontend.AmperModule
-import org.jetbrains.amper.frontend.TaskName
 import org.jetbrains.amper.frontend.schema.ProductType
 import org.jetbrains.amper.frontend.singleSourceRoot
 import org.jetbrains.amper.tasks.TaskResult
@@ -53,13 +53,12 @@ import kotlin.io.path.relativeTo
  *   if not possible, errors are reported.
  */
 class ManageXCodeProjectTask(
+    override val taskName: TaskName,
     private val module: AmperModule,
 ) : Task {
     init {
         require(module.type == ProductType.IOS_APP) { "Wrong module type: ${module.type}" }
     }
-
-    override val taskName = taskName(module)
 
     override suspend fun run(dependenciesResult: List<TaskResult>, executionContext: TaskGraphExecutionContext): TaskResult {
         initializeXcodeComponentManager()
@@ -372,8 +371,6 @@ class ManageXCodeProjectTask(
     private class XcodeProjectHandle : XcodeProjectId, UserDataHolderEx by XcodeUserDataHolder()
 
     companion object {
-        fun taskName(module: AmperModule) = TaskName.moduleTask(module, "manageXCodeProject")
-
         private const val DEFAULT_TARGET_NAME = "app"
         private const val PRODUCT_MODULE_NAME = DEFAULT_TARGET_NAME
         private const val XCODE_PROJECT_DIR_NAME = "module.xcodeproj"

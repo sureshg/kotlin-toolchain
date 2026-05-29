@@ -13,6 +13,7 @@ import org.jetbrains.amper.dependency.resolution.ResolutionPlatform
 import org.jetbrains.amper.dependency.resolution.ResolutionScope
 import org.jetbrains.amper.engine.Task
 import org.jetbrains.amper.engine.TaskGraphExecutionContext
+import org.jetbrains.amper.engine.TaskName
 import org.jetbrains.amper.frontend.AmperModule
 import org.jetbrains.amper.frontend.AmperModuleFileSource
 import org.jetbrains.amper.frontend.Artifact
@@ -26,7 +27,6 @@ import org.jetbrains.amper.frontend.MavenDependency
 import org.jetbrains.amper.frontend.ModulePart
 import org.jetbrains.amper.frontend.Notation
 import org.jetbrains.amper.frontend.Platform
-import org.jetbrains.amper.frontend.TaskName
 import org.jetbrains.amper.frontend.VersionCatalog
 import org.jetbrains.amper.frontend.aomBuilder.DefaultLocalModuleDependency
 import org.jetbrains.amper.frontend.api.DefaultTrace

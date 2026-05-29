@@ -8,15 +8,13 @@ import org.jetbrains.amper.cli.CliContext
 import org.jetbrains.amper.dependency.resolution.ResolutionScope
 import org.jetbrains.amper.engine.TaskGraph
 import org.jetbrains.amper.engine.TaskGraphBuilder
+import org.jetbrains.amper.engine.TaskName
 import org.jetbrains.amper.frontend.AmperModule
-import org.jetbrains.amper.frontend.Fragment
 import org.jetbrains.amper.frontend.Model
 import org.jetbrains.amper.frontend.Platform
-import org.jetbrains.amper.frontend.TaskName
 import org.jetbrains.amper.frontend.isParentOf
 import org.jetbrains.amper.frontend.project.getTaskOutputRoot
 import org.jetbrains.amper.frontend.schema.ProductType
-import org.jetbrains.amper.tasks.ProjectTasksBuilder.Companion.testSuffix
 import org.jetbrains.amper.tasks.android.setupAndroidTasks
 import org.jetbrains.amper.tasks.compose.setupComposeTasks
 import org.jetbrains.amper.tasks.custom.setupTasksFromPlugins
@@ -30,33 +28,6 @@ import org.jetbrains.amper.tasks.native.setupNativeTasks
 import org.jetbrains.amper.tasks.wasm.setupWasmJsTasks
 import org.jetbrains.amper.tasks.wasm.setupWasmWasiTasks
 import org.jetbrains.amper.util.BuildType
-
-internal interface TaskType {
-    val prefix: String
-}
-
-internal interface PlatformTaskType : TaskType {
-    fun getTaskName(
-        module: AmperModule,
-        platform: Platform,
-        isTest: Boolean = false,
-        buildType: BuildType? = null,
-        suffix: String = "",
-    ): TaskName {
-        if (platform == Platform.JVM) require(buildType == null) {
-            "BuildType must not be present in task names for JVM"
-        }
-        val uppercasePlatform = platform.pretty.replaceFirstChar { it.uppercase() }
-        val buildTypeSuffix = buildType?.name ?: ""
-        val testSuffix = isTest.testSuffix
-        return TaskName.moduleTask(module, "$prefix$uppercasePlatform$testSuffix$buildTypeSuffix$suffix")
-    }
-}
-
-internal interface FragmentTaskType : TaskType {
-    fun getTaskName(fragment: Fragment): TaskName =
-        TaskName.moduleTask(fragment.module, "$prefix${fragment.name.replaceFirstChar { it.uppercase() }}")
-}
 
 data class ModuleSequenceCtx(
     val module: AmperModule,
@@ -153,6 +124,6 @@ class ProjectTasksBuilder(
          * task properties, or module properties
          */
         fun CliContext.getTaskOutputPath(taskName: TaskName): TaskOutputRoot =
-            TaskOutputRoot(path = projectContext.getTaskOutputRoot(taskName))
+            TaskOutputRoot(path = projectContext.getTaskOutputRoot(taskName.id))
     }
 }

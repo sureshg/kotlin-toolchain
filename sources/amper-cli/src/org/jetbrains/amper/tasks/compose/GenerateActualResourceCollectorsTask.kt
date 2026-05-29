@@ -28,7 +28,7 @@ class GenerateActualResourceCollectorsTask(
     useActualModifier: Boolean,
     shouldGenerateCode: Boolean,
     resClassName: String,
-) : PureArtifactTaskBase(buildOutputRoot, incrementalCache) {
+) : PureArtifactTaskBase(buildOutputRoot, incrementalCache, "compose resources > generating code > `actual` collectors") {
     private val packageName by extraInput(packageName)
     private val makeAccessorsPublic by extraInput(makeAccessorsPublic)
     private val useActualModifier by extraInput(useActualModifier)

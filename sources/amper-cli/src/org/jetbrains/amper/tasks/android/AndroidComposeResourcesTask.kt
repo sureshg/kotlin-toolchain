@@ -5,8 +5,8 @@
 package org.jetbrains.amper.tasks.android
 
 import org.jetbrains.amper.engine.TaskGraphExecutionContext
+import org.jetbrains.amper.engine.TaskName
 import org.jetbrains.amper.frontend.Fragment
-import org.jetbrains.amper.frontend.TaskName
 import org.jetbrains.amper.tasks.TaskResult
 import org.jetbrains.amper.tasks.artifacts.ArtifactTaskBase
 import org.jetbrains.amper.tasks.artifacts.Selectors

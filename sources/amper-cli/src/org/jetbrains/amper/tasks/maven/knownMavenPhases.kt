@@ -5,8 +5,8 @@
 package org.jetbrains.amper.tasks.maven
 
 import org.apache.maven.project.MavenProject
+import org.jetbrains.amper.engine.TaskName
 import org.jetbrains.amper.frontend.EnumMap
-import org.jetbrains.amper.frontend.TaskName
 import org.jetbrains.amper.tasks.ModuleSequenceCtx
 import org.jetbrains.amper.tasks.ProjectTasksBuilder
 import org.jetbrains.amper.tasks.artifacts.ArtifactTaskBase
@@ -47,10 +47,12 @@ enum class KnownMavenPhase(
     ;
 
     context(moduleCtx: ModuleSequenceCtx)
-    val beforeTaskName get() = TaskName.fromHierarchy(listOf(moduleCtx.module.userReadableName, "maven", name, "before"))
+    val beforeTaskName get() =
+        TaskName(moduleCtx.module, "maven:${name}:before", "configuring Maven project before `${name}` phase")
 
     context(moduleCtx: ModuleSequenceCtx)
-    val afterTaskName get() = TaskName.fromHierarchy(listOf(moduleCtx.module.userReadableName, "maven", name, "after"))
+    val afterTaskName get() =
+        TaskName(moduleCtx.module, "maven:${name}:after", "configuring Maven project after `${name}` phase")
 
     val dependsOn get() = entries.getOrNull(entries.indexOf(this) - 1)
 

@@ -9,8 +9,8 @@ import org.jetbrains.amper.cli.userReadableError
 import org.jetbrains.amper.core.downloader.amperHttpClient
 import org.jetbrains.amper.engine.PublishTask
 import org.jetbrains.amper.engine.TaskGraphExecutionContext
+import org.jetbrains.amper.engine.TaskName
 import org.jetbrains.amper.frontend.AmperModule
-import org.jetbrains.amper.frontend.TaskName
 import org.jetbrains.amper.frontend.publishingSettings
 import org.jetbrains.amper.frontend.schema.PublishingMode
 import org.jetbrains.amper.mavencentral.DeploymentState

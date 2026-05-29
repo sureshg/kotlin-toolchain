@@ -9,6 +9,7 @@ import org.jetbrains.amper.frontend.schema.UnscopedModuleDependency
 import org.jetbrains.amper.frontend.schema.enabled
 import org.jetbrains.amper.tasks.CommonTaskType
 import org.jetbrains.amper.tasks.ProjectTasksBuilder
+import org.jetbrains.amper.tasks.getTaskName
 import org.jetbrains.amper.tasks.jvm.JvmSpecificTaskType
 
 fun ProjectTasksBuilder.setupJavaAnnotationProcessingTasks() {

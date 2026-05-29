@@ -19,10 +19,11 @@ import org.jetbrains.amper.core.AmperUserCacheRoot
 import org.jetbrains.amper.core.extract.cleanDirectory
 import org.jetbrains.amper.engine.BuildTask
 import org.jetbrains.amper.engine.TaskGraphExecutionContext
+import org.jetbrains.amper.engine.TaskName
 import org.jetbrains.amper.engine.requireSingleDependency
 import org.jetbrains.amper.frontend.AmperModule
 import org.jetbrains.amper.frontend.Platform
-import org.jetbrains.amper.frontend.TaskName
+import org.jetbrains.amper.frontend.TaskId
 import org.jetbrains.amper.frontend.dr.resolver.ModuleDependencies.Companion.toRepository
 import org.jetbrains.amper.frontend.fragmentsTargeting
 import org.jetbrains.amper.frontend.isDescendantOf
@@ -57,11 +58,11 @@ internal class NativeLinkTask(
     /**
      * The name of the task that produces the klib for the sources of this module.
      */
-    val compileKLibTaskName: TaskName,
+    val compileKLibTaskId: TaskId,
     /**
      * Task names that produce klibs that need to be exposed as API in the resulting artifact.
      */
-    val exportedKLibTaskNames: Set<TaskName>,
+    val exportedKLibTaskIds: Set<TaskId>,
     private val kotlinArtifactsDownloader: KotlinArtifactsDownloader =
         KotlinArtifactsDownloader(userCacheRoot, incrementalCache),
     private val jdkProvider: JdkProvider,
@@ -100,8 +101,8 @@ internal class NativeLinkTask(
 
         val includeArtifactDependency = dependenciesResult
             .filterIsInstance<NativeCompileKlibTask.Result>()
-            .firstOrNull { it.taskName == compileKLibTaskName }
-            ?: error("The result of the klib compilation task (${compileKLibTaskName.name}) was not found")
+            .firstOrNull { it.taskId == compileKLibTaskId }
+            ?: error("The result of the klib compilation task (${compileKLibTaskId.value}) was not found")
         val includeArtifact = includeArtifactDependency.compiledKlib
         if (includeArtifact == null && isTest) {
             // We may skip linking for test specifically if there's no compiled code in the fragments.
@@ -114,11 +115,11 @@ internal class NativeLinkTask(
 
         val compileKLibDependencies = dependenciesResult
             .filterIsInstance<NativeCompileKlibTask.Result>()
-            .filter { it.taskName != compileKLibTaskName }
+            .filter { it.taskId != compileKLibTaskId }
 
         val exportedKLibDependencies = compileKLibDependencies
-            .filter { it.taskName in exportedKLibTaskNames }
-        check(exportedKLibDependencies.size == exportedKLibTaskNames.size)
+            .filter { it.taskId in exportedKLibTaskIds }
+        check(exportedKLibDependencies.size == exportedKLibTaskIds.size)
 
         val compiledKLibs = compileKLibDependencies.mapNotNull { it.compiledKlib } +
                 cinteropKlibs.flatMap { it.allKlibs() }

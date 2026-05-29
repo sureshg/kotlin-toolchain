@@ -24,7 +24,7 @@ class PrepareComposeResourcesTask(
     incrementalCache: IncrementalCache,
     fragment: Fragment,
     packagingDir: String,
-) : PureArtifactTaskBase(buildOutputRoot, incrementalCache) {
+) : PureArtifactTaskBase(buildOutputRoot, incrementalCache, "compose resources > processing") {
     private val sourceDirs by Selectors.fromFragment(
         type = ComposeResourcesSourceDirArtifact::class,
         fragment = fragment,

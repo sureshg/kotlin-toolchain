@@ -16,9 +16,9 @@ import org.jetbrains.amper.composehotreload.recompiler.ENV_AMPER_BUILD_ROOT
 import org.jetbrains.amper.composehotreload.recompiler.ENV_AMPER_BUILD_TASK
 import org.jetbrains.amper.composehotreload.recompiler.ENV_AMPER_SERVER_PORT
 import org.jetbrains.amper.core.AmperUserCacheRoot
+import org.jetbrains.amper.engine.TaskName
 import org.jetbrains.amper.frontend.AmperModule
 import org.jetbrains.amper.frontend.Platform
-import org.jetbrains.amper.frontend.TaskName
 import org.jetbrains.amper.frontend.jdkSettings
 import org.jetbrains.amper.frontend.schema.JvmDistribution
 import org.jetbrains.amper.incrementalcache.IncrementalCache
@@ -29,6 +29,7 @@ import org.jetbrains.amper.jdk.provisioning.orElse
 import org.jetbrains.amper.run.ToolingArtifactsDownloader
 import org.jetbrains.amper.tasks.JvmMainRunSettings
 import org.jetbrains.amper.tasks.TaskResult
+import org.jetbrains.amper.tasks.getTaskName
 import org.jetbrains.amper.util.BuildType
 import java.io.File
 import java.net.ServerSocket

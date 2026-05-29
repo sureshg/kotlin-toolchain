@@ -5,14 +5,14 @@
 package org.jetbrains.amper.tasks
 
 import io.opentelemetry.api.GlobalOpenTelemetry
+import org.jetbrains.amper.engine.TaskName
 import org.jetbrains.amper.frontend.AmperModule
 import org.jetbrains.amper.frontend.LocalModuleDependency
 import org.jetbrains.amper.frontend.ModuleTasksPart
 import org.jetbrains.amper.frontend.Platform
 import org.jetbrains.amper.frontend.RepositoriesModulePart
-import org.jetbrains.amper.frontend.TaskName
+import org.jetbrains.amper.frontend.TaskId
 import org.jetbrains.amper.frontend.allSourceFragmentCompileDependencies
-import org.jetbrains.amper.frontend.doCapitalize
 import org.jetbrains.amper.frontend.dr.resolver.AmperResolutionSettings
 import org.jetbrains.amper.frontend.dr.resolver.ModuleDependencies
 import org.jetbrains.amper.frontend.isPublishingEnabled
@@ -20,34 +20,39 @@ import org.jetbrains.amper.frontend.mavenPublishRepositories
 import org.jetbrains.amper.frontend.publishingSettings
 import org.jetbrains.amper.frontend.shouldPublishSourcesJars
 import org.jetbrains.amper.tasks.ProjectTasksBuilder.Companion.getTaskOutputPath
-import org.jetbrains.amper.tasks.js.JsTaskType
 import org.jetbrains.amper.tasks.native.NativeTaskType
 import org.jetbrains.amper.tasks.publication.MavenCentralPublishTask
 import org.jetbrains.amper.tasks.publication.MavenPublishTask
 import org.jetbrains.amper.tasks.publication.PrepareMavenCentralBundleTask
-import org.jetbrains.amper.tasks.wasm.WasmTaskType
 import org.jetbrains.amper.util.BuildType
 
-internal enum class CommonTaskType(override val prefix: String) : PlatformTaskType {
-    Compile("compile"),
-    Ksp("ksp"),
-    Dependencies("resolveDependencies"),
-    TransformDependencies("transformDependencies"),
-    Classes("classes"),
-    MergedClasses("mergedClasses"),
-    Jar("jar"),
-    JavadocJar("javadocJar"),
-    SourcesJar("sourcesJar"),
-    Publish("publish"),
-    Run("run"),
-    RuntimeClasspath("runtimeClasspath"),
-    KspProcessorDependencies("resolveKspProcessorDependencies"),
-    KspProcessorClasspath("kspProcessorClasspath"),
-    Test("test"),
+internal enum class CommonTaskType(
+    override val internalName: String,
+    override val operationMoniker: String,
+) : TaskNameFactory.LeafPlatform {
+    Compile("compile", "compiling"),
+    Ksp("ksp", "processing sources with KSP"),
+    Dependencies("resolveDependencies", "resolving external dependencies"),
+    TransformDependencies("transformDependencies", "transforming external dependencies"),
+    Classes("classes", "aggregating compiled classes"),
+    MergedClasses("mergedClasses", "merging compiled classes"),
+    Jar("jar", "writing JAR"),
+    JavadocJar("javadocJar", "writing Javadoc JAR"),
+    SourcesJar("sourcesJar", "writing source JAR"),
+    @Deprecated("kept for compat reasons, use `ModuleTaskTypes.Publish` instead")
+    Publish("publish", "publishing"),
+    Run("run", "running the app"),
+    RuntimeClasspath("runtimeClasspath", "assembling runtime classpath"),
+    KspProcessorDependencies("resolveKspProcessorDependencies", "resolving external KSP dependencies"),
+    KspProcessorClasspath("kspProcessorClasspath", "assembling ksp processors classpath"),
+    Test("test", "running unit tests"),
 }
 
-internal enum class CommonFragmentTaskType(override val prefix: String) : FragmentTaskType {
-    CompileMetadata("compileMetadata"),
+internal enum class CommonFragmentTaskType(
+    override val internalName: String,
+    override val operationMoniker: String,
+) : TaskNameFactory.Fragment {
+    CompileMetadata("compileMetadata", "compiling Kotlin metadata"),
 }
 
 fun ProjectTasksBuilder.setupCommonTasks() {
@@ -133,7 +138,7 @@ fun ProjectTasksBuilder.setupCommonTasks() {
     allModules()
         .withEach {
             if (module.isPublishingEnabled()) {
-                val prepareMavenPublishablesTaskName = TaskName.moduleTask(module, "prepareMavenPublishables")
+                val prepareMavenPublishablesTaskName = ModuleTaskTypes.PrepareMavenPublishables.getTaskName(module)
                 tasks.registerTask(
                     PrepareMavenPublishablesTask(
                         taskName = prepareMavenPublishablesTaskName,
@@ -155,7 +160,7 @@ fun ProjectTasksBuilder.setupCommonTasks() {
                 )
 
                 if (module.publishingSettings.mavenCentral.enabled) {
-                    val packageTaskName = TaskName.moduleTask(module, "prepareMavenCentralBundle")
+                    val packageTaskName = ModuleTaskTypes.PrepareMavenCentralBundle.getTaskName(module)
                     tasks.registerTask(
                         task = PrepareMavenCentralBundleTask(
                             taskName = packageTaskName,
@@ -167,7 +172,7 @@ fun ProjectTasksBuilder.setupCommonTasks() {
                     )
                     tasks.registerTask(
                         task = MavenCentralPublishTask(
-                            taskName = TaskName.moduleTask(module, "publishToMavenCentral"),
+                            taskName = ModuleTaskTypes.Publish("mavenCentral").getTaskName(module),
                             module = module,
                         ),
                         dependsOn = listOf(packageTaskName),
@@ -209,10 +214,10 @@ private fun ModuleSequenceCtx.tasksWithPlatformSpecificPublishablesFor(platform:
     when (platform) {
         Platform.JVM -> add(CommonTaskType.Jar.getTaskName(module, platform, isTest = false))
         Platform.ANDROID -> add(CommonTaskType.Jar.getTaskName(module, platform, isTest = false, BuildType.Release))
-        Platform.JS -> add(JsTaskType.CompileKLib.getTaskName(module, platform, isTest = false))
+        Platform.JS,
         Platform.WASM_JS,
         Platform.WASM_WASI,
-            -> add(WasmTaskType.CompileKLib.getTaskName(module, platform, isTest = false))
+            -> add(CommonTaskType.Compile.getTaskName(module, platform, isTest = false))
         Platform.LINUX_X64,
         Platform.LINUX_ARM64,
         Platform.TVOS_ARM64,
@@ -249,20 +254,20 @@ private fun ModuleSequenceCtx.tasksWithPlatformSpecificPublishablesFor(platform:
 }
 
 internal fun publishTaskNameFor(module: AmperModule, repository: RepositoriesModulePart.Repository): TaskName =
-    TaskName.moduleTask(module, "publishTo${repository.id.doCapitalize()}")
+    ModuleTaskTypes.Publish(repository.id).getTaskName(module)
 
 // TODO: Still in use. Redesign/remove
 fun ProjectTasksBuilder.setupCustomTaskDependencies() {
     allModules().withEach {
         val tasksSettings = module.parts.filterIsInstance<ModuleTasksPart>().singleOrNull() ?: return@withEach
         for ((taskName, taskSettings) in tasksSettings.settings) {
-            val thisModuleTaskName = TaskName.moduleTask(module, taskName)
+            val thisModuleTaskName = TaskId.moduleTask(module, taskName)
 
             for (dependsOnTaskName in taskSettings.dependsOn) {
                 val dependsOnTask = if (dependsOnTaskName.startsWith(":")) {
-                    TaskName(dependsOnTaskName)
+                    TaskId(dependsOnTaskName)
                 } else {
-                    TaskName.moduleTask(module, dependsOnTaskName)
+                    TaskId.moduleTask(module, dependsOnTaskName)
                 }
 
                 tasks.registerDependency(thisModuleTaskName, dependsOnTask)

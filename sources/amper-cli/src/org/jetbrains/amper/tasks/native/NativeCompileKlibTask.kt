@@ -19,9 +19,10 @@ import org.jetbrains.amper.core.AmperUserCacheRoot
 import org.jetbrains.amper.core.extract.cleanDirectory
 import org.jetbrains.amper.engine.BuildTask
 import org.jetbrains.amper.engine.TaskGraphExecutionContext
+import org.jetbrains.amper.engine.TaskName
 import org.jetbrains.amper.frontend.AmperModule
 import org.jetbrains.amper.frontend.Platform
-import org.jetbrains.amper.frontend.TaskName
+import org.jetbrains.amper.frontend.TaskId
 import org.jetbrains.amper.frontend.dr.resolver.ModuleDependencies.Companion.toRepository
 import org.jetbrains.amper.frontend.isDescendantOf
 import org.jetbrains.amper.frontend.mavenResolveRepositories
@@ -179,7 +180,7 @@ internal class NativeCompileKlibTask(
         return Result(
             compiledKlib = artifact,
             dependencyKlibs = libraryPaths,
-            taskName = taskName,
+            taskId = taskName.id,
             platform = platform,
         )
     }
@@ -187,7 +188,7 @@ internal class NativeCompileKlibTask(
     class Result(
         val compiledKlib: Path?,
         val dependencyKlibs: List<Path>,
-        val taskName: TaskName,
+        val taskId: TaskId,
         val platform: Platform,
     ) : TaskResult
 

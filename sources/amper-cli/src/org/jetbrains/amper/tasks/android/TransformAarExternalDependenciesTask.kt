@@ -10,7 +10,7 @@ import kotlinx.coroutines.coroutineScope
 import org.jetbrains.amper.core.extract.extractFileToLocation
 import org.jetbrains.amper.engine.Task
 import org.jetbrains.amper.engine.TaskGraphExecutionContext
-import org.jetbrains.amper.frontend.TaskName
+import org.jetbrains.amper.engine.TaskName
 import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.tasks.AdditionalClasspathProvider
 import org.jetbrains.amper.tasks.ResolveExternalDependenciesTask

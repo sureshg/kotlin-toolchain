@@ -8,7 +8,6 @@ import org.jetbrains.amper.BuildPrimitives
 import org.jetbrains.amper.cli.AmperBuildOutputRoot
 import org.jetbrains.amper.engine.TaskGraphExecutionContext
 import org.jetbrains.amper.frontend.Fragment
-import org.jetbrains.amper.frontend.TaskName
 import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.tasks.artifacts.JvmResourcesDirArtifact
 import org.jetbrains.amper.tasks.artifacts.PureArtifactTaskBase
@@ -26,11 +25,10 @@ import kotlin.io.path.isDirectory
  * **Output**: [JvmResourcesDirArtifact]
  */
 class JvmComposeResourcesTask(
-    override val taskName: TaskName,
     private val fragment: Fragment,
     private val buildOutputRoot: AmperBuildOutputRoot,
     incrementalCache: IncrementalCache,
-) : PureArtifactTaskBase(buildOutputRoot, incrementalCache) {
+) : PureArtifactTaskBase(buildOutputRoot, incrementalCache, "copying JVM compose resources") {
     private val preparedResources by Selectors.fromFragment(
         type = PreparedComposeResourcesDirArtifact::class,
         fragment = fragment,

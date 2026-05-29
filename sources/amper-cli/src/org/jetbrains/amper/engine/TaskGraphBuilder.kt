@@ -4,7 +4,7 @@
 
 package org.jetbrains.amper.engine
 
-import org.jetbrains.amper.frontend.TaskName
+import org.jetbrains.amper.frontend.TaskId
 import org.jetbrains.amper.tasks.artifacts.api.Artifact
 import org.jetbrains.amper.tasks.artifacts.api.ArtifactSelector
 import org.jetbrains.amper.tasks.artifacts.api.ArtifactTask
@@ -12,25 +12,32 @@ import org.jetbrains.amper.tasks.artifacts.api.Quantifier
 
 class TaskGraphBuilder {
     // do not give access to the graph while it's being built
-    private val taskRegistry = mutableMapOf<TaskName, Task>()
-    private val dependencies = mutableMapOf<TaskName, Set<TaskName>>()
+    private val taskRegistry = mutableMapOf<TaskId, Task>()
+    private val dependencies = mutableMapOf<TaskId, Set<TaskId>>()
     private val builtinArtifacts = mutableListOf<Artifact>()
 
-    fun registerTask(task: Task, dependsOn: List<TaskName> = emptyList()) {
-        if (taskRegistry.contains(task.taskName)) {
-            error("Task '${task.taskName}' already exists")
+    fun registerTask(task: Task, dependsOn: List<TaskName> = emptyList()) =
+        registerTaskImpl(task, dependsOn.map(TaskName::id))
+
+    private fun registerTaskImpl(task: Task, dependsOn: List<TaskId> = emptyList()) {
+        if (taskRegistry.contains(task.id)) {
+            error("Task '${task.id}' already exists")
         }
-        taskRegistry[task.taskName] = task
+        taskRegistry[task.id] = task
 
         for (dependsOnTaskName in dependsOn) {
-            registerDependency(task.taskName, dependsOnTaskName)
+            registerDependency(task.id, dependsOnTaskName)
         }
     }
 
-    fun registerTask(task: Task, dependsOn: TaskName) = registerTask(task = task, dependsOn = listOf(dependsOn))
+    fun registerTask(task: Task, dependsOn: TaskName) = registerTaskImpl(task = task, dependsOn = listOf(dependsOn.id))
+
+    fun registerDependency(taskName: TaskId, dependsOn: TaskId) {
+        dependencies[taskName] = dependencies.getOrDefault(taskName, emptySet()) + dependsOn
+    }
 
     fun registerDependency(taskName: TaskName, dependsOn: TaskName) {
-        dependencies[taskName] = dependencies.getOrDefault(taskName, emptySet()) + dependsOn
+        dependencies[taskName.id] = dependencies.getOrDefault(taskName.id, emptySet()) + dependsOn.id
     }
 
     /**

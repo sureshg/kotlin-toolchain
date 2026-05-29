@@ -4,11 +4,11 @@
 
 package org.jetbrains.amper.frontend.project
 
-import org.jetbrains.amper.frontend.TaskName
+import org.jetbrains.amper.frontend.TaskId
 import java.nio.file.Path
 import kotlin.io.path.div
 
 
-fun AmperProjectContext.getTaskOutputRoot(taskName: TaskName): Path {
-    return projectBuildDir / "tasks" / taskName.name.replace(":", "_")
+fun AmperProjectContext.getTaskOutputRoot(taskId: TaskId): Path {
+    return projectBuildDir / "tasks" / taskId.value.replace(":", "_")
 }

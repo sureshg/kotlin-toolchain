@@ -16,11 +16,11 @@ import org.jetbrains.amper.frontend.Platform
 import org.jetbrains.amper.frontend.schema.ProductType
 import org.jetbrains.amper.system.info.Arch
 import org.jetbrains.amper.tasks.CommonTaskType
-import org.jetbrains.amper.tasks.FragmentTaskType
-import org.jetbrains.amper.tasks.PlatformTaskType
 import org.jetbrains.amper.tasks.ProjectTasksBuilder
 import org.jetbrains.amper.tasks.ProjectTasksBuilder.Companion.getTaskOutputPath
+import org.jetbrains.amper.tasks.TaskNameFactory
 import org.jetbrains.amper.tasks.compose.isComposeEnabledFor
+import org.jetbrains.amper.tasks.getTaskName
 import org.jetbrains.amper.tasks.jvm.JvmClassesJarTask
 import org.jetbrains.amper.tasks.jvm.JvmCompileTask
 import org.jetbrains.amper.tasks.jvm.JvmRuntimeClasspathTask
@@ -503,21 +503,27 @@ private fun getAndroidFragment(module: AmperModule, isTest: Boolean): LeafFragme
     .filterIsInstance<LeafFragment>()
     .filter { it.isTest == isTest }.firstOrNull { Platform.ANDROID in it.platforms }
 
-private enum class AndroidTaskType(override val prefix: String) : PlatformTaskType {
-    InstallBuildTools("installBuildTools"),
-    InstallPlatformTools("installPlatformTools"),
-    InstallPlatform("installPlatform"),
-    InstallSystemImage("installSystemImage"),
-    InstallEmulator("installEmulator"),
-    InstallCmdlineTools("installCmdlineTools"),
-    CheckAndroidSdkLicense("checkAndroidSdkLicense"),
-    Aar("aar"),
-    Prepare("prepare"),
-    Build("build"),
-    Bundle("bundle"),
-    MockablePlatformJar("mockablePlatformJar"),
+private enum class AndroidTaskType(
+    override val internalName: String,
+    override val operationMoniker: String,
+) : TaskNameFactory.LeafPlatform {
+    InstallBuildTools("installBuildTools", "installing `build-tools` for Android"),
+    InstallPlatformTools("installPlatformTools", "installing `platform-tools` for Android"),
+    InstallPlatform("installPlatform", "installing Android Platform"),
+    InstallSystemImage("installSystemImage", "installing Android System Image"),
+    InstallEmulator("installEmulator", "installing Android Emulator"),
+    InstallCmdlineTools("installCmdlineTools", "installing `cmdline-tools` for Android"),
+    CheckAndroidSdkLicense("checkAndroidSdkLicense", "checking Android SDK license"),
+    Aar("aar", "writing AAR"),
+    Prepare("prepare", "preparing Android build"),
+    Build("build", "building Android app"),
+    Bundle("bundle", "bundling Android app"),
+    MockablePlatformJar("mockablePlatformJar", "providing mockable platform JAR"),
 }
 
-private enum class AndroidFragmentTaskType(override val prefix: String) : FragmentTaskType {
-    PrepareComposeResources("prepareComposeResourcesForAndroid"),
+private enum class AndroidFragmentTaskType(
+    override val internalName: String,
+    override val operationMoniker: String,
+) : TaskNameFactory.Fragment {
+    PrepareComposeResources("prepareComposeResourcesForAndroid", "aggregating Android compose resources"),
 }

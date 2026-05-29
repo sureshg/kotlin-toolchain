@@ -10,7 +10,7 @@ import com.github.ajalt.clikt.parameters.arguments.multiple
 import org.jetbrains.amper.cli.CliContext
 import org.jetbrains.amper.cli.withBackend
 import org.jetbrains.amper.frontend.Model
-import org.jetbrains.amper.frontend.TaskName
+import org.jetbrains.amper.frontend.TaskId
 
 internal class TaskCommand : AmperModelAwareCommand(name = "task") {
 
@@ -22,7 +22,7 @@ internal class TaskCommand : AmperModelAwareCommand(name = "task") {
 
     override suspend fun run(cliContext: CliContext, model: Model) {
         withBackend(cliContext, model) { backend ->
-            backend.runTasks(taskNames.map { TaskName(it) }.toSet())
+            backend.runTasks(taskNames.map { TaskId(it) }.toSet())
         }
     }
 }

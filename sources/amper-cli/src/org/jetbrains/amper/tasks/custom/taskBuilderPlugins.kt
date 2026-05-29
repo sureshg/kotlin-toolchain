@@ -4,16 +4,34 @@
 
 package org.jetbrains.amper.tasks.custom
 
+import com.github.ajalt.mordant.markdown.Markdown
+import com.github.ajalt.mordant.rendering.Theme
 import org.jetbrains.amper.dependency.resolution.ResolutionScope
+import org.jetbrains.amper.engine.TaskName
+import org.jetbrains.amper.engine.renderModule
 import org.jetbrains.amper.frontend.Platform
-import org.jetbrains.amper.frontend.TaskName
 import org.jetbrains.amper.frontend.fragmentsTargeting
+import org.jetbrains.amper.frontend.plugins.TaskFromPluginDescription
 import org.jetbrains.amper.frontend.plugins.generated.ShadowCompilationArtifactKind
 import org.jetbrains.amper.frontend.plugins.generated.ShadowResolutionScope
 import org.jetbrains.amper.frontend.plugins.generated.ShadowSourcesKind
+import org.jetbrains.amper.stdlib.collections.joinToString
 import org.jetbrains.amper.tasks.CommonTaskType
 import org.jetbrains.amper.tasks.ProjectTasksBuilder
 import org.jetbrains.amper.tasks.getModuleDependencies
+import org.jetbrains.amper.tasks.getTaskName
+
+private fun TaskFromPluginDescription.taskName() = TaskName(
+    id = backendTaskId,
+    renderOperationMonikerWidget = {
+        renderModule(enabledIn)
+        val theme = contextOf<Theme>()
+        cell(Markdown("running `$name`")) {
+            style(bold = true)
+        }
+        cell("from plugin '${pluginId.value}'") { style = theme.muted }
+    },
+)
 
 fun ProjectTasksBuilder.setupTasksFromPlugins() {
     allModules().withEach {
@@ -22,7 +40,12 @@ fun ProjectTasksBuilder.setupTasksFromPlugins() {
             for (sourcesRequest in taskDescription.requestedModuleSources) {
                 val fragments = sourcesRequest.from.fragmentsTargeting(Platform.JVM, isTest = false)
                 if (sourcesRequest.node.includeGenerated) {
-                    val taskName = TaskName(taskDescription.backendTaskName.name + "*resolve-${sourcesRequest.propertyLocation}")
+                    val taskName = TaskName(
+                        module = module,
+                        internalName = taskDescription.backendTaskId.value + "*resolve-${sourcesRequest.propertyLocation}",
+                        operationMoniker =
+                            "assembling module sources for `${sourcesRequest.propertyLocation.joinToString(".")}`",
+                    )
                     tasks.registerTask(
                         ModuleSourcesResolveTask(
                             taskName = taskName,
@@ -53,7 +76,12 @@ fun ProjectTasksBuilder.setupTasksFromPlugins() {
                     ShadowResolutionScope.Runtime -> ResolutionScope.RUNTIME
                     ShadowResolutionScope.Compile -> ResolutionScope.COMPILE
                 }
-                val taskName = TaskName(taskDescription.backendTaskName.name + "*resolve-${classpathRequest.propertyLocation}")
+                val taskName = TaskName(
+                    module = module,
+                    internalName = taskDescription.backendTaskId.value + "*resolve-${classpathRequest.propertyLocation}",
+                    operationMoniker =
+                        "assembling classpath for `${classpathRequest.propertyLocation.joinToString(".")}`",
+                )
                 val task = ResolveClasspathRequestTask(
                     taskName = taskName,
                     classpathRequest = classpathRequest,
@@ -76,7 +104,12 @@ fun ProjectTasksBuilder.setupTasksFromPlugins() {
                             }
                         }
 
-                        val resolveExternalTaskName = TaskName(taskName.name + "*external")
+                        val resolveExternalTaskName = TaskName(
+                            module = module,
+                            internalName = taskName.id.value + "*external",
+                            operationMoniker = "resolving external dependencies for the " +
+                                    "`${classpathRequest.propertyLocation.joinToString(".")}`",
+                        )
                         tasks.registerTask(ResolveCustomExternalDependenciesTask(
                             taskName = resolveExternalTaskName,
                             module = module,
@@ -92,7 +125,7 @@ fun ProjectTasksBuilder.setupTasksFromPlugins() {
                 taskName
             }
             val task = TaskFromPlugin(
-                taskName = taskDescription.backendTaskName,
+                taskName = taskDescription.taskName(),
                 module = module,
                 description = taskDescription,
                 buildOutputRoot = context.buildOutputRoot,
@@ -103,7 +136,7 @@ fun ProjectTasksBuilder.setupTasksFromPlugins() {
                 task, dependsOn = buildList {
                     addAll(taskDependencies)
                     add(CommonTaskType.RuntimeClasspath.getTaskName(taskDescription.codeSource, Platform.JVM, isTest = false))
-                    addAll(taskDescription.dependsOn.map { it.backendTaskName })
+                    addAll(taskDescription.dependsOn.map { it.taskName() })
                 }
             )
         }

@@ -8,16 +8,18 @@ import org.jetbrains.amper.ProcessRunner
 import org.jetbrains.amper.cli.AmperProjectTempRoot
 import org.jetbrains.amper.core.AmperUserCacheRoot
 import org.jetbrains.amper.dependency.resolution.ResolutionScope
+import org.jetbrains.amper.engine.TaskName
 import org.jetbrains.amper.frontend.AmperModule
 import org.jetbrains.amper.frontend.Platform
-import org.jetbrains.amper.frontend.TaskName
+import org.jetbrains.amper.frontend.TaskId
 import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.jdk.provisioning.JdkProvider
 import org.jetbrains.amper.tasks.CommonTaskType
-import org.jetbrains.amper.tasks.PlatformTaskType
 import org.jetbrains.amper.tasks.ProjectTasksBuilder
 import org.jetbrains.amper.tasks.ProjectTasksBuilder.Companion.getTaskOutputPath
 import org.jetbrains.amper.tasks.TaskOutputRoot
+import org.jetbrains.amper.tasks.getTaskName
+import org.jetbrains.amper.tasks.native.NativeTaskType
 import org.jetbrains.amper.tasks.web.WebCompileKlibTask
 import org.jetbrains.amper.tasks.web.WebLinkTask
 
@@ -45,7 +47,7 @@ internal fun ProjectTasksBuilder.setupWasmTasks(
         taskName: TaskName,
         tempRoot: AmperProjectTempRoot,
         isTest: Boolean,
-        compileKLibTaskName: TaskName,
+        compileKLibTaskId: TaskId,
         processRunner: ProcessRunner,
     ) -> WebLinkTask,
 ) {
@@ -54,7 +56,7 @@ internal fun ProjectTasksBuilder.setupWasmTasks(
         .alsoPlatforms(platform)
         .alsoTests()
         .withEach {
-            val compileKLibTaskName = WasmTaskType.CompileKLib.getTaskName(module, platform, isTest)
+            val compileKLibTaskName = CommonTaskType.Compile.getTaskName(module, platform, isTest)
             tasks.registerTask(
                 task = createCompileTask(
                     module,
@@ -72,13 +74,13 @@ internal fun ProjectTasksBuilder.setupWasmTasks(
                     add(CommonTaskType.Dependencies.getTaskName(module, platform, isTest))
                     if (isTest) {
                         // todo (AB) : Check if this is required for test KLib compilation
-                        add(WasmTaskType.CompileKLib.getTaskName(module, platform, isTest = false))
+                        add(CommonTaskType.Compile.getTaskName(module, platform, isTest = false))
                     }
                 },
             )
 
             if (needsLinkedExecutable(module, isTest)) {
-                val linkAppTaskName = WasmTaskType.Link.getTaskName(module, platform, isTest)
+                val linkAppTaskName = NativeTaskType.Link.getTaskName(module, platform, isTest)
                 tasks.registerTask(
                     task = createLinkTask(
                         module,
@@ -90,14 +92,14 @@ internal fun ProjectTasksBuilder.setupWasmTasks(
                         linkAppTaskName,
                         context.projectTempRoot,
                         isTest,
-                        compileKLibTaskName,
+                        compileKLibTaskName.id,
                         context.processRunner,
                     ),
                     dependsOn = buildList {
                         add(compileKLibTaskName)
                         add(CommonTaskType.Dependencies.getTaskName(module, platform, isTest))
                         if (isTest) {
-                            add(WasmTaskType.CompileKLib.getTaskName(module, platform, isTest = false))
+                            add(CommonTaskType.Compile.getTaskName(module, platform, isTest = false))
                         }
                     }
                 )
@@ -109,22 +111,17 @@ internal fun ProjectTasksBuilder.setupWasmTasks(
         .alsoTests()
         .selectModuleDependencies(ResolutionScope.RUNTIME).withEach {
             tasks.registerDependency(
-                WasmTaskType.CompileKLib.getTaskName(module, platform, isTest),
-                WasmTaskType.CompileKLib.getTaskName(dependsOn, platform, false)
+                CommonTaskType.Compile.getTaskName(module, platform, isTest),
+                CommonTaskType.Compile.getTaskName(dependsOn, platform, false)
             )
 
             if (needsLinkedExecutable(module, isTest)) {
                 tasks.registerDependency(
-                    WasmTaskType.Link.getTaskName(module, platform, isTest),
-                    WasmTaskType.CompileKLib.getTaskName(dependsOn, platform, false)
+                    NativeTaskType.Link.getTaskName(module, platform, isTest),
+                    CommonTaskType.Compile.getTaskName(dependsOn, platform, false)
                 )
             }
         }
-}
-
-enum class WasmTaskType(override val prefix: String) : PlatformTaskType {
-    CompileKLib("compile"),
-    Link("link"),
 }
 
 private fun needsLinkedExecutable(module: AmperModule, isTest: Boolean) =

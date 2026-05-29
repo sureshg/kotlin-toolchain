@@ -5,8 +5,8 @@
 package org.jetbrains.amper.tasks.maven
 
 import org.apache.maven.project.MavenProject
+import org.jetbrains.amper.engine.TaskName
 import org.jetbrains.amper.frontend.Platform
-import org.jetbrains.amper.frontend.TaskName
 import org.jetbrains.amper.frontend.schema.MavenMojoSettings
 import org.jetbrains.amper.frontend.schema.toMavenCoordinates
 import org.jetbrains.amper.frontend.tree.CompleteObjectNode
@@ -16,9 +16,10 @@ import org.jetbrains.amper.frontend.types.maven.amperMavenPluginId
 import org.jetbrains.amper.maven.publish.createPlexusContainer
 import org.jetbrains.amper.tasks.CommonTaskType
 import org.jetbrains.amper.tasks.ModuleSequenceCtx
-import org.jetbrains.amper.tasks.PlatformTaskType
 import org.jetbrains.amper.tasks.ProjectTasksBuilder
 import org.jetbrains.amper.tasks.ProjectTasksBuilder.Companion.getTaskOutputPath
+import org.jetbrains.amper.tasks.TaskNameFactory
+import org.jetbrains.amper.tasks.getTaskName
 
 // Set up maven tasks only for JVM modules. 
 fun ProjectTasksBuilder.setupMavenCompatibilityTasks() {
@@ -38,7 +39,7 @@ fun ProjectTasksBuilder.setupMavenCompatibilityTasks() {
 context(taskBuilder: ProjectTasksBuilder)
 private fun ModuleSequenceCtx.setupUmbrellaMavenTasks(sharedMavenProject: MavenProject) {
     // Convenient helper, since we operate only for the JVM platform and specific module.
-    operator fun PlatformTaskType.invoke(isTest: Boolean) = getTaskName(module, Platform.JVM, isTest)
+    operator fun TaskNameFactory.LeafPlatform.invoke(isTest: Boolean) = getTaskName(module, Platform.JVM, isTest)
 
     // Register "before" and "after" tasks for each phase.
     KnownMavenPhase.entries.forEach { phase ->
@@ -142,7 +143,7 @@ private fun ModuleSequenceCtx.setupMavenPluginTasks(sharedMavenProject: MavenPro
                     }.orEmpty()
             }
 
-            val taskName = TaskName.moduleTask(module, mavenCompatPluginId)
+            val taskName = TaskName(module, mavenCompatPluginId, "running maven goal `$mavenCompatPluginId`")
             ExecuteMavenMojoTask(
                 taskName = taskName,
                 module = module,

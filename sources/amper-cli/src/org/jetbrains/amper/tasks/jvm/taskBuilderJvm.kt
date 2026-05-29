@@ -12,13 +12,13 @@ import org.jetbrains.amper.frontend.mavenPublishRepositories
 import org.jetbrains.amper.frontend.schema.DependencyMode
 import org.jetbrains.amper.frontend.schema.enabled
 import org.jetbrains.amper.tasks.CommonTaskType
-import org.jetbrains.amper.tasks.FragmentTaskType
 import org.jetbrains.amper.tasks.NoopTask
-import org.jetbrains.amper.tasks.PlatformTaskType
 import org.jetbrains.amper.tasks.ProjectTasksBuilder
 import org.jetbrains.amper.tasks.ProjectTasksBuilder.Companion.getTaskOutputPath
+import org.jetbrains.amper.tasks.TaskNameFactory
 import org.jetbrains.amper.tasks.compose.isComposeEnabledFor
 import org.jetbrains.amper.tasks.getModuleDependencies
+import org.jetbrains.amper.tasks.getTaskName
 import org.jetbrains.amper.tasks.publishTaskNameFor
 
 fun ProjectTasksBuilder.setupJvmTasks() {
@@ -163,10 +163,8 @@ fun ProjectTasksBuilder.setupJvmTasks() {
     allModules().alsoPlatforms(Platform.JVM).withEach {
         if (isComposeEnabledFor(module)) {
             module.fragments.filter { Platform.JVM in it.platforms }.forEach { fragment ->
-                val prepareForJvm = JvmFragmentTaskType.PrepareComposeResources.getTaskName(fragment)
                 tasks.registerTask(
                     task = JvmComposeResourcesTask(
-                        taskName = prepareForJvm,
                         fragment = fragment,
                         buildOutputRoot = context.buildOutputRoot,
                         incrementalCache = context.incrementalCache,
@@ -253,6 +251,7 @@ fun ProjectTasksBuilder.setupJvmTasks() {
                 val publishRepositories = module.mavenPublishRepositories
                 for (repository in publishRepositories) {
                     val publishTaskSuffix = "To${repository.id.doCapitalize()}"
+                    @Suppress("DEPRECATION")
                     val publishTaskName = CommonTaskType.Publish.getTaskName(module, platform, suffix = publishTaskSuffix)
                     tasks.registerTask(
                         task = NoopTask(taskName = publishTaskName),
@@ -288,22 +287,21 @@ fun ProjectTasksBuilder.setupJvmTasks() {
         }
 }
 
-private enum class JvmFragmentTaskType(
-    override val prefix: String,
-) : FragmentTaskType {
-    PrepareComposeResources("prepareComposeResourcesForJvm"),
-    ;
-}
-
-internal enum class HotReloadTaskType(override val prefix: String) : PlatformTaskType {
-    Reload("reload"),
-    HotRun("hotRun"),
+internal enum class HotReloadTaskType(
+    override val internalName: String,
+    override val operationMoniker: String,
+) : TaskNameFactory.LeafPlatform {
+    Reload("reload", "hot reloading"),
+    HotRun("hotRun", "running (hot)"),
 }
 
 // Adding a specific task type for JVM-specific tasks
-internal enum class JvmSpecificTaskType(override val prefix: String) : PlatformTaskType {
-    ExecutableJar("executableJar"),
-    RunExecutableJar("runExecutableJar"),
-    JavaAnnotationProcessorDependencies("resolveJavaAnnotationProcessorDependencies"),
-    JavaAnnotationProcessorClasspath("javaAnnotationProcessorClasspath"),
+internal enum class JvmSpecificTaskType(
+    override val internalName: String,
+    override val operationMoniker: String,
+) : TaskNameFactory.LeafPlatform {
+    ExecutableJar("executableJar", "writing executable JAR"),
+    RunExecutableJar("runExecutableJar", "running executable JAR"),
+    JavaAnnotationProcessorDependencies("resolveJavaAnnotationProcessorDependencies", "resolving external annotation processor dependencies"),
+    JavaAnnotationProcessorClasspath("javaAnnotationProcessorClasspath", "assembling Java annotation processors classpath"),
 }

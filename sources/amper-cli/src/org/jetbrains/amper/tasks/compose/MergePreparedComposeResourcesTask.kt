@@ -21,7 +21,7 @@ class MergePreparedComposeResourcesTask(
     incrementalCache: IncrementalCache,
     fragment: LeafFragment,
     packagingDir: String,
-) : PureArtifactTaskBase(buildOutputRoot, incrementalCache) {
+) : PureArtifactTaskBase(buildOutputRoot, incrementalCache, "compose resources > merging") {
     private val packagingDir by extraInput(packagingDir)
 
     private val preparedDirs by Selectors.fromFragmentWithDependencies(

@@ -9,7 +9,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
 import org.jetbrains.amper.cli.AmperBuildOutputRoot
 import org.jetbrains.amper.engine.TaskGraphExecutionContext
-import org.jetbrains.amper.frontend.TaskName
+import org.jetbrains.amper.engine.TaskName
 import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.tasks.EmptyTaskResult
 import org.jetbrains.amper.tasks.TaskResult
@@ -35,14 +35,20 @@ import kotlin.reflect.KProperty
 abstract class PureArtifactTaskBase(
     buildOutputRoot: AmperBuildOutputRoot,
     private val incrementalCache: IncrementalCache,
+    publicTaskMoniker: String,
 ) : ArtifactTaskBase(), Serializable {
     private val extraInputs = mutableMapOf<String, String>()
     private lateinit var inputPaths: List<Path>
 
     override val taskName: TaskName by lazy {
-        val output = produces.single()
+        val output = produces.singleOrNull()
+            ?: error("Only a single output is possible for the automatic `taskName` deduction. " +
+                    "Please override the `taskName` property manually if you have more than one output artifact.")
         val path = output.path.relativeTo(buildOutputRoot.path)
-        TaskName.fromHierarchy(listOf(path.pathString))
+        TaskName(
+            internalName = path.pathString,
+            operationMoniker = publicTaskMoniker,
+        )
     }
 
     private fun extraInput(key: String, value: String) {

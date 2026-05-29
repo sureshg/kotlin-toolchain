@@ -7,8 +7,8 @@ package org.jetbrains.amper.tasks.ios
 import kotlinx.serialization.Serializable
 import org.jetbrains.amper.engine.Task
 import org.jetbrains.amper.engine.TaskGraphExecutionContext
+import org.jetbrains.amper.engine.TaskName
 import org.jetbrains.amper.engine.requireSingleDependency
-import org.jetbrains.amper.frontend.TaskName
 import org.jetbrains.amper.serialization.paths.SerializablePath
 import org.jetbrains.amper.tasks.TaskResult
 import org.jetbrains.amper.tasks.native.NativeLinkTask

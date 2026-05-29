@@ -8,6 +8,7 @@ import com.github.ajalt.mordant.animation.animation
 import com.github.ajalt.mordant.rendering.TextAlign
 import com.github.ajalt.mordant.rendering.Widget
 import com.github.ajalt.mordant.table.ColumnWidth
+import com.github.ajalt.mordant.table.HorizontalLayoutBuilder
 import com.github.ajalt.mordant.table.horizontalLayout
 import com.github.ajalt.mordant.table.verticalLayout
 import com.github.ajalt.mordant.terminal.Terminal
@@ -26,6 +27,9 @@ import kotlinx.coroutines.sync.withLock
 import org.jetbrains.amper.engine.Task
 import org.jetbrains.amper.engine.TaskExecutor
 import org.jetbrains.amper.engine.TaskGraphExecutionListener
+import org.jetbrains.amper.engine.TaskName
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import kotlin.math.min
 import kotlin.time.ComparableTimeMark
 import kotlin.time.Duration
@@ -124,18 +128,16 @@ class TaskProgressRenderer(
             }
         })
 
-        for (entry in state.taskEntries.take(maxTasksOnScreen)) {
+        for ((task, _, elapsed) in state.taskEntries.take(maxTasksOnScreen)) {
             cell(horizontalLayout {
                 cell(">") {
                     style = terminal.theme.muted
                 }
 
-                cell(entry.task.taskName.name) {
-                    style = terminal.theme.info
-                }
+                formatTaskStatus(task.taskName)
 
-                if (entry.elapsed >= 1.seconds) {
-                    cell(entry.elapsed.toString()) {
+                if (elapsed >= 1.seconds) {
+                    cell(elapsed.toString()) {
                         style = terminal.theme.muted
                     }
                 }
@@ -144,6 +146,10 @@ class TaskProgressRenderer(
         if (state.taskEntries.size > maxTasksOnScreen) {
             cell("(+${state.taskEntries.size - maxTasksOnScreen} more)")
         }
+    }
+
+    private fun HorizontalLayoutBuilder.formatTaskStatus(name: TaskName) {
+        name.renderOperationMonikerWidget(terminal.theme, this)
     }
 
     private fun updateElapsedTime() {
@@ -178,6 +184,8 @@ class TaskProgressRenderer(
             }
         }
     }
+
+    private val logger: Logger = LoggerFactory.getLogger(javaClass)
 }
 
 private fun Duration.roundToTheSecond(): Duration = inWholeSeconds.seconds

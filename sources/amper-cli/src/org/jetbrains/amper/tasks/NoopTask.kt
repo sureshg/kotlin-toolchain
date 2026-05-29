@@ -6,7 +6,7 @@ package org.jetbrains.amper.tasks
 
 import org.jetbrains.amper.engine.Task
 import org.jetbrains.amper.engine.TaskGraphExecutionContext
-import org.jetbrains.amper.frontend.TaskName
+import org.jetbrains.amper.engine.TaskName
 
 /**
  * A task that does nothing, which can be used as a lifecycle task (just for its dependencies).

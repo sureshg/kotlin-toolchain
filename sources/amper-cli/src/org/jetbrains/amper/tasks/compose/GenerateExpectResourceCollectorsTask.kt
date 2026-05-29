@@ -25,7 +25,7 @@ class GenerateExpectResourceCollectorsTask(
     makeAccessorsPublic: Boolean,
     shouldGenerateCode: Boolean,
     resClassName: String,
-) : PureArtifactTaskBase(buildOutputRoot, incrementalCache) {
+) : PureArtifactTaskBase(buildOutputRoot, incrementalCache, "compose resources > generating code > `expect` collectors") {
     private val packageName by extraInput(packageName)
     private val makeAccessorsPublic by extraInput(makeAccessorsPublic)
     private val shouldGenerateCode by extraInput(shouldGenerateCode)

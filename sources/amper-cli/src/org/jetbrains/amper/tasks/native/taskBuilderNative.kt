@@ -11,12 +11,13 @@ import org.jetbrains.amper.frontend.Platform
 import org.jetbrains.amper.frontend.fragmentsTargeting
 import org.jetbrains.amper.frontend.isDescendantOf
 import org.jetbrains.amper.tasks.CommonTaskType
-import org.jetbrains.amper.tasks.PlatformTaskType
+import org.jetbrains.amper.tasks.ModuleTaskTypes
 import org.jetbrains.amper.tasks.ProjectTasksBuilder
 import org.jetbrains.amper.tasks.ProjectTasksBuilder.Companion.getTaskOutputPath
+import org.jetbrains.amper.tasks.TaskNameFactory
 import org.jetbrains.amper.tasks.getModuleDependencies
+import org.jetbrains.amper.tasks.getTaskName
 import org.jetbrains.amper.tasks.ios.IosTaskType
-import org.jetbrains.amper.tasks.ios.ManageXCodeProjectTask
 import org.jetbrains.amper.util.BuildType
 
 private fun isIosApp(platform: Platform, module: AmperModule) =
@@ -93,8 +94,8 @@ fun ProjectTasksBuilder.setupNativeTasks() {
                         isTest = isTest,
                         buildType = buildType,
                         compilationType = compilationType,
-                        compileKLibTaskName = compileKLibTaskName,
-                        exportedKLibTaskNames = buildSet {
+                        compileKLibTaskId = compileKLibTaskName.id,
+                        exportedKLibTaskIds = buildSet {
                             // Build the exported libraries set for iOS
                             if (compilationType == KotlinCompilationType.IOS_FRAMEWORK) {
                                 module.getModuleDependencies(
@@ -104,7 +105,7 @@ fun ProjectTasksBuilder.setupNativeTasks() {
                                     userCacheRoot = context.userCacheRoot,
                                     incrementalCache = context.incrementalCache
                                 ).forEach { dependsOn ->
-                                    add(NativeTaskType.CompileKLib.getTaskName(dependsOn, platform, false, buildType))
+                                    add(NativeTaskType.CompileKLib.getTaskName(dependsOn, platform, false, buildType).id)
                                 }
                             }
                         },
@@ -119,7 +120,7 @@ fun ProjectTasksBuilder.setupNativeTasks() {
                         }
                         if (compilationType == KotlinCompilationType.IOS_FRAMEWORK) {
                             // Needed for bundleId inference
-                            add(ManageXCodeProjectTask.taskName(module))
+                            add(ModuleTaskTypes.ManageXCodeProject.getTaskName(module))
                         }
                     }
                 )
@@ -214,8 +215,11 @@ private fun getNativeLinkTaskDetails(
         NativeTaskType.Link.getTaskName(module, platform, isTest, buildType) to KotlinCompilationType.BINARY
 }
 
-enum class NativeTaskType(override val prefix: String) : PlatformTaskType {
-    CompileKLib("compile"),
-    Cinterop("cinterop"),
-    Link("link"),
+enum class NativeTaskType(
+    override val internalName: String,
+    override val operationMoniker: String,
+) : TaskNameFactory.LeafPlatform {
+    CompileKLib("compile", "compiling"),
+    Cinterop("cinterop", "processing cinterop definitions"),
+    Link("link", "linking"),
 }

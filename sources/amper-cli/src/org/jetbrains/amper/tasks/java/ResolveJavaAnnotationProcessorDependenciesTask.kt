@@ -5,9 +5,9 @@
 package org.jetbrains.amper.tasks.java
 
 import org.jetbrains.amper.core.AmperUserCacheRoot
+import org.jetbrains.amper.engine.TaskName
 import org.jetbrains.amper.frontend.AmperModule
 import org.jetbrains.amper.frontend.Fragment
-import org.jetbrains.amper.frontend.TaskName
 import org.jetbrains.amper.frontend.schema.UnscopedDependency
 import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.tasks.AbstractResolveJvmExternalDependenciesTask

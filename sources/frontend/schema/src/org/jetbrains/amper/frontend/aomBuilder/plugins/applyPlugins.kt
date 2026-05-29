@@ -71,7 +71,7 @@ internal fun applyPlugins(
                 name = name,
                 pluginId = plugin.id,
                 enabledIn = moduleBuildCtx.module,
-                backendTaskName = plugin.taskNameFor(moduleBuildCtx.module, name),
+                backendTaskId = plugin.taskIdFor(moduleBuildCtx.module, name),
                 actionFunctionJvmName = taskInfo.jvmFunctionName,
                 actionClassJvmName = taskInfo.jvmFunctionClassName,
                 actionArguments = task.action.backingTree,
@@ -126,7 +126,7 @@ internal fun applyPlugins(
             }
             val checkerDescription = CheckFromPlugin(
                 name = checker.name,
-                performedBy = plugin.taskNameFor(moduleBuildCtx.module, checker.performedBy),
+                performedBy = plugin.taskIdFor(moduleBuildCtx.module, checker.performedBy),
                 pluginId = plugin.id,
             )
             moduleBuildCtx.module.checksFromPlugins += checkerDescription
@@ -138,7 +138,7 @@ internal fun applyPlugins(
             }
             val commandDescription = CustomCommandFromPlugin(
                 name = command.name,
-                performedBy = plugin.taskNameFor(moduleBuildCtx.module, command.performedBy),
+                performedBy = plugin.taskIdFor(moduleBuildCtx.module, command.performedBy),
                 pluginId = plugin.id,
             )
             moduleBuildCtx.module.customCommandsFromPlugins += commandDescription

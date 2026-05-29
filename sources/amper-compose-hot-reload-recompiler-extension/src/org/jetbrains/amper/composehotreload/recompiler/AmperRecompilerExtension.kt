@@ -49,7 +49,7 @@ class AmperRecompilerExtension : RecompilerExtension {
 class AmperRecompiler() : Recompiler, AutoCloseable {
 
     @Serializable
-    data class ReloadRequest(val taskHierarchy: List<String>)
+    data class ReloadRequest(val taskId: String)
 
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val httpClient = HttpClient(CIO) {
@@ -79,11 +79,6 @@ class AmperRecompiler() : Recompiler, AutoCloseable {
 
     override suspend fun buildAndReload(context: RecompilerContext): ExitCode {
         context.orchestration.send(OrchestrationMessage.BuildStarted())
-        val parts = amperBuildTask.removePrefix(":").split(":")
-        if (parts.size < 2) {
-            logger.error("Invalid amperBuildTask format. Expected ':module:task' or ':module:submodule:task', got $amperBuildTask")
-            return ExitCode(1)
-        }
 
         httpClient.sse({
             header(HttpHeaders.ContentType, ContentType.Application.Json)
@@ -95,7 +90,7 @@ class AmperRecompiler() : Recompiler, AutoCloseable {
                 path("task")
             }
 
-            setBody(ReloadRequest(parts))
+            setBody(ReloadRequest(amperBuildTask))
         }) {
             incoming.collect { event ->
                 when (event.id) {

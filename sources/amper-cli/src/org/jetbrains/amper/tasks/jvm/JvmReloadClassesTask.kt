@@ -7,7 +7,7 @@ package org.jetbrains.amper.tasks.jvm
 import org.jetbrains.amper.composehotreload.recompiler.ENV_COMPOSE_HOT_RELOAD_ORCHESTRATION_PORT
 import org.jetbrains.amper.engine.Task
 import org.jetbrains.amper.engine.TaskGraphExecutionContext
-import org.jetbrains.amper.frontend.TaskName
+import org.jetbrains.amper.engine.TaskName
 import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.tasks.EmptyTaskResult
 import org.jetbrains.amper.tasks.TaskResult

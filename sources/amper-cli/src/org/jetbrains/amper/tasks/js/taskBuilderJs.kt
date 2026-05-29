@@ -8,9 +8,10 @@ import org.jetbrains.amper.dependency.resolution.ResolutionScope
 import org.jetbrains.amper.frontend.AmperModule
 import org.jetbrains.amper.frontend.Platform
 import org.jetbrains.amper.tasks.CommonTaskType
-import org.jetbrains.amper.tasks.PlatformTaskType
 import org.jetbrains.amper.tasks.ProjectTasksBuilder
 import org.jetbrains.amper.tasks.ProjectTasksBuilder.Companion.getTaskOutputPath
+import org.jetbrains.amper.tasks.getTaskName
+import org.jetbrains.amper.tasks.native.NativeTaskType
 
 fun ProjectTasksBuilder.setupJsTasks() {
 
@@ -18,7 +19,7 @@ fun ProjectTasksBuilder.setupJsTasks() {
         .alsoPlatforms(Platform.JS)
         .alsoTests()
         .withEach {
-            val compileKLibTaskName = JsTaskType.CompileKLib.getTaskName(module, platform, isTest)
+            val compileKLibTaskName = CommonTaskType.Compile.getTaskName(module, platform, isTest)
             tasks.registerTask(
                 task = JsCompileKlibTask(
                     module = module,
@@ -36,13 +37,13 @@ fun ProjectTasksBuilder.setupJsTasks() {
                     add(CommonTaskType.Dependencies.getTaskName(module, platform, isTest))
                     if (isTest) {
                         // todo (AB) : Check if this is required for test KLib compilation
-                        add(JsTaskType.CompileKLib.getTaskName(module, platform, isTest = false))
+                        add(CommonTaskType.Compile.getTaskName(module, platform, isTest = false))
                     }
                 },
             )
 
             if (needsLinkedExecutable(module, isTest)) {
-                val linkAppTaskName = JsTaskType.Link.getTaskName(module, platform, isTest)
+                val linkAppTaskName = NativeTaskType.Link.getTaskName(module, platform, isTest)
                 tasks.registerTask(
                     task = JsLinkTask(
                         module = module,
@@ -54,14 +55,14 @@ fun ProjectTasksBuilder.setupJsTasks() {
                         tempRoot = context.projectTempRoot,
                         isTest = isTest,
                         jdkProvider = context.jdkProvider,
-                        compileKLibTaskName = compileKLibTaskName,
+                        compileKLibTaskId = compileKLibTaskName.id,
                         processRunner = context.processRunner,
                     ),
                     dependsOn = buildList {
                         add(compileKLibTaskName)
                         add(CommonTaskType.Dependencies.getTaskName(module, platform, isTest))
                         if (isTest) {
-                            add(JsTaskType.CompileKLib.getTaskName(module, platform, isTest = false))
+                            add(CommonTaskType.Compile.getTaskName(module, platform, isTest = false))
                         }
                     }
                 )
@@ -73,14 +74,14 @@ fun ProjectTasksBuilder.setupJsTasks() {
         .alsoTests()
         .selectModuleDependencies(ResolutionScope.RUNTIME).withEach {
             tasks.registerDependency(
-                JsTaskType.CompileKLib.getTaskName(module, platform, isTest),
-                JsTaskType.CompileKLib.getTaskName(dependsOn, platform, false)
+                CommonTaskType.Compile.getTaskName(module, platform, isTest),
+                CommonTaskType.Compile.getTaskName(dependsOn, platform, false)
             )
 
             if (needsLinkedExecutable(module, isTest)) {
                 tasks.registerDependency(
-                    JsTaskType.Link.getTaskName(module, platform, isTest),
-                    JsTaskType.CompileKLib.getTaskName(dependsOn, platform, false)
+                    NativeTaskType.Link.getTaskName(module, platform, isTest),
+                    CommonTaskType.Compile.getTaskName(dependsOn, platform, false)
                 )
             }
         }
@@ -88,8 +89,3 @@ fun ProjectTasksBuilder.setupJsTasks() {
 
 private fun needsLinkedExecutable(module: AmperModule, isTest: Boolean) =
     module.type.isApplication() || isTest
-
-enum class JsTaskType(override val prefix: String) : PlatformTaskType {
-    CompileKLib("compile"),
-    Link("link"),
-}

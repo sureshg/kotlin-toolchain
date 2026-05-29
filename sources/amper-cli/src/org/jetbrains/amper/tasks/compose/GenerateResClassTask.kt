@@ -26,7 +26,7 @@ class GenerateResClassTask(
     packagingDir: String,
     shouldGenerateCode: Boolean,
     resClassName: String,
-) : PureArtifactTaskBase(buildOutputRoot, incrementalCache) {
+) : PureArtifactTaskBase(buildOutputRoot, incrementalCache, "compose resources > generating code > res class") {
     private val packageName by extraInput(packageName)
     private val makeAccessorsPublic by extraInput(makeAccessorsPublic)
     private val packagingDir by extraInput(packagingDir)

@@ -7,7 +7,7 @@ package org.jetbrains.amper.frontend.plugins
 import org.jetbrains.amper.frontend.AmperModule
 import org.jetbrains.amper.frontend.Fragment
 import org.jetbrains.amper.frontend.MavenCoordinates
-import org.jetbrains.amper.frontend.TaskName
+import org.jetbrains.amper.frontend.TaskId
 import org.jetbrains.amper.frontend.api.Trace
 import org.jetbrains.amper.frontend.api.Traceable
 import org.jetbrains.amper.frontend.api.TraceablePath
@@ -41,7 +41,7 @@ class TaskFromPluginDescription(
     /**
      * Unique internal task name.
      */
-    val backendTaskName: TaskName,
+    val backendTaskId: TaskId,
 
     /**
      * JVM reflection name of the class (Kotlin file facade)

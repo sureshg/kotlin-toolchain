@@ -6,7 +6,7 @@ package org.jetbrains.amper.engine
 
 import org.jetbrains.amper.cli.UserReadableError
 import org.jetbrains.amper.engine.TaskExecutor.TaskExecutionFailed
-import org.jetbrains.amper.frontend.TaskName
+import org.jetbrains.amper.frontend.TaskId
 import org.jetbrains.amper.tasks.TaskResult
 
 /**
@@ -21,7 +21,7 @@ import org.jetbrains.amper.tasks.TaskResult
  * @throws UserReadableError if any of the given [tasks] is not found in the current task graph, or if a task
  * fails with a [UserReadableError].
  */
-suspend fun TaskExecutor.runTasksAndReportOnFailure(tasks: Set<TaskName>): Map<TaskName, TaskResult> {
+suspend fun TaskExecutor.runTasksAndReportOnFailure(tasks: Set<TaskId>): Map<TaskId, TaskResult> {
     val result = run(tasks) // this directly throws in fail-fast mode
     return result.resultsOrThrowCombinedError()
 }
@@ -30,7 +30,7 @@ suspend fun TaskExecutor.runTasksAndReportOnFailure(tasks: Set<TaskName>): Map<T
  * Returns a map of successful task results, or throws an exception if any task failed. In case of failure, the first
  * task exception is rethrown, and all other task failures are provided as suppressed exceptions.
  */
-private fun Map<TaskName, ExecutionResult>.resultsOrThrowCombinedError(): Map<TaskName, TaskResult> {
+private fun Map<TaskId, ExecutionResult>.resultsOrThrowCombinedError(): Map<TaskId, TaskResult> {
     val exceptions = values.filterIsInstance<ExecutionResult.Failure>().map { it.exception }
     if (exceptions.isNotEmpty()) {
         val firstException = exceptions.first()
@@ -42,3 +42,9 @@ private fun Map<TaskName, ExecutionResult>.resultsOrThrowCombinedError(): Map<Ta
             ?: error("All tasks should be successful here, because we throw in case of failure")
     }
 }
+
+/**
+ * Utility property to get [TaskName.id] from a [Task] object.
+ */
+val Task.id
+    get() = taskName.id

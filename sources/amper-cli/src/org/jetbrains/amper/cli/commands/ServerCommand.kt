@@ -34,7 +34,7 @@ import org.jetbrains.amper.cli.logging.useServerValue
 import org.jetbrains.amper.cli.options.choiceWithTypoSuggestion
 import org.jetbrains.amper.cli.withBackend
 import org.jetbrains.amper.frontend.Model
-import org.jetbrains.amper.frontend.TaskName
+import org.jetbrains.amper.frontend.TaskId
 import org.jetbrains.amper.tasks.AllRunSettings
 import org.slf4j.MDC
 import org.tinylog.Level
@@ -42,7 +42,7 @@ import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 @Serializable
-data class Task(val taskHierarchy: List<String>)
+data class Task(val taskId: String)
 
 private const val defaultPort = 8000
 
@@ -117,7 +117,7 @@ internal class ServerCommand : AmperModelAwareCommand(name = "server") {
                                 )
 
                                 withContext(MDCContext()) {
-                                    backend.runTask(task = TaskName.fromHierarchy(task.taskHierarchy))
+                                    backend.runTask(task = TaskId(task.taskId))
                                 }
                             }.onFailure { e ->
                                 when (e) {
