@@ -17,6 +17,8 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import org.jetbrains.amper.concurrency.FileMutexGroup
 import org.jetbrains.amper.concurrency.withRetry
+import org.jetbrains.amper.dependency.resolution.DependencyFileImpl.Companion.HttpHeaders.USER_AGENT
+import org.jetbrains.amper.dependency.resolution.DependencyFileImpl.Companion.HttpHeaders.USER_AGENT_VALUE
 import org.jetbrains.amper.dependency.resolution.buildinfo.DependencyResolutionBuild
 import org.jetbrains.amper.dependency.resolution.diagnostics.CollectingDiagnosticReporter
 import org.jetbrains.amper.dependency.resolution.diagnostics.DependencyResolutionDiagnostics.ContentLengthMismatch
@@ -55,7 +57,6 @@ import java.net.http.HttpResponse
 import java.net.http.HttpResponse.BodyHandlers
 import java.nio.ByteBuffer
 import java.nio.channels.FileChannel
-import java.nio.charset.Charset
 import java.nio.file.AccessDeniedException
 import java.nio.file.FileAlreadyExistsException
 import java.nio.file.Files
@@ -167,9 +168,9 @@ class GradleLocalRepository(internal val filesPath: Path) : LocalRepository {
             Files.list(this@naiveSearchDepth2)
                 .use {
                     it.filter { it.exists() }
-                        .forEach {
-                            if (it.isDirectory() && shouldDescend) addAll(it.naiveSearchDepth2(false, filterBlock))
-                            if (filterBlock(it)) add(it)
+                        .forEach { path ->
+                            if (path.isDirectory() && shouldDescend) addAll(path.naiveSearchDepth2(false, filterBlock))
+                            if (filterBlock(path)) add(path)
                         }
                 }
         }
@@ -227,7 +228,7 @@ internal fun getDependencyFile(dependency: MavenDependencyImpl, file: File, isDo
     getDependencyFile(
         dependency,
         file.url.substringBeforeLast('.'),
-        file.name.substringAfterLast('.',),
+        file.name.substringAfterLast('.'),
         isDocumentation = isDocumentation
     )
 
@@ -476,7 +477,7 @@ open class DependencyFileImpl(
                         getPath().takeIf {
                             isDownloadedWithVerification {
                                 expectedHashBeforeLocking
-                                    ?: getExpectedHash(diagnosticsReporter,ResolutionLevel.NETWORK,)
+                                    ?: getExpectedHash(diagnosticsReporter,ResolutionLevel.NETWORK)
                             }
                         }
                     } else null
@@ -620,7 +621,7 @@ open class DependencyFileImpl(
         isDownloadedWithVerification { expectedHash }
 
     /**
-     * This method verifies checksum if the [expectedHashFn] returns non-null expected hash.
+     * This method verifies checksum if the [expectedHashFn] returns a non-null expected hash.
      * It is intended to be called for the verification during actual file download when it is missing in
      * local storage. It ignores the settings [Settings.verifyChecksumsLocally]
      */
@@ -696,27 +697,11 @@ open class DependencyFileImpl(
         diagnosticsReporter: DiagnosticReporter,
         deleteTempFileOnFinish: Boolean = true,
     ): Path? {
-        for (repository in repositories) {
-            val hasher = expectedHash?.let { Hasher(it.algorithm) }
-            val sha1Hasher = hasher?.takeIf { it.algorithm.name == "sha1" } ?: Hasher(getSha1Algorithm())
-            val hashers = buildList {
-                hasher?.let { add(it) }                     // for calculation of the given hash on download
-                if (hasher !== sha1Hasher) add(sha1Hasher)  // for calculation of `sha1` hash on download additionally
-            }
-            val writers = hashers.map { it.writer } + Writer(channel::write)
-            if (!download(writers, repository, progress, cache, spanBuilderSource, diagnosticsReporter)) {
-                channel.truncate(0)
-                continue
-            }
-            if (hasher != null) {
-                val result = checkHash(hasher, expectedHash, diagnosticsReporter)
-                if (result > VerificationResult.PASSED) {
-                    channel.truncate(0)
-                    continue
-                }
-            }
-
-            return storeToTargetLocation(temp, hasher, cache, repository, diagnosticsReporter) { sha1Hasher.hash }
+        repositoriesLoop@ for (repository in repositories) {
+            val path = tryDownloadFromRepository(
+                repository, channel, temp, progress, cache, spanBuilderSource, expectedHash, diagnosticsReporter
+            )
+            if (path != null) return path
         }
 
         if (deleteTempFileOnFinish) {
@@ -725,6 +710,51 @@ open class DependencyFileImpl(
 
         return null
     }
+
+    private suspend fun tryDownloadFromRepository(
+        repository: MavenRepository,
+        channel: FileChannel,
+        temp: Path,
+        progress: Progress,
+        cache: Cache,
+        spanBuilderSource: SpanBuilderSource,
+        expectedHash: Hash?,      // this should be passed for all files being downloaded, except when hash files are downloaded itself
+        diagnosticsReporter: DiagnosticReporter,
+    ): Path? {
+        for (attempt in 1..3) { // up to 3 attempts
+            val hasher = expectedHash?.let { Hasher(it.algorithm) }
+            val sha1Hasher = hasher?.takeIf { it.algorithm.name == "sha1" } ?: Hasher(getSha1Algorithm())
+            val hashers = buildList {
+                hasher?.let { add(it) }                     // for calculation of the given hash on download
+                if (hasher !== sha1Hasher) add(sha1Hasher)  // for calculation of `sha1` hash on download additionally
+            }
+            val writers = hashers.map { it.writer } + Writer(channel::write)
+
+            if (!download(writers, repository, progress, cache, spanBuilderSource, diagnosticsReporter)) {
+                channel.truncate(0)
+                return null // Download failed, no point in retrying.
+            }
+
+            if (hasher != null) {
+                val result = checkHash(hasher, expectedHash, diagnosticsReporter)
+                if (result == VerificationResult.PASSED) {
+                    // Hash verification passed. Exit the loop and proceed to the store.
+                    return storeToTargetLocation(temp, hasher, cache, repository, diagnosticsReporter) { sha1Hasher.hash }
+                } else {
+                    // Hash verification failed. Truncate and retry if there are remaining attempts.
+                    channel.truncate(0)
+                    if (attempt == 3) {
+                        return null // All attempts failed.
+                    }
+                }
+            } else {
+                // No expected hash, so no verification. Consider it successful.
+                return storeToTargetLocation(temp, hasher, cache, repository, diagnosticsReporter) { sha1Hasher.hash }
+            }
+        }
+        return null // All 3 attempts failed
+    }
+
 
     private suspend fun storeToTargetLocation(
         temp: Path,
@@ -995,10 +1025,10 @@ open class DependencyFileImpl(
                         val request = HttpRequest.newBuilder()
                             .uri(URI.create(url))
                             // User-agent header helps the repository provider to distinguish clients
-                            // and give them a way to contact client authors if they ould like to report misuse or any other issue.
+                            // and give them a way to contact client authors if they would like to report misuse or any other issue.
                             // It is explicitly required by Maven Central, see
                             // https://central.sonatype.org/faq/429-tooling-provider/#identify-your-tool-in-the-user-agent
-                            .header("User-Agent", "KotlinToolchain/${DependencyResolutionBuild.majorAndMinorVersion} (mailto:alexey.barsov@jetbrains.com)")
+                            .header(USER_AGENT, USER_AGENT_VALUE)
                             .withBasicAuth(repository)
                             .timeout(Duration.ofMinutes(2))
                             .GET()
@@ -1176,6 +1206,9 @@ open class DependencyFileImpl(
 
         object HttpHeaders {
             const val CONTENT_LENGTH: String = "Content-Length"
+            const val USER_AGENT = "User-Agent"
+            const val USER_AGENT_VALUE =
+                "KotlinToolchain/${DependencyResolutionBuild.majorAndMinorVersion} (mailto:alexey.barsov@jetbrains.com)"
         }
 
         /**
@@ -1600,13 +1633,5 @@ internal object HttpClientProvider {
         } catch (e: Exception) {
             logger.warn("Failed to close DR context resource", e)
         }
-    }
-}
-
-private class StringWriter(private val charset: Charset): Writer {
-    val sb = StringBuilder()
-
-    override fun write(data: ByteBuffer) {
-        sb.append(charset.decode(data).toString())
     }
 }

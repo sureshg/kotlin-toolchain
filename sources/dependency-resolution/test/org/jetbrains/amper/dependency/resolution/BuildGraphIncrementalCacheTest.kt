@@ -229,24 +229,4 @@ class BuildGraphIncrementalCacheTest : BaseDRTest() {
             .setTracerProvider(tracerProvider)
             .build()
     }
-
-    private fun MavenCoordinates.toUrl(repository: MavenRepository, extension: String = "jar"): String {
-        return StringBuilder(repository.url.trimEnd('/'))
-            .appendToUrl(groupId.replace(".", "/"))
-            .appendToUrl(artifactId)
-            .appendToUrl(version.orUnspecified())
-            .appendToUrl("$artifactId-$version.$extension")
-            .toString()
-    }
-
-    private fun StringBuilder.appendToUrl(suffix: String): StringBuilder {
-        ensureEndsWith("/")
-        append(suffix.trimStart('/'))
-        return this
-    }
-
-    private fun StringBuilder.ensureEndsWith(suffix: String = "/"): StringBuilder {
-        if (!endsWith(suffix)) append(suffix)
-        return this
-    }
 }

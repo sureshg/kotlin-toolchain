@@ -16,24 +16,11 @@ import org.junit.jupiter.api.TestInfo
 import org.junit.jupiter.api.assertNotNull
 import org.junit.jupiter.api.fail
 import org.junit.jupiter.api.io.TempDir
-import java.net.Authenticator
-import java.net.CookieHandler
-import java.net.ProxySelector
-import java.net.URI
-import java.net.http.HttpClient
-import java.net.http.HttpClient.Redirect
-import java.net.http.HttpClient.Version
-import java.net.http.HttpRequest
-import java.net.http.HttpResponse
 import java.nio.file.Path
-import java.time.Duration
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.*
-import java.util.concurrent.Executor
-import javax.net.ssl.SSLContext
-import javax.net.ssl.SSLParameters
 import kotlin.io.path.copyToRecursively
 import kotlin.io.path.createDirectories
 import kotlin.io.path.div
@@ -352,7 +339,7 @@ class ResolveFromMavenLocalTest : BaseDRTest() {
             repositories = repositories,
             cacheBuilder = cacheBuilder
         )
-        val httpClient = createTestHttpClient(
+        val httpClient = TestHttpClient.create(
             filesThatShouldNotBeDownloaded.map { "$urlPrefix/$it" }
         )
         context.resolutionCache.computeIfAbsent(httpClientKey) { httpClient }
@@ -400,7 +387,7 @@ class ResolveFromMavenLocalTest : BaseDRTest() {
         downloadAndAssertFiles(testInfo, root)
 
         val notDownloaded =
-            filesThatMustBeDownloaded.filter { fileName -> httpClient.processedUrls.none { it.path.toString().endsWith(fileName) } }
+            filesThatMustBeDownloaded.filter { fileName -> httpClient.processedUrls.none { it.key.path.toString().endsWith(fileName) } }
         assertTrue(
             notDownloaded.isEmpty(),
             "The following artifacts should have been downloaded, but they were not: ${notDownloaded.joinToString("\n")}"
@@ -430,53 +417,5 @@ class ResolveFromMavenLocalTest : BaseDRTest() {
         localRepository = MavenLocalRepository(cacheRoot.resolve(".m2.cache.test"))
         readOnlyExternalRepositories = emptyList()
         mavenLocalRepository = customMavenLocalRepository
-    }
-
-    private fun createTestHttpClient(urlThatShouldNotBeDownloaded: List<String>): TestHttpClient {
-        val client = HttpClient.newBuilder()
-            .version(Version.HTTP_1_1)
-            .followRedirects(Redirect.NORMAL)
-            .sslContext(SSLContext.getDefault())
-            .connectTimeout(Duration.ofSeconds(20))
-            .build()
-        return TestHttpClient(client, urlThatShouldNotBeDownloaded)
-    }
-
-    class TestHttpClient(val client: HttpClient, private val failOnUrls: List<String>) : HttpClient() {
-
-        val processedUrls: MutableList<URI> = mutableListOf()
-
-        override fun cookieHandler(): Optional<CookieHandler?>? = client.cookieHandler()
-        override fun connectTimeout(): Optional<Duration?>? = client.connectTimeout()
-        override fun followRedirects(): HttpClient.Redirect? = client.followRedirects()
-        override fun proxy(): Optional<ProxySelector?>? = client.proxy()
-        override fun sslContext(): SSLContext? = client.sslContext()
-        override fun sslParameters(): SSLParameters? = client.sslParameters()
-        override fun authenticator(): Optional<Authenticator?>? = client.authenticator()
-        override fun version(): HttpClient.Version? = client.version()
-        override fun executor(): Optional<Executor?>? = client.executor()
-        override fun <T : Any?> send(p0: HttpRequest?, p1: HttpResponse.BodyHandler<T?>?) =
-            withUrlsCheck(p0) { client.send(p0, p1) }
-
-        override fun <T : Any?> sendAsync(p0: HttpRequest?, p1: HttpResponse.BodyHandler<T?>?) =
-            withUrlsCheck(p0) { client.sendAsync(p0, p1) }
-
-        override fun <T : Any?> sendAsync(
-            p0: HttpRequest?,
-            p1: HttpResponse.BodyHandler<T?>?,
-            p2: HttpResponse.PushPromiseHandler<T?>?
-        ) = withUrlsCheck(p0) { client.sendAsync(p0, p1, p2) }
-
-        private fun <T> withUrlsCheck(request: HttpRequest?, block: () -> T): T {
-            request?.let {
-                if (failOnUrls.any { request.uri() == URI.create(it) }) {
-                    fail("Unexpected request to ${request.uri()}")
-                }
-
-                processedUrls.add(request.uri())
-            }
-
-            return block()
-        }
     }
 }

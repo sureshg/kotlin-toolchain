@@ -250,7 +250,7 @@ abstract class BaseDRTest {
         files: List<String>, root: DependencyNode,
         withSources: Boolean = false,
         checkExistence: Boolean = false,// could be set to true only in case dependency files were downloaded by caller already
-        checkAutoAddedDocumentation: Boolean = true // auto-added documentation files are skipped fom check if this flag is false.
+        checkAutoAddedDocumentation: Boolean = true // auto-added documentation files are skipped from check if this flag is false.
     ) {
         root.distinctBfsSequence()
             .filterIsInstance<MavenDependencyNode>()
@@ -280,7 +280,7 @@ abstract class BaseDRTest {
             }
     }
 
-    protected suspend fun assertFiles(
+    protected fun assertFiles(
         testInfo: TestInfo,
         root: DependencyNode,
         withSources: Boolean = false,
@@ -405,10 +405,9 @@ abstract class BaseDRTest {
             val messages = root.children.single().messages.defaultFilterMessages()
             val message = messages.singleOrNull()
             assertNotNull(message, "A single error message is expected, but found: ${messages.toSet()}")
-            assertIs<MessageT>(message, "Unexpected error message")
             assertEquals(
                 severity,
-                message.severity,
+                assertIs<MessageT>(message, "Unexpected error message").severity,
                 "Unexpected severity of the error message"
             )
             return message
@@ -421,7 +420,7 @@ abstract class BaseDRTest {
             transitively: Boolean = false
         ) {
             val nodes = if (transitively) root.distinctBfsSequence() else sequenceOf(root)
-            val messages = nodes.flatMap{ it.children.flatMap { it.messages.defaultFilterMessages() } }
+            val messages = nodes.flatMap{ node -> node.children.flatMap { it.messages.defaultFilterMessages() } }
             val message = messages.singleOrNull()
             assertNotNull(message, "A single error message is expected, but found: ${messages.toSet()}")
             assertEquals(
@@ -435,5 +434,25 @@ abstract class BaseDRTest {
                 "Unexpected severity of the error message"
             )
         }
+    }
+
+    protected fun MavenCoordinates.toUrl(repository: MavenRepository, extension: String = "jar"): String {
+        return StringBuilder(repository.url.trimEnd('/'))
+            .appendToUrl(groupId.replace(".", "/"))
+            .appendToUrl(artifactId)
+            .appendToUrl(version.orUnspecified())
+            .appendToUrl("$artifactId-$version.$extension")
+            .toString()
+    }
+
+    private fun StringBuilder.appendToUrl(suffix: String): StringBuilder {
+        ensureEndsWith("/")
+        append(suffix.trimStart('/'))
+        return this
+    }
+
+    private fun StringBuilder.ensureEndsWith(suffix: String = "/"): StringBuilder {
+        if (!endsWith(suffix)) append(suffix)
+        return this
     }
 }
