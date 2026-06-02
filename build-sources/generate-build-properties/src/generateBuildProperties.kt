@@ -16,12 +16,13 @@ import org.jetbrains.amper.plugins.TaskAction
 import java.nio.file.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
+import kotlin.io.path.isDirectory
 import kotlin.io.path.readBytes
 import kotlin.io.path.writeBytes
 
 @TaskAction(ExecutionAvoidance.Disabled)
 fun generateBuildProperties(
-    @Input dotGitDirectory: Path, // it won't track the whole directory because we disabled execution avoidance
+    @Input dotGitPath: Path, // it won't track the whole directory because we disabled execution avoidance
     @Output taskOutputDirectory: Path,
     version: String?,
     classSimpleName: String,
@@ -35,14 +36,21 @@ fun generateBuildProperties(
 
     // .git is usually a directory, but can be a file in the case when `git worktree add` was used so exists check
     // is sufficient.
-    check(dotGitDirectory.exists()) {
-        "Git root doesn't exist: $dotGitDirectory"
+    check(dotGitPath.exists()) {
+        "Git root doesn't exist: $dotGitPath"
     }
 
-    // We run without global Git config to avoid issues with people who use config parameters that are not
-    // supported by JGit. For example, the 'patience' diff algorithm isn't supported.
+    val actualDotGitRepository = if (dotGitPath.isDirectory()) {
+        dotGitPath
+    } else {
+        // if .git is a file, assume it's a worktree and use work-tree directory as a Git repository root
+        dotGitPath.parent
+    }
+
+    // We run without global Git config to avoid issues with people who use config parameters that JGit does not
+    // support. For example, the 'patience' diff algorithm isn't supported.
     val (commitHash, commitShortHash, commitDate) = runWithoutGlobalGitConfig {
-        Git.open(dotGitDirectory.toFile()).use { git ->
+        Git.open(actualDotGitRepository.toFile()).use { git ->
             val repo = git.repository
             val head = repo.refDatabase.getReflogReader("HEAD").lastEntry
             val shortHash = repo.newObjectReader().use { it.abbreviate(head.newId).name() }
