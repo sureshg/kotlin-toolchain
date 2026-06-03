@@ -55,7 +55,7 @@ up_to_date_file="$script_dir/build/up-to-date-from-sources-wrapper.txt"
 current="$(current_state)"
 if [ ! -f "$up_to_date_file" ] || [ "$(cat "$up_to_date_file")" != "$current" ]; then
   # Amper needs a published Amper Android Gradle plugin support for the delegated Gradle builds
-  (cd "$script_dir" && ./kotlin --log-level=warn task :amper-cli:buildUnpacked@amper-distribution && ./kotlin --log-level=warn publish -m amper-android-gradle-plugin mavenLocal)
+  (cd "$script_dir" && ./kotlin --log-level=warn do buildUnpackedDistribution && ./kotlin --log-level=warn publish -m amper-android-gradle-plugin mavenLocal)
   current_state >"$up_to_date_file"
 
   if [ -n "$TERM" ] && tput clear >/dev/null 2>&1; then

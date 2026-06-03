@@ -22,7 +22,7 @@ pushd "%~dp0"
 if errorlevel 1 goto fail
 
 echo Building Kotlin Toolchain distribution from sources...
-call kotlin.bat --log-level=warn task :amper-cli:buildUnpacked@amper-distribution
+call kotlin.bat --log-level=warn do buildUnpackedDistribution
 if errorlevel 1 goto fail
 
 echo Publishing Kotlin Toolchain Android support plugin for delegated Gradle builds...

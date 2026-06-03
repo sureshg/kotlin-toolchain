@@ -71,6 +71,9 @@ commands:
   - name: uploadAmperDistributionLocal
     performedBy: uploadLocal
 
+  - name: buildUnpackedDistribution
+    performedBy: buildUnpacked
+
   - buildSdkmanArchive
 
   - installLocalDemoBrewFormula
