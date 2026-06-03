@@ -49,6 +49,7 @@ internal fun validateAndReportMavenCoordinates(
     parts.forEach { part ->
         try {
             // It throws InvalidPathException in case coordinates contain some restricted symbols.
+            @Suppress("RETURN_VALUE_NOT_USED_COERCION")
             Path(part)
         } catch (e: InvalidPathException) {
             reporter.reportMessage(MavenCoordinatesShouldBuildValidPath(origin, coordinates, part, e.toString()))
