@@ -230,34 +230,34 @@ class AmperBuildTest : AmperCliTestBase() {
         val filePath = Path("src/main.kt").pathString
 
         result.assertStderrContains("""
-              ╭─ ERROR: Cannot infer type for type parameter 'B'. Specify it explicitly.
-              │ → $filePath:8:9 (kotlin-diagnostics-errors)
-              │
-            8 │     "a" to unknownValue
-              │         ⌃⌃
-              ╰─
-        """.trimIndent())
+           |    ╭─ ERROR: Cannot infer type for type parameter 'B'. Specify it explicitly.
+           |    │ → $filePath:8:9 (kotlin-diagnostics-errors)
+           |    │
+           |  8 │     "a" to unknownValue
+           |    │         ⌃⌃
+           |    ╰─
+        """.trimMargin())
 
         result.assertStderrContains("""
-              ╭─ ERROR: Unresolved reference 'unknownValue'.
-              │ → $filePath:8:12 (kotlin-diagnostics-errors)
-              │
-            8 │     "a" to unknownValue
-              │            ⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃
-              ╰─
-        """.trimIndent())
+           |    ╭─ ERROR: Unresolved reference 'unknownValue'.
+           |    │ → $filePath:8:12 (kotlin-diagnostics-errors)
+           |    │
+           |  8 │     "a" to unknownValue
+           |    │            ⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃
+           |    ╰─
+        """.trimMargin())
 
         result.assertStderrContains("""
-               ╭─ ERROR: Argument type mismatch: actual type is 'String', but 'Int' was expected.
-               │ → $filePath:10:9 (kotlin-diagnostics-errors)
-               │
-               │         ⌄⌄⌄
-            10 │     foo(""${'"'}
-            11 │         multiline
-            12 │     ""${'"'}.trimIndent())
-               │ ⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃
-               ╰─
-        """.trimIndent())
+           |    ╭─ ERROR: Argument type mismatch: actual type is 'String', but 'Int' was expected.
+           |    │ → $filePath:10:9 (kotlin-diagnostics-errors)
+           |    │
+           |    │         ⌄⌄⌄
+           | 10 │     foo(""${'"'}
+           | 11 │         multiline
+           | 12 │     ""${'"'}.trimIndent())
+           |    │ ⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃
+           |    ╰─
+        """.trimMargin())
     }
 
     @Test
@@ -266,25 +266,25 @@ class AmperBuildTest : AmperCliTestBase() {
         val result = runCli(projectDir = projectContext, "build")
         val filePath = Path("src/main.kt").pathString
         result.assertStdoutContains("""
-              ╭─ WARNING: Unused return value of 'foo'.
-              │ → $filePath:9:5 (kotlin-diagnostics-warnings)
-              │
-            9 │     foo()
-              │     ⌃⌃⌃
-              ╰─
-        """.trimIndent())
+           |    ╭─ WARNING: Unused return value of 'foo'.
+           |    │ → $filePath:9:5 (kotlin-diagnostics-warnings)
+           |    │
+           |  9 │     foo()
+           |    │     ⌃⌃⌃
+           |    ╰─
+        """.trimMargin())
 
         result.assertStdoutContains("""
-               ╭─ WARNING: Expression is unused.
-               │ → $filePath:11:5 (kotlin-diagnostics-warnings)
-               │
-               │     ⌄⌄⌄
-            11 │     ""${'"'}
-            12 │         multiline
-            13 │     ""${'"'}
-               │ ⌃⌃⌃⌃⌃⌃⌃
-               ╰─
-        """.trimIndent())
+           |    ╭─ WARNING: Expression is unused.
+           |    │ → $filePath:11:5 (kotlin-diagnostics-warnings)
+           |    │
+           |    │     ⌄⌄⌄
+           | 11 │     ""${'"'}
+           | 12 │         multiline
+           | 13 │     ""${'"'}
+           |    │ ⌃⌃⌃⌃⌃⌃⌃
+           |    ╰─
+        """.trimMargin())
     }
 
     // AMPER-5259

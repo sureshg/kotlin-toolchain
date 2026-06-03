@@ -51,7 +51,8 @@ internal class TerminalCompilerMessageRenderer(
         terminal.println(buildString {
             if (location != null && snippet != null) {
                 val maxLineNo = location.line + snippet.size - 1
-                val gutterWidth = maxLineNo.toString().length
+                // At least 3, so most diagnostics are aligned
+                val gutterWidth = maxLineNo.toString().length.coerceAtLeast(3)
                 val borderPrefix = " ".repeat(gutterWidth + 1)
                 val isMultiLine = snippet.size > 1
                 append(muted("$borderPrefix╭─ "))
