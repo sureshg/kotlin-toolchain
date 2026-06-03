@@ -4,10 +4,13 @@
 
 package org.jetbrains.amper.tasks.web
 
+import com.github.ajalt.mordant.terminal.Terminal
 import kotlinx.serialization.json.Json
 import org.jetbrains.amper.ProcessRunner
 import org.jetbrains.amper.cli.AmperProjectTempRoot
+import org.jetbrains.amper.cli.logging.infoNoConsole
 import org.jetbrains.amper.cli.telemetry.setAmperModule
+import org.jetbrains.amper.cli.terminal.printCompilationSuccess
 import org.jetbrains.amper.cli.userReadableError
 import org.jetbrains.amper.compilation.KotlinArtifactsDownloader
 import org.jetbrains.amper.compilation.KotlinCompilationType
@@ -73,6 +76,7 @@ internal abstract class WebCompileKlibTask(
     private val kotlinArtifactsDownloader: KotlinArtifactsDownloader =
         KotlinArtifactsDownloader(userCacheRoot, incrementalCache),
     private val processRunner: ProcessRunner,
+    private val terminal: Terminal,
 ) : ArtifactTaskBase(), BuildTask {
 
     abstract val expectedPlatform: Platform
@@ -124,8 +128,6 @@ internal abstract class WebCompileKlibTask(
 
         val kotlinUserSettings = fragments.singleLeafFragment().serializableKotlinSettings()
 
-        logger.debug("${expectedPlatform.name} compile klib '${module.userReadableName}' -- ${fragments.joinToString(" ") { it.name }}")
-
         val jdk = jdkProvider.getJdkOrUserError(module.jdkSettings)
 
         val libraryPaths = compiledKlibModuleDependencies + externalDependencies
@@ -166,6 +168,8 @@ internal abstract class WebCompileKlibTask(
                 return@execute IncrementalCache.ExecutionResult(emptyList())
             }
 
+            logger.infoNoConsole("Compiling module '${module.userReadableName}' for platform '${platform.pretty}'...")
+
             compileSources(
                 jdk = jdk,
                 kotlinUserSettings = kotlinUserSettings,
@@ -176,7 +180,7 @@ internal abstract class WebCompileKlibTask(
                 friendPaths = listOfNotNull(productionCompileResult?.compiledKlib),
             )
 
-            logger.info("Compiling module '${module.userReadableName}' for platform '${platform.pretty}'...")
+            terminal.printCompilationSuccess(module, platform, isTest)
 
             return@execute IncrementalCache.ExecutionResult(listOf(artifact))
         }.outputFiles.singleOrNull()

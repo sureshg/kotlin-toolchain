@@ -13,8 +13,10 @@ import org.jetbrains.amper.ProcessRunner
 import org.jetbrains.amper.cli.AmperBuildOutputRoot
 import org.jetbrains.amper.cli.AmperProjectRoot
 import org.jetbrains.amper.cli.AmperProjectTempRoot
+import org.jetbrains.amper.cli.logging.infoNoConsole
 import org.jetbrains.amper.cli.telemetry.setAmperModule
 import org.jetbrains.amper.cli.telemetry.setFragments
+import org.jetbrains.amper.cli.terminal.printCompilationSuccess
 import org.jetbrains.amper.cli.userReadableError
 import org.jetbrains.amper.compilation.CombiningKotlinLogger
 import org.jetbrains.amper.compilation.CompilationUserSettings
@@ -227,6 +229,7 @@ internal class JvmCompileTask(
             outputPaths.add(compiledJvmArtifact.kotlinCompilerOutputRoot.toAbsolutePath())
 
             if (nonEmptySourceDirs.isNotEmpty()) {
+                logger.infoNoConsole("Compiling module '${module.userReadableName}' for platform '${platform.pretty}'...")
                 compileSources(
                     jdk = jdk,
                     sourceDirectories = nonEmptySourceDirs,
@@ -241,6 +244,7 @@ internal class JvmCompileTask(
                 if (javaAnnotationProcessorsGeneratedDir.exists()) {
                     outputPaths.add(javaAnnotationProcessorsGeneratedDir)
                 }
+                terminal.printCompilationSuccess(module, platform, isTest)
             } else {
                 logger.debug("No sources were found for ${fragments.identificationPhrase()}, skipping compilation")
             }
@@ -333,6 +337,8 @@ internal class JvmCompileTask(
         additionalSourceRoots: List<SourceRoot>,
         friendPaths: List<Path>,
     ) {
+        logger.debug("Compiling Kotlin/JVM sources for module '${module.userReadableName}'...")
+
         val kotlinToolchains = KotlinToolchains.loadMaybeCachedImpl(
             kotlinVersion = userSettings.kotlin.compilerVersion,
             downloader = kotlinArtifactsDownloader,
@@ -380,7 +386,6 @@ internal class JvmCompileTask(
             .setListAttribute("compiler-args", compilerArgs)
             .setAttribute("compiler-version", userSettings.kotlin.compilerVersion)
             .use {
-                logger.info("Compiling module '${module.userReadableName}' for platform '${platform.pretty}'...")
                 // TODO capture compiler errors/warnings in incremental result
                 // TODO maybe share the build session with the whole Amper build (across all JVM compile tasks)?
                 kotlinToolchains.createBuildSession().use {
@@ -423,6 +428,8 @@ internal class JvmCompileTask(
         tempRoot: AmperProjectTempRoot,
         processorGeneratedDir: Path,
     ) {
+        logger.debug("Compiling Java sources for module '${module.userReadableName}'...")
+
         // javac arguments that are common for plain javac and JIC
         val commonArgs = buildList {
             if (userSettings.jvmRelease != null) {

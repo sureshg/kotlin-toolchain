@@ -1,0 +1,49 @@
+/*
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+package org.jetbrains.amper.cli.terminal
+
+import com.github.ajalt.mordant.terminal.Terminal
+import org.jetbrains.amper.cli.logging.withoutConsoleLogging
+import org.jetbrains.amper.frontend.AmperModule
+import org.jetbrains.amper.frontend.Platform
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import org.slf4j.event.Level
+
+// TODO this requires a terminal in the compilation tasks, which is not ideal. We should move to a different approach
+//   to report CLI-agnostic structured events from tasks and format them in the CLI module.
+/**
+ * Prints a nicely formatted compilation success message to the terminal, and logs a plain version of this message to
+ * the info logs file.
+ */
+internal fun Terminal.printCompilationSuccess(module: AmperModule, platform: Platform, isTest: Boolean) {
+    val themedModuleName = theme.info(module.userReadableName)
+    val themedPlatformTest = theme.muted("[${platform.schemaValue}${if (isTest) " tests" else ""}]")
+    printCompletedMilestone("Compilation successful for $themedModuleName $themedPlatformTest")
+}
+
+/**
+ * Prints a message with a green checkmark to the terminal (without terminal logging), and logs the message at info
+ * level to the log file.
+ */
+internal fun Terminal.printCompletedMilestone(message: String) {
+    val messageWithCheck = buildString {
+        append(theme.success("✓ "))
+        append(message)
+    }
+    printAndLog(terminalMessage = messageWithCheck, logMessage = message.filterAnsiCodes())
+}
+
+private fun Terminal.printAndLog(
+    terminalMessage: Any,
+    logMessage: String,
+    logLevel: Level = Level.INFO,
+    logger: Logger = LoggerFactory.getLogger("Events"),
+) {
+    println(terminalMessage)
+    withoutConsoleLogging {
+        logger.atLevel(logLevel).log(logMessage)
+    }
+}

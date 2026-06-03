@@ -216,6 +216,10 @@ class AmperJavaBuildTest : AmperCliTestBase() {
 
     private fun AmperCliResult.realStdout(): String {
         // remove the last line from the logger
-        return stdoutClean.substringBefore("Process exited with exit code").substringBeforeLast("\n")
+        return stdoutClean
+            .lineSequence()
+            .dropWhile { "✓ Compilation successful" in it }
+            .takeWhile { "Process exited with exit code" !in it }
+            .joinToString("\n")
     }
 }

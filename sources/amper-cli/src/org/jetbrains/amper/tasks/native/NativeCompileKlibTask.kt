@@ -4,9 +4,13 @@
 
 package org.jetbrains.amper.tasks.native
 
+import com.github.ajalt.mordant.terminal.Terminal
 import kotlinx.serialization.json.Json
 import org.jetbrains.amper.ProcessRunner
 import org.jetbrains.amper.cli.AmperProjectTempRoot
+import org.jetbrains.amper.cli.logging.infoNoConsole
+import org.jetbrains.amper.cli.logging.withoutConsoleLogging
+import org.jetbrains.amper.cli.terminal.printCompilationSuccess
 import org.jetbrains.amper.compilation.KotlinArtifactsDownloader
 import org.jetbrains.amper.compilation.KotlinCompilationType
 import org.jetbrains.amper.compilation.downloadCompilerPlugins
@@ -59,6 +63,7 @@ internal class NativeCompileKlibTask(
         KotlinArtifactsDownloader(userCacheRoot, incrementalCache),
     private val jdkProvider: JdkProvider,
     private val processRunner: ProcessRunner,
+    private val terminal: Terminal,
 ): ArtifactTaskBase(), BuildTask {
     init {
         require(platform.isLeaf)
@@ -171,9 +176,11 @@ internal class NativeCompileKlibTask(
                 include = null,
             )
 
-            logger.info("Compiling module '${module.userReadableName}' for platform '${platform.pretty}'...")
+            // only for the log file, because animations take care of this
+            logger.infoNoConsole("Compiling module '${module.userReadableName}' for platform '${platform.pretty}'...")
             nativeCompiler.compile(processRunner, args, tempRoot, module)
 
+            terminal.printCompilationSuccess(module, platform, isTest)
             return@execute IncrementalCache.ExecutionResult(listOf(artifact))
         }.outputFiles.singleOrNull()
 

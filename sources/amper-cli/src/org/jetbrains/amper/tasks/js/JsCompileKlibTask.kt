@@ -1,9 +1,10 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.tasks.js
 
+import com.github.ajalt.mordant.terminal.Terminal
 import org.jetbrains.amper.ProcessRunner
 import org.jetbrains.amper.cli.AmperProjectTempRoot
 import org.jetbrains.amper.compilation.KotlinArtifactsDownloader
@@ -36,8 +37,8 @@ internal class JsCompileKlibTask(
     jdkProvider: JdkProvider,
     processRunner: ProcessRunner,
     buildType: BuildType? = null,
-    kotlinArtifactsDownloader: KotlinArtifactsDownloader =
-        KotlinArtifactsDownloader(userCacheRoot, incrementalCache),
+    kotlinArtifactsDownloader: KotlinArtifactsDownloader = KotlinArtifactsDownloader(userCacheRoot, incrementalCache),
+    terminal: Terminal,
 ) : WebCompileKlibTask(
     module,
     platform,
@@ -51,6 +52,7 @@ internal class JsCompileKlibTask(
     buildType,
     kotlinArtifactsDownloader,
     processRunner,
+    terminal,
 ) {
     override val expectedPlatform: Platform
         get() = Platform.JS

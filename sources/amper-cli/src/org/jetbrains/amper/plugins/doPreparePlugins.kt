@@ -9,7 +9,7 @@ import kotlinx.coroutines.coroutineScope
 import org.jetbrains.amper.ProcessRunner
 import org.jetbrains.amper.cli.AmperProjectRoot
 import org.jetbrains.amper.cli.CliProblemReporter
-import org.jetbrains.amper.cli.logging.withoutConsoleLogging
+import org.jetbrains.amper.cli.logging.infoNoConsole
 import org.jetbrains.amper.cli.userReadableError
 import org.jetbrains.amper.cli.widgets.simpleSpinnerProgressIndicator
 import org.jetbrains.amper.frontend.plugins.PluginManifest
@@ -36,9 +36,8 @@ internal suspend fun doPreparePlugins(
         ),
         inputFiles = plugins.keys.toList(),
     ) {
-        withoutConsoleLogging {
-            logger.info("Processing local plugin schema for [${plugins.values.joinToString { it.id }}]...")
-        }
+        logger.infoNoConsole("Processing local plugin schema for [${plugins.values.joinToString { it.id }}]...")
+
         val widgetJob = simpleSpinnerProgressIndicator(terminal, "Pre-processing local plugins (will be cached)")
         try {
             runAmperSchemaProcessor(

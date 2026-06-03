@@ -1,11 +1,13 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.tasks.wasm
 
+import com.github.ajalt.mordant.terminal.Terminal
 import org.jetbrains.amper.ProcessRunner
 import org.jetbrains.amper.cli.AmperProjectTempRoot
+import org.jetbrains.amper.compilation.KotlinArtifactsDownloader
 import org.jetbrains.amper.core.AmperUserCacheRoot
 import org.jetbrains.amper.dependency.resolution.ResolutionScope
 import org.jetbrains.amper.engine.TaskName
@@ -22,6 +24,7 @@ import org.jetbrains.amper.tasks.getTaskName
 import org.jetbrains.amper.tasks.native.NativeTaskType
 import org.jetbrains.amper.tasks.web.WebCompileKlibTask
 import org.jetbrains.amper.tasks.web.WebLinkTask
+import org.jetbrains.amper.util.BuildType
 
 internal fun ProjectTasksBuilder.setupWasmTasks(
     platform: Platform,
@@ -36,6 +39,7 @@ internal fun ProjectTasksBuilder.setupWasmTasks(
         tempRoot: AmperProjectTempRoot,
         isTest: Boolean,
         processRunner: ProcessRunner,
+        terminal: Terminal,
     ) -> WebCompileKlibTask,
     createLinkTask: (
         module: AmperModule,
@@ -69,6 +73,7 @@ internal fun ProjectTasksBuilder.setupWasmTasks(
                     context.projectTempRoot,
                     isTest,
                     context.processRunner,
+                    context.terminal,
                 ),
                 dependsOn = buildList {
                     add(CommonTaskType.Dependencies.getTaskName(module, platform, isTest))

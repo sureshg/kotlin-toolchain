@@ -6,7 +6,7 @@ package org.jetbrains.amper.tasks.custom
 
 import com.github.ajalt.mordant.terminal.Terminal
 import org.jetbrains.amper.cli.AmperBuildOutputRoot
-import org.jetbrains.amper.cli.logging.withoutConsoleLogging
+import org.jetbrains.amper.cli.logging.infoNoConsole
 import org.jetbrains.amper.cli.telemetry.setAmperModule
 import org.jetbrains.amper.cli.userReadableError
 import org.jetbrains.amper.engine.TaskGraphExecutionContext
@@ -188,9 +188,7 @@ class TaskFromPlugin(
                     StandardStreamsCapture.capturing(
                         onStderrLine = { logger.error("${tagForLogs()} $it") },
                         onStdoutLine = {
-                            withoutConsoleLogging {
-                                logger.info(it)
-                            }
+                            logger.infoNoConsole(it)
                             val fullTaskId = terminal.theme.muted(tagForLogs())
                             terminal.println("$fullTaskId $it")
                         },
