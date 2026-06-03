@@ -406,7 +406,8 @@ class ModuleDependencies private constructor(
                         } else {
                             val cacheInputValues = mapOf(
                                 "userCacheRoot" to moduleGraphs.first().context.settings.fileCache.amperCache.pathString,
-                                "dependencies" to graphEntryKeys.joinToString("|") { it.computeKey() ?: "null" },
+                                @Suppress("REDUNDANT_SINGLE_EXPRESSION_STRING_TEMPLATE") // KT-86705
+                                "dependencies" to graphEntryKeys.joinToString("|") { "${it.computeKey()}" },
                             )
 
                             incrementalCache.execute(
