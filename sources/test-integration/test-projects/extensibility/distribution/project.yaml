@@ -5,4 +5,4 @@ modules:
   - distribution-plugin
 
 plugins:
-  - ./distribution-plugin
+  - //distribution-plugin

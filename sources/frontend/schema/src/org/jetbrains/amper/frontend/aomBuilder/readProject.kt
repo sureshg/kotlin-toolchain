@@ -7,6 +7,7 @@ package org.jetbrains.amper.frontend.aomBuilder
 import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.amper.frontend.FrontendPathResolver
 import org.jetbrains.amper.frontend.contexts.EmptyContexts
+import org.jetbrains.amper.frontend.project.AmperFrontendProjectRoot
 import org.jetbrains.amper.frontend.schema.Project
 import org.jetbrains.amper.frontend.tree.TreeRefiner
 import org.jetbrains.amper.frontend.tree.completeTree
@@ -15,13 +16,12 @@ import org.jetbrains.amper.frontend.tree.reading.readTree
 import org.jetbrains.amper.frontend.types.generated.*
 import org.jetbrains.amper.problems.reporting.ProblemReporter
 
-context(problemReporter: ProblemReporter)
+context(_: ProblemReporter, _: FrontendPathResolver, _: AmperFrontendProjectRoot)
 internal fun readProject(
-    resolver: FrontendPathResolver,
     projectFile: VirtualFile,
-): Project = context(resolver, problemReporter) {
+): Project {
     val projectTree = readTree(projectFile, DeclarationOfProject)
-    TreeRefiner().refineTree(projectTree, EmptyContexts)
+    return TreeRefiner().refineTree(projectTree, EmptyContexts)
         .completeTree()?.instance<Project>()
         ?: error("No required values must be in the project schema!")
 }

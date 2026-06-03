@@ -19,6 +19,7 @@ import org.jetbrains.amper.frontend.contexts.PathInheritance
 import org.jetbrains.amper.frontend.contexts.plus
 import org.jetbrains.amper.frontend.diagnostics.TemplateApplicationLoop
 import org.jetbrains.amper.frontend.plus
+import org.jetbrains.amper.frontend.project.AmperFrontendProjectRoot
 import org.jetbrains.amper.frontend.project.AmperProjectContext
 import org.jetbrains.amper.frontend.schema.Template
 import org.jetbrains.amper.frontend.tree.ListNode
@@ -46,6 +47,7 @@ context(_: ProblemReporter)
 fun AmperProjectContext.readEffectiveCatalogForTemplate(templateFile: VirtualFile): VersionCatalog =
     context(
         frontendPathResolver,
+        projectRoot,
         // We can use default typing context for this purpose because currently nothing can introduce catalogs apart
         // from builtin functionality. When bundled plugin templates are implemented, we'll need to pass the
         // plugin-aware context here.
@@ -89,7 +91,7 @@ internal data class ModuleTreesReadResult(
  * @return [ModuleTreesReadResult] containing all the trees and the graph of template applications
  * @see ModuleTreesReadResult
  */
-context(problemReporter: ProblemReporter, types: SchemaTypingContext, pathResolver: FrontendPathResolver)
+context(_: ProblemReporter, types: SchemaTypingContext, _: FrontendPathResolver, _: AmperFrontendProjectRoot)
 internal fun readWithTemplates(
     file: VirtualFile,
     fileDeclaration: SchemaObjectDeclaration,
@@ -115,7 +117,7 @@ internal fun readWithTemplates(
 
         val templateTree = templatesCache.getOrPut(templatePath) {
             val templateVirtual = templatePath.asVirtualOrNull() ?: continue@loop
-            val psiFile = pathResolver.toPsiFile(templateVirtual) ?: continue@loop
+            val psiFile = templateVirtual.asPsiOrNull() ?: continue@loop
             readTree(templateVirtual, types.templateDeclaration, PathCtx(templatePath, psiFile.asTrace()))
         }
         allTemplateTrees.add(templateTree)

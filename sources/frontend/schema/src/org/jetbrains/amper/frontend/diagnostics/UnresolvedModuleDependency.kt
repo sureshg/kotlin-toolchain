@@ -21,7 +21,7 @@ import kotlin.io.path.relativeTo
 
 class UnresolvedModuleDependency(
     val dependency: InternalDependency,
-    val moduleDirectory: Path,
+    val projectRoot: Path,
     val possibleCorrectPath: Path?,
 ) : PsiBuildProblem(Level.Error, BuildProblemType.UnresolvedReference) {
 
@@ -32,7 +32,7 @@ class UnresolvedModuleDependency(
 
     override val message: @Nls String
         get() {
-            val relativePath = dependency.path.relativeTo(moduleDirectory)
+            val relativePath = dependency.path.relativeTo(projectRoot)
             val relativePathString = relativePath.formatModulePath()
 
             return if (possibleCorrectPath == null) {
@@ -53,10 +53,6 @@ class UnresolvedModuleDependency(
     val possibleCorrectPathString: String? = possibleCorrectPath?.formatModulePath()
 
     private fun Path.formatModulePath(): String {
-        val pathString = pathString
-        // If a relative path starts from the current folder, it should be prepended with ./ to distinguish it from Maven dependency
-        val relativeToCurrent = if (pathString.startsWith(".")) pathString else "./$pathString"
-        // Module paths are always using / as delimiter
-        return relativeToCurrent.replace('\\', '/')
+        return "//" + pathString.removePrefix(".").removePrefix("./")
     }
 }

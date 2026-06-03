@@ -1,5 +1,5 @@
 product: jvm/lib
 
 dependencies:
-  - ../core
+  - //core
   - net.freeutils:jcharset:2.1

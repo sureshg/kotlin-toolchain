@@ -14,6 +14,7 @@ import org.jetbrains.amper.frontend.contexts.PathCtx
 import org.jetbrains.amper.frontend.contexts.PathInheritance
 import org.jetbrains.amper.frontend.contexts.plus
 import org.jetbrains.amper.frontend.contexts.tryReadMinimalModule
+import org.jetbrains.amper.frontend.project.AmperFrontendProjectRoot
 import org.jetbrains.amper.frontend.tree.TreeNode
 import org.jetbrains.amper.frontend.tree.TreeRefiner
 import org.jetbrains.amper.frontend.tree.jsonDump
@@ -90,7 +91,8 @@ fun FrontendTestCaseBase.readModuleWithTemplatesAndGetProblems(
     val pathResolver = TestFrontendPathResolver()
     val inputPath = base.resolve("$caseName.yaml").absolute()
     val inputVirtual = pathResolver.loadVirtualFile(inputPath)
-    context(problemReporter, pathResolver, types) {
+    val root = AmperFrontendProjectRoot(pathResolver.loadVirtualFile(base))
+    val _ = context(problemReporter, pathResolver, types, root) {
         val treeBuilder = readAndRefineModuleWithTemplates(selectedContexts)
         treeBuilder(inputVirtual)
     }
@@ -130,7 +132,7 @@ internal open class TreeTestRun(
 
     protected fun doReadTree(inputPath: Path): TreeNode {
         val inputVirtual = pathResolver.loadVirtualFile(inputPath)
-        val readTree = context(problemReporter, pathResolver, types) {
+        val readTree = context(problemReporter, pathResolver, types, projectContext.projectRoot) {
             treeBuilder(inputVirtual)
         }
         assertNotNull(readTree)
@@ -145,7 +147,8 @@ internal open class TreeTestRun(
 }
 
 internal typealias TreeBuilderFunction =
-        context(ProblemReporter, SchemaTypingContext, FrontendPathResolver) (VirtualFile) -> TreeNode
+        context(ProblemReporter, SchemaTypingContext, FrontendPathResolver, AmperFrontendProjectRoot) (VirtualFile)
+        -> TreeNode
 
 /**
  * Test run that:

@@ -13,6 +13,7 @@ import org.jetbrains.amper.problems.reporting.BuildProblemType
 import org.jetbrains.amper.problems.reporting.ProblemReporter
 import java.nio.file.InvalidPathException
 import kotlin.io.path.Path
+import kotlin.io.path.div
 
 context(_: Contexts, _: ParsingConfig, _: ProblemReporter)
 internal fun parseScalar(scalar: YamlValue.Scalar, type: SchemaType.ScalarType): TreeNode = when (type) {
@@ -53,7 +54,11 @@ internal fun parseScalar(scalar: YamlValue.Scalar, type: SchemaType.ScalarType):
 context(_: Contexts, config: ParsingConfig, _: ProblemReporter)
 private fun parsePath(scalar: YamlValue.Scalar): TreeNode {
     var path = try {
-        Path(scalar.textValue)
+        val textValue = scalar.textValue
+        if (textValue.startsWith("//")) {
+            // Path relative to the project root
+            config.rootPath / Path(textValue.removePrefix("//"))
+        } else Path(textValue)
     } catch (e: InvalidPathException) {
         reportParsing(scalar, TreeDiagnosticId.InvalidPath, "validation.types.invalid.path", e.message)
         return errorNode(scalar, SchemaType.PathType)

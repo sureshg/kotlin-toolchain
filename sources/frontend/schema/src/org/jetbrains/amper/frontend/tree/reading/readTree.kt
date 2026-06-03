@@ -16,6 +16,7 @@ import org.jetbrains.amper.frontend.asBuildProblemSource
 import org.jetbrains.amper.frontend.contexts.Context
 import org.jetbrains.amper.frontend.contexts.Contexts
 import org.jetbrains.amper.frontend.messages.originalFilePath
+import org.jetbrains.amper.frontend.project.AmperFrontendProjectRoot
 import org.jetbrains.amper.frontend.reportBundleError
 import org.jetbrains.amper.frontend.tree.MappingNode
 import org.jetbrains.amper.frontend.tree.TreeDiagnosticId
@@ -33,14 +34,13 @@ import kotlin.io.path.absolute
 /**
  * Read a tree from the given [file], using the [type] as the schema.
  *
- * @param reportUnknowns whether to report unknown properties inside object mappings.
- *  If `false`, such properties are silently ignored.
+ * @param unknownPropertiesMode whether to report unknown properties inside object mappings.
  * @param referenceParsingMode how to treat Amper references (`${...}`) syntax in the file. See [ReferencesParsingMode].
  * @param parseContexts whether to treat `@<id>` at the end of the object keys as contexts.
  * @param contexts the contexts of the whole file, e.g., a template context.
  */
 @UsedInIdePlugin
-context(_: ProblemReporter, _: FrontendPathResolver)
+context(_: ProblemReporter, _: FrontendPathResolver, projectRoot: AmperFrontendProjectRoot)
 fun readTree(
     file: YAMLFile,
     type: SchemaType.ObjectType,
@@ -52,6 +52,7 @@ fun readTree(
     val rootContexts = contexts.toSet()
     return file.childrenOfType<YAMLDocument>().firstOrNull()?.topLevelValue?.let {
         val config = ParsingConfig(
+            rootPath = projectRoot.path,
             basePath = checkNotNull(file.originalFilePath).parent.absolute(),
             unknownPropertiesMode = unknownPropertiesMode,
             supportContexts = parseContexts,
@@ -66,7 +67,7 @@ fun readTree(
     } ?: MappingNode(emptyList(), type.declaration, file.asTrace(), rootContexts)
 }
 
-context(_: ProblemReporter, _: FrontendPathResolver)
+context(_: ProblemReporter, _: FrontendPathResolver, _: AmperFrontendProjectRoot)
 internal fun readTree(
     file: VirtualFile,
     declaration: SchemaObjectDeclaration,
@@ -92,6 +93,7 @@ internal fun readTree(
 }
 
 internal class ParsingConfig(
+    val rootPath: Path,
     val basePath: Path,
     val unknownPropertiesMode: UnknownPropertiesParsingMode,
     val referenceParsingMode: ReferencesParsingMode,

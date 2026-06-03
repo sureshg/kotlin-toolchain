@@ -4,6 +4,7 @@
 
 package org.jetbrains.amper.frontend.helpers
 
+import org.jetbrains.amper.frontend.project.AmperFrontendProjectRoot
 import org.jetbrains.amper.problems.reporting.CollectingProblemReporter
 import org.jetbrains.amper.test.golden.GoldFileTest
 import java.nio.file.Path
@@ -29,13 +30,12 @@ abstract class FrontendTest(
     protected val buildDir by lazy { testCase.buildDir.absolute() }
 
     protected val inputFile by lazy { pathResolver.loadVirtualFile(inputPath) }
-    protected val buildDirFile by lazy { pathResolver.loadVirtualFile(buildDir) }
 
     /**
      * Default test project context.
      */
     protected val projectContext = TestProjectContext(
-        projectRootDir = buildDirFile,
+        projectRoot = AmperFrontendProjectRoot(pathResolver.loadVirtualFile(base)),
         amperModuleFiles = listOf(inputFile),
         frontendPathResolver = pathResolver,
     )

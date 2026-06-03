@@ -191,7 +191,7 @@ private fun parseAndDiagnosePluginTree(
     }
 
     val proxyReporter = CollectingProblemReporter()
-    context(proxyReporter, projectContext.frontendPathResolver) {
+    context(proxyReporter, projectContext.frontendPathResolver, projectContext.projectRoot) {
         val tree = readTree(
             file = pluginFile,
             declaration = pluginYamlDeclaration,

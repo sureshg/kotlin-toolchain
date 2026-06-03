@@ -1,4 +1,4 @@
 product: jvm/app
 
 dependencies:
-  - <![Error] Cannot find module file in `./module2`. Did you mean `./inner/module2`?!>./module2<!>
+  - <![Error] Cannot find module file in `//unresolved-module-with-hint/module2`. Did you mean `//unresolved-module-with-hint/inner/module2`?!>./module2<!>

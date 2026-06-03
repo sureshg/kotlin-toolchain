@@ -7,6 +7,7 @@ package org.jetbrains.amper.frontend.plugins
 import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.amper.frontend.FrontendPathResolver
 import org.jetbrains.amper.frontend.contexts.EmptyContexts
+import org.jetbrains.amper.frontend.project.AmperFrontendProjectRoot
 import org.jetbrains.amper.frontend.schema.ProductType
 import org.jetbrains.amper.frontend.tree.TreeRefiner
 import org.jetbrains.amper.frontend.tree.completeTree
@@ -29,11 +30,11 @@ data class PluginManifest(
  *
  * @return plugin manifest on the best effort basis or `null` is this `module.yaml` file is not a plugin for sure.
  */
+context(_: FrontendPathResolver, _: AmperFrontendProjectRoot)
 fun parsePluginManifestFromModuleFile(
-    frontendPathResolver: FrontendPathResolver,
     moduleFile: VirtualFile,
 ) : PluginManifest? {
-    context(NoopProblemReporter, frontendPathResolver, SchemaTypingContext()) {
+    context(NoopProblemReporter, SchemaTypingContext()) {
         val pluginModuleTree = readTree(
             file = moduleFile,
             declaration = DeclarationOfMinimalPluginModule,

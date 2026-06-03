@@ -22,7 +22,7 @@ internal class TemplatesTest : FrontendTestCaseBase(Path("testResources") / "tem
         aomTest(
             "templates-adjust-path-test",
             // TODO: Rewrite this test to properly reflect the project structure
-            expectedError = "Cannot find module file in `./some-dep-2`",
+            expectedError = "Cannot find module file in `//inner-dir/some-dep-2`",
         )
     }
 

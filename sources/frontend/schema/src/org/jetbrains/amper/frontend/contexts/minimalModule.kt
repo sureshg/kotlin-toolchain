@@ -14,6 +14,7 @@ import org.jetbrains.amper.frontend.diagnostics.FrontendDiagnosticId
 import org.jetbrains.amper.frontend.keyValueAsBuildProblemSource
 import org.jetbrains.amper.frontend.leaves
 import org.jetbrains.amper.frontend.messages.extractPsiElementOrNull
+import org.jetbrains.amper.frontend.project.AmperFrontendProjectRoot
 import org.jetbrains.amper.frontend.reportBundleError
 import org.jetbrains.amper.frontend.schema.ModuleProduct
 import org.jetbrains.amper.frontend.schema.ProductType
@@ -22,11 +23,9 @@ import org.jetbrains.amper.frontend.tree.completeTree
 import org.jetbrains.amper.frontend.tree.instance
 import org.jetbrains.amper.frontend.tree.reading.UnknownPropertiesParsingMode
 import org.jetbrains.amper.frontend.tree.reading.readTree
-import org.jetbrains.amper.frontend.types.SchemaTypingContext
 import org.jetbrains.amper.frontend.types.generated.*
 import org.jetbrains.amper.problems.reporting.BuildProblemType
 import org.jetbrains.amper.problems.reporting.CollectingProblemReporter
-import org.jetbrains.amper.problems.reporting.NonIdealDiagnostic
 import org.jetbrains.amper.problems.reporting.ProblemReporter
 import org.jetbrains.amper.problems.reporting.replayProblemsTo
 import org.jetbrains.yaml.psi.YAMLPsiElement
@@ -37,8 +36,7 @@ val defaultContextsInheritance by lazy {
     PlatformsInheritance() + MainTestInheritance + DefaultInheritance
 }
 
-@OptIn(NonIdealDiagnostic::class)
-context(problemReporter: ProblemReporter, types: SchemaTypingContext, pathResolver: FrontendPathResolver)
+context(problemReporter: ProblemReporter, _: FrontendPathResolver, _: AmperFrontendProjectRoot)
 internal fun tryReadMinimalModule(moduleFilePath: VirtualFile): MinimalModuleHolder? {
     val collectingReporter = CollectingProblemReporter()
     val minimalModule = context(collectingReporter) {

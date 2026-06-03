@@ -29,14 +29,13 @@ import org.jetbrains.amper.frontend.diagnostics.AomModelDiagnosticFactories
 import org.jetbrains.amper.frontend.diagnostics.AomSingleModuleDiagnosticFactories
 import org.jetbrains.amper.frontend.diagnostics.UnresolvedModuleDependency
 import org.jetbrains.amper.frontend.diagnostics.treeDiagnosticFactories
-import org.jetbrains.amper.frontend.messages.extractPsiElementOrNull
-import org.jetbrains.amper.frontend.messages.originalFilePath
 import org.jetbrains.amper.frontend.plus
 import org.jetbrains.amper.frontend.processing.addImplicitDependencies
 import org.jetbrains.amper.frontend.processing.configureLombokDefaults
 import org.jetbrains.amper.frontend.processing.configurePluginDefaults
 import org.jetbrains.amper.frontend.processing.configureSpringBootDefaults
 import org.jetbrains.amper.frontend.processing.substituteComposeOsSpecific
+import org.jetbrains.amper.frontend.project.AmperFrontendProjectRoot
 import org.jetbrains.amper.frontend.project.AmperProjectContext
 import org.jetbrains.amper.frontend.schema.CatalogDependency
 import org.jetbrains.amper.frontend.schema.Dependency
@@ -61,7 +60,6 @@ import org.jetbrains.amper.plugins.schema.model.PluginData
 import org.jetbrains.amper.problems.reporting.ProblemReporter
 import org.jetbrains.amper.system.info.SystemInfo
 import java.nio.file.Path
-import kotlin.io.path.absolute
 import kotlin.io.path.name
 import kotlin.io.path.relativeTo
 
@@ -93,8 +91,9 @@ internal fun AmperProjectContext.doReadProjectModel(
     mavenPluginXmls: List<MavenPluginXml>,
     systemInfo: SystemInfo = SystemInfo.CurrentHost,
 ): Model = context(
-    frontendPathResolver, 
-    SchemaTypingContext(pluginData, mavenPluginXmls), 
+    frontendPathResolver,
+    projectRoot,
+    SchemaTypingContext(pluginData, mavenPluginXmls),
     systemInfo,
 ) {
     // Parse all module files and perform preprocessing (templates, catalogs, etc.)
@@ -134,7 +133,13 @@ internal fun AmperProjectContext.doReadProjectModel(
     return model
 }
 
-context(problemReporter: ProblemReporter, types: SchemaTypingContext, pathResolver: FrontendPathResolver, _: SystemInfo)
+context(
+    problemReporter: ProblemReporter,
+    types: SchemaTypingContext,
+    pathResolver: FrontendPathResolver,
+    _: AmperFrontendProjectRoot,
+    _: SystemInfo,
+)
 internal fun readModuleMergedTree(
     moduleFile: VirtualFile,
     projectVersionsCatalog: VersionCatalog?,
@@ -207,7 +212,7 @@ internal fun readModuleMergedTree(
 /**
  * Build and resolve internal module dependencies.
  */
-context(_: ProblemReporter, _: SchemaTypingContext)
+context(_: ProblemReporter, _: SchemaTypingContext, _: AmperFrontendProjectRoot)
 private fun buildAmperModules(
     modules: List<ModuleBuildCtx>,
 ): List<ModuleBuildCtx> {
@@ -246,7 +251,7 @@ private fun createArtifacts(
 /**
  * Resolve internal modules against known ones by path.
  */
-context(_: ProblemReporter)
+context(_: ProblemReporter, _: AmperFrontendProjectRoot)
 private fun Dependency.resolveInternalDependency(
     moduleDir2module: Map<Path, AmperModule>,
     reportedUnresolvedModules: MutableSet<Trace>,
@@ -267,22 +272,25 @@ private fun Dependency.resolveInternalDependency(
     is CatalogDependency -> error("Catalog dependency must be processed earlier!")
 }
 
-context(problemReporter: ProblemReporter)
+context(problemReporter: ProblemReporter, projectRoot: AmperFrontendProjectRoot)
 private fun InternalDependency.resolveModuleDependency(
     moduleDir2module: Map<Path, AmperModule>,
     reportedUnresolvedModules: MutableSet<Trace>,
 ): DefaultScopedNotation? {
     val module = moduleDir2module[path]
     if (module == null) {
-        val originalDirectory = trace.extractPsiElementOrNull()?.originalFilePath?.parent?.absolute()
         // Do not report the same error twice from different fragments.
-        if (originalDirectory != null && reportedUnresolvedModules.add(trace)) {
+        if (reportedUnresolvedModules.add(trace)) {
             val possibleCorrectPath = moduleDir2module.keys
                 .find { it.name == path.name }
-                ?.relativeTo(originalDirectory)
+                ?.relativeTo(projectRoot.path)
 
             problemReporter.reportMessage(
-                UnresolvedModuleDependency(this, originalDirectory, possibleCorrectPath)
+                UnresolvedModuleDependency(
+                    dependency = this,
+                    projectRoot = projectRoot.path,
+                    possibleCorrectPath = possibleCorrectPath
+                )
             )
         }
         return null

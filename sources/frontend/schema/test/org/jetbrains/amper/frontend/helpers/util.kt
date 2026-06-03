@@ -8,6 +8,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
 import org.jetbrains.amper.frontend.FrontendPathResolver
 import org.jetbrains.amper.frontend.VersionCatalog
+import org.jetbrains.amper.frontend.project.AmperFrontendProjectRoot
 import org.jetbrains.amper.frontend.project.AmperProjectContext
 import org.jetbrains.amper.frontend.project.StandaloneAmperProjectContext
 import org.jetbrains.amper.frontend.schema.MavenPlugin
@@ -24,7 +25,7 @@ class TestSystemInfo(
 ) : SystemInfo
 
 data class TestProjectContext(
-    override val projectRootDir: VirtualFile,
+    override val projectRoot: AmperFrontendProjectRoot,
     override val amperModuleFiles: List<VirtualFile>,
     override val frontendPathResolver: FrontendPathResolver,
 ) : AmperProjectContext {

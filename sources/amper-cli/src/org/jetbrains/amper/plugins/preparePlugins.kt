@@ -23,10 +23,11 @@ suspend fun preparePlugins(
         val seenPluginIds = hashSetOf<String>()
         val pluginInfos = projectContext.enabledLocalAmperPluginModuleFiles.associateNotNull { pluginModuleFile ->
             val pluginManifest = spanBuilder("Read plugin manifest").use {
-                parsePluginManifestFromModuleFile(
-                    frontendPathResolver = projectContext.frontendPathResolver,
-                    moduleFile = pluginModuleFile,
-                )
+                context(projectContext.frontendPathResolver, projectContext.projectRoot) {
+                    parsePluginManifestFromModuleFile(
+                        moduleFile = pluginModuleFile,
+                    )
+                }
             } ?: return@associateNotNull null
             if (!seenPluginIds.add(pluginManifest.id)) {
                 // Skip the plugin with a duplicate id

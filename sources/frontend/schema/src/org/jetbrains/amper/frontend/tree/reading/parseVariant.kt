@@ -196,6 +196,7 @@ internal fun tryInferTypeFromKnownKeys(value: YamlValue.Mapping): DependencyType
 private fun inferDependencyTypeFromStringKey(keyText: String) = when (keyText.firstOrNull()) {
     '$' -> Catalog
     '.' -> Local
+    '/' -> Local
     else -> Maven
 }
 

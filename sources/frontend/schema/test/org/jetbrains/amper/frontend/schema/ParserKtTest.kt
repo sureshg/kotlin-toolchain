@@ -73,7 +73,7 @@ internal class ParserKtTest : FrontendTestCaseBase(Path("testResources") / "pars
         aomTest(
             "11-frontend-plain",
             // TODO: Rewrite this test to properly reflect the project structure
-            expectedError = "Cannot find module file in `../frontend-api`"
+            expectedError = "Cannot find module file in `//frontend-api`"
         )
     }
 
@@ -168,7 +168,7 @@ internal class ParserKtTest : FrontendTestCaseBase(Path("testResources") / "pars
         aomTest(
             "24-no-npe-for-leaf-platform",
             // TODO: Rewrite this test to properly reflect the project structure
-            expectedError = "Cannot find module file in `./subModule`"
+            expectedError = "Cannot find module file in `//subModule`"
         )
     }
 

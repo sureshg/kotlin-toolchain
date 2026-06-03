@@ -23,10 +23,20 @@ interface AmperProjectContext {
     val frontendPathResolver: FrontendPathResolver
 
     /**
+     * Project root path holder.
+     */
+    val projectRoot: AmperFrontendProjectRoot
+
+    /**
      * The root directory of this Amper project.
      * This directory contains either a project file, or a module file, or both.
      */
+    @Deprecated(
+        "Use `projectRoot.virtualFile` instead, or `projectRoot.path` when the `Path` instance is needed",
+        replaceWith = ReplaceWith("this.projectRoot.virtualFile")
+    )
     val projectRootDir: VirtualFile
+        get() = projectRoot.virtualFile
 
     /**
      * The build directory of the project, containing project-specific outputs and caches.
@@ -57,17 +67,6 @@ interface AmperProjectContext {
      * Subset of [amperModuleFiles].
      */
     val enabledLocalAmperPluginModuleFiles: List<VirtualFile>
-
-    /**
-     * Local plugin module files of this project. Subset of [amperModuleFiles].
-     */
-    @Deprecated(
-        message = "Use enabledLocalAmperPluginModuleFiles instead",
-        replaceWith = ReplaceWith("enabledLocalAmperPluginModuleFiles"),
-        level = DeprecationLevel.ERROR,
-    )
-    val pluginsModuleFiles: List<VirtualFile>
-        get() = enabledLocalAmperPluginModuleFiles
 
     companion object {
         /**

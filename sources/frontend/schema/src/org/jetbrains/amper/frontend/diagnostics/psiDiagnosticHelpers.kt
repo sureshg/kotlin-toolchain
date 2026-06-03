@@ -26,7 +26,7 @@ data class MergedTreeHolder(
 context(problemReporter: ProblemReporter)
 @UsedInIdePlugin
 fun AmperProjectContext.readAmperModuleTree(moduleFile: VirtualFile): MergedTreeHolder? {
-    val moduleBuildCtx = context(frontendPathResolver, SchemaTypingContext(), SystemInfo.CurrentHost) {
+    val moduleBuildCtx = context(frontendPathResolver, SchemaTypingContext(), SystemInfo.CurrentHost, projectRoot) {
         readModuleMergedTree(moduleFile, projectVersionsCatalog) ?: return null
     }
     return MergedTreeHolder(moduleBuildCtx.mergedTree, moduleBuildCtx.refiner)
