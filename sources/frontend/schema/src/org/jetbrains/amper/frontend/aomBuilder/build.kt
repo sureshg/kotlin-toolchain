@@ -59,7 +59,6 @@ import org.jetbrains.amper.frontend.types.maven.MavenPluginDescriptionAdapter
 import org.jetbrains.amper.maven.MavenPluginXml
 import org.jetbrains.amper.plugins.schema.model.PluginData
 import org.jetbrains.amper.problems.reporting.ProblemReporter
-import org.jetbrains.amper.stdlib.caching
 import org.jetbrains.amper.system.info.SystemInfo
 import java.nio.file.Path
 import kotlin.io.path.absolute
@@ -99,10 +98,9 @@ internal fun AmperProjectContext.doReadProjectModel(
     systemInfo,
 ) {
     // Parse all module files and perform preprocessing (templates, catalogs, etc.)
-    val rawModulesByFile = caching { templateCache ->
-        amperModuleFiles.associateWith {
-            readModuleMergedTree(it, projectVersionsCatalog, templateCache)
-        }
+    val templateCache = hashMapOf<Path, MappingNode>()
+    val rawModulesByFile = amperModuleFiles.associateWith {
+        readModuleMergedTree(it, projectVersionsCatalog, templateCache)
     }
 
     val unreadableModuleFiles = rawModulesByFile.filterValues { it == null }.keys
