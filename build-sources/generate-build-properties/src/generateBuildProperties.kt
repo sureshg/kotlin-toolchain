@@ -16,7 +16,6 @@ import org.jetbrains.amper.plugins.TaskAction
 import java.nio.file.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
-import kotlin.io.path.isDirectory
 import kotlin.io.path.readBytes
 import kotlin.io.path.writeBytes
 
@@ -40,12 +39,7 @@ fun generateBuildProperties(
         "Git root doesn't exist: $dotGitPath"
     }
 
-    val actualDotGitRepository = if (dotGitPath.isDirectory()) {
-        dotGitPath
-    } else {
-        // if .git is a file, assume it's a worktree and use work-tree directory as a Git repository root
-        dotGitPath.parent
-    }
+    val actualDotGitRepository = dotGitPath.parent
 
     // We run without global Git config to avoid issues with people who use config parameters that JGit does not
     // support. For example, the 'patience' diff algorithm isn't supported.
