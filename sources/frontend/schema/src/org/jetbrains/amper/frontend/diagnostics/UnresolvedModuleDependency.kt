@@ -16,7 +16,7 @@ import org.jetbrains.amper.problems.reporting.DiagnosticId
 import org.jetbrains.amper.problems.reporting.Level
 import org.jetbrains.annotations.Nls
 import java.nio.file.Path
-import kotlin.io.path.pathString
+import kotlin.io.path.invariantSeparatorsPathString
 import kotlin.io.path.relativeTo
 
 class UnresolvedModuleDependency(
@@ -53,6 +53,6 @@ class UnresolvedModuleDependency(
     val possibleCorrectPathString: String? = possibleCorrectPath?.formatModulePath()
 
     private fun Path.formatModulePath(): String {
-        return "//" + pathString.removePrefix(".").removePrefix("./")
+        return "//" + normalize().invariantSeparatorsPathString
     }
 }

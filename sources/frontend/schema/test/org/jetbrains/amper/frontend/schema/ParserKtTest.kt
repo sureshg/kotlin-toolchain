@@ -73,7 +73,8 @@ internal class ParserKtTest : FrontendTestCaseBase(Path("testResources") / "pars
         aomTest(
             "11-frontend-plain",
             // TODO: Rewrite this test to properly reflect the project structure
-            expectedError = "Cannot find module file in `//frontend-api`"
+            // FIXME: We should probably forbid referencing modules outside the project root.
+            expectedError = "Cannot find module file in `//../frontend-api`"
         )
     }
 
