@@ -9,3 +9,6 @@ dependencies:
   - $libs.kotlin.poet
   - $libs.org.eclipse.jgit
   - $libs.slf4j.simple
+
+pluginInfo:
+  settingsClass: Settings

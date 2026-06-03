@@ -1,7 +1,5 @@
 product: jvm/lib
 
-description: Cross-platform system information accessors.
-
 apply:
   - ../../dr.amper.common.module-template.yaml
   - ../../dr.amper.used-in-gradle.module-template.yaml
@@ -10,7 +8,5 @@ apply:
 
 settings:
   jvm:
-    # Used in IDEA (max 21), Android Gradle builds (max 17), and Kotlin Notebook (max 11), so we take the lowest version 11
+    # Used in Android Gradle builds (max 17), IDEA (max 21), and Notebooks (max 11), so we pick 11
     release: 11
-  publishing:
-    enabled: true

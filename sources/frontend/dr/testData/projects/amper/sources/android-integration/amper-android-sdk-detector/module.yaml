@@ -4,7 +4,7 @@ description: Android SDK discovery utilities.
 
 apply:
   - ../../dr.amper.common.module-template.yaml
-  - ../../dr.amper.used-in-gradle.module-template.yaml.yaml
+  - ../../dr.amper.used-in-gradle.module-template.yaml
   - ../../dr.amper.used-in-idea.module-template.yaml
 
 dependencies:
@@ -13,6 +13,7 @@ dependencies:
 
 settings:
   jvm:
+    # Used in Android Gradle builds (max 17) and IDEA (max 21), so we take the lowest version 17
     release: 17
   publishing:
     enabled: true

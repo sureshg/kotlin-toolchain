@@ -4,7 +4,7 @@ description: A gradle plugin to handle Android builds that are delegated from Am
 
 apply:
   - ../../dr.amper.common.module-template.yaml
-  - ../../dr.amper.used-in-gradle.module-template.yaml.yaml
+  - ../../dr.amper.used-in-gradle.module-template.yaml
 
 dependencies:
   - ../amper-android-gradle-api
@@ -12,17 +12,15 @@ dependencies:
   - ../../frontend-api
   - ../../frontend/schema
   - ../../libraries/stdlib-extended
+  - ../../libraries/maven-central-configuration
   - $libs.android.gradle.plugin
   - $libs.google.services.gradle.plugin: runtime-only
   - $libs.gradle.api: compile-only
 
 settings:
-  jvm:
-    # Used in Android Gradle builds (max 17), but common template sets it to 21, so we take the lowest version 17
-    release: 17
   kotlin:
     serialization: json
   publishing:
     enabled: true
     group: org.jetbrains.amper.android.settings.plugin
-    name: org.jetbrains.amper.android.settings.plugin.gradle.plugin
+    artifactId: org.jetbrains.amper.android.settings.plugin.gradle.plugin

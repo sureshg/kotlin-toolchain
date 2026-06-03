@@ -16,6 +16,7 @@ modules:
   - sources/amper-crypto
   - sources/amper-jdk-provisioning
   - sources/amper-junit-listeners
+  - sources/amper-libraries-for-idea
   - sources/amper-maven-converter
   - sources/amper-maven-plugin-download
   - sources/amper-maven-plugins-compatibility
@@ -54,6 +55,8 @@ modules:
   - sources/libraries/concurrency
   - sources/libraries/incremental-cache
   - sources/libraries/jetbrains-jdk-list
+  - sources/libraries/maven-central-configuration
+  - sources/libraries/maven-central-portal-publisher-client
   - sources/libraries/maven-plugin-xml-parser
   - sources/libraries/nio-filechannels
   - sources/libraries/serialization-extended

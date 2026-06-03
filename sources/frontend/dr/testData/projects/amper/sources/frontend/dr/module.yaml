@@ -1,4 +1,4 @@
-product: jvm/lib
+product: jvm/app
 
 description: Amper-aware dependency resolution library, based on the Amper-agnostic resolver.
 
@@ -19,6 +19,7 @@ dependencies:
   - ../../dependency-resolution: exported
   - ../../libraries/telemetry
   - ../../libraries/incremental-cache
+  - ../../libraries/maven-central-configuration
   - $libs.slf4j.api
   - $libs.intellij.platform.util
 

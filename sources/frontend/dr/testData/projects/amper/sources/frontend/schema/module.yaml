@@ -4,7 +4,7 @@ description: Amper model parser – the real Amper frontend. It contains impleme
 
 apply:
   - ../../dr.amper.common.module-template.yaml
-  - ../../dr.amper.used-in-gradle.module-template.yaml.yaml
+  - ../../dr.amper.used-in-gradle.module-template.yaml
   - ../../dr.amper.used-in-idea.module-template.yaml
 
 settings:
@@ -31,6 +31,7 @@ dependencies:
   - ../../frontend/plain/toml-psi
   - ../../frontend/plain/yaml-psi
   - ../../frontend/plain/amper-psi
+  - ../../libraries/maven-central-configuration
   - ../../libraries/maven-plugin-xml-parser: exported
   - ../../libraries/stdlib-extended
   - ../../libraries/system-info

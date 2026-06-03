@@ -6,4 +6,6 @@ apply:
   - ../dr.amper.common.module-template.yaml
 
 dependencies:
+  - ../libraries/system-info
+  - ../libraries/stdlib-extended
   - $libs.slf4j.api

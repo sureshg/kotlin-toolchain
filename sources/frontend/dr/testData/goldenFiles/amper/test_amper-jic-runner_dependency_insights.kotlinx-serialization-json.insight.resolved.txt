@@ -1,0 +1,7 @@
+Module amper-jic-runner
+│ - main
+│ - scope = RUNTIME
+│ - platforms = [jvm]
+╰─── Module amper-jic-api
+     ╰─── amper-jic-api:main:org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0, implicit (because kotlin.serialization.format=json)
+          ╰─── org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0

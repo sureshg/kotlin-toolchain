@@ -4,8 +4,8 @@ description: Public API for extending Amper with custom plugins and tasks.
 
 apply:
   - ../../dr.amper.common.module-template.yaml
-#  - ../../detekt.module-template.yaml
-#  - ../../dokka.module-template.yaml
+  - ../../dr.amper.detekt.module-template.yaml
+  - ../../dr.amper.dokka.module-template.yaml
 
 plugins:
   binary-compatibility-validator:

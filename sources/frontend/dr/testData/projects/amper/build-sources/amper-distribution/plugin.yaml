@@ -1,39 +1,68 @@
 
 tasks:
+  provisionThirdPartyComponents:
+    action: !provisionThirdPartyComponents
+      stagingDir: ${taskOutputDir}/thirdPartyStagingDir
+      versions:
+        busyboxW32Version: 'FRP-6075-g169694ebd'
+      ourLicenseFile: ${project.rootDir}/LICENSE.txt
+
   build:
     action: !buildDist
       distribution:
         cliTgz: ${taskOutputDir}/cli.tgz
         wrappersDir: ${taskOutputDir}/wrappers
+        installersDir: ${taskOutputDir}/installers
       cliRuntimeClasspath: ${module.runtimeClasspath}
       extraClasspaths: ${pluginSettings.extraClasspaths}
       extraFilteredClasspaths: ${pluginSettings.extraFilteredClasspaths}
+      thirdPartyStagingDir: ${provisionThirdPartyComponents.action.stagingDir}
 
   buildUnpacked:
-    action: !buildUnpackedClasspath
+    action: !buildUnpackedDist
       outputDir: ${taskOutputDir}/dist
       baseClasspath: ${module.runtimeClasspath}
       extraClasspaths: ${pluginSettings.extraClasspaths}
       extraFilteredClasspaths: ${pluginSettings.extraFilteredClasspaths}
+      thirdPartyStagingDir: ${provisionThirdPartyComponents.action.stagingDir}
+
+  buildSdkmanArchive:
+    action: !buildSdkmanArchive
+      archive: ${taskOutputDir}/kotlin-cli-sdkman.zip
+      distribution: ${tasks.build.action.distribution}
+      licenseFile: ${project.rootDir}/LICENSE.txt
 
   uploadLocal:
     action: !uploadDist
       distribution: ${tasks.build.action.distribution}
-      sdkmanArchive: ${taskOutputDir}/kotlin.zip
+      sdkmanArchive: ${tasks.buildSdkmanArchive.action.archive}
       repository: maven-local
 
   upload:
     action: !uploadDist
       distribution: ${tasks.build.action.distribution}
-      sdkmanArchive: ${taskOutputDir}/kotlin.zip
+      sdkmanArchive: ${tasks.buildSdkmanArchive.action.archive}
       repository: jetbrains-team-amper-maven
 
   embedClasspathAsResources:
-    action: !buildUnpackedClasspath
-      outputDir: ${taskOutputDir}
-      baseClasspath: ${pluginSettings.embedClasspathAsResources.classpath}
+    action: !assembleClasspathWithIndex
+      outputRoot: ${taskOutputDir}
+      # we have to use this trick to be able to include the dir itself in the resource path
       subdirectoryName: ${pluginSettings.embedClasspathAsResources.resourceDirName}
+      classpath: ${pluginSettings.embedClasspathAsResources.classpath}
       jarListFileName: classpath.txt
+
+  # ********** Home Brew **********
+
+  generateLocalDemoBrewFormula:
+    action: !generateLocalDemoBrewFormula
+      hostWrapperScript: ${project.rootDir}/kotlin
+      formula: ${taskOutputDir}/kotlin.rb
+      archive: ${taskOutputDir}/kotlin.zip
+
+  installLocalDemoBrewFormula:
+    action: !installBrewFormula
+      formula: ${generateLocalDemoBrewFormula.action.formula}
 
 commands:
   - name: uploadAmperDistribution
@@ -42,6 +71,11 @@ commands:
   - name: uploadAmperDistributionLocal
     performedBy: uploadLocal
 
+  - buildSdkmanArchive
+
+  - installLocalDemoBrewFormula
+
 generated:
   resources:
-    - directory: ${tasks.embedClasspathAsResources.action.outputDir}
+    # we refer to the root so that the nested dir appears in the jar
+    - directory: ${tasks.embedClasspathAsResources.action.outputRoot}

@@ -28,6 +28,7 @@ dependencies:
   - ../libraries/compose-resources
   - ../libraries/concurrency
   - ../libraries/incremental-cache
+  - ../libraries/maven-central-configuration
   - ../libraries/serialization-extended
   - ../libraries/stdlib-extended
   - ../libraries/system-info
@@ -85,6 +86,7 @@ dependencies:
   - $libs.maven.plugin.annotations
   - $libs.maven.site.plugin
   - com.google.code.findbugs:jsr305:3.0.2
+  - ../libraries/maven-central-portal-publisher-client
 
 test-dependencies:
   - ../test-base
@@ -108,11 +110,6 @@ plugins:
       resourceDirName: "junit-listeners"
 
 settings:
-  publishing:
-    # Old versions of Amper check the maven-metadata.xml of the old 'cli' artifact name, so we need to keep publishing
-    # to this artifactId. This is because even if we publish files with both 'cli' and 'amper-cli' names, only the
-    # maven-metadata.xml of the artifactId specified here will be updated.
-    name: cli
   kotlin:
     serialization: json
   internal:

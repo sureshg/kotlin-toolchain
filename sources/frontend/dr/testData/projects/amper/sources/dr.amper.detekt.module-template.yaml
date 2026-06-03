@@ -1,0 +1,8 @@
+apply:
+  - ./dr.amper.common.module-template.yaml
+
+plugins:
+  detekt:
+    enabled: true
+    configFile: dr.amper.detekt-rules.yaml
+    buildUponDefaultConfig: true

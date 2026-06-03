@@ -4,7 +4,7 @@ description: Kotlin extensions and coroutines integration for OpenTelemetry.
 
 apply:
   - ../../dr.amper.common.module-template.yaml
-  - ../../dr.amper.used-in-gradle.module-template.yaml.yaml
+  - ../../dr.amper.used-in-gradle.module-template.yaml
   - ../../dr.amper.used-in-idea.module-template.yaml
   - ../../dr.amper.used-in-jic.module-template.yaml
   - ../../dr.amper.used-in-kotlin-notebook.module-template.yaml

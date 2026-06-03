@@ -1,0 +1,21 @@
+Module amper-jic-runner
+│ - main
+│ - scope = COMPILE
+│ - platforms = [jvm]
+╰─── amper-jic-runner:main:org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0
+     ╰─── org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0 -> 1.10.0
+Module amper-jic-runner
+│ - main
+│ - scope = RUNTIME
+│ - platforms = [jvm]
+├─── Module amper-telemetry
+│    ├─── Module telemetry
+│    │    ╰─── telemetry:main:org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0, implicit (because kotlin.serialization.format=json)
+│    │         ╰─── org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0 -> 1.10.0
+│    ╰─── amper-telemetry:main:org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0, implicit (because kotlin.serialization.format=json)
+│         ╰─── org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0 -> 1.10.0
+├─── Module amper-jic-api
+│    ╰─── amper-jic-api:main:org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0, implicit (because kotlin.serialization.format=json)
+│         ╰─── org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0
+╰─── amper-jic-runner:main:org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0
+     ╰─── org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0 -> 1.10.0

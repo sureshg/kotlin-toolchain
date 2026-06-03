@@ -4,18 +4,16 @@ description: Utilities to run delegated Android Gradle builds from Amper.
 
 apply:
   - ../../dr.amper.common.module-template.yaml
-  - ../../dr.amper.used-in-gradle.module-template.yaml.yaml
+  - ../../dr.amper.used-in-gradle.module-template.yaml
 
 dependencies:
   - ../../amper-build-info
   - ../../libraries/stdlib-extended
+  - ../../libraries/maven-central-configuration
   - ../amper-android-gradle-api: exported
   - $libs.gradle.toolingApi: exported
   - $libs.android.tools.builder.model
 
 settings:
-  jvm:
-    # Used in Android Gradle builds (max 17), but common template sets it to 21, so we take the lowest version 17
-    release: 17
   kotlin:
     serialization: json

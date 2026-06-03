@@ -3,7 +3,7 @@ product: jvm/amper-plugin
 description: |
   Provides commands to handle common maintenance and dev tasks.
   
-  This is both a plugin module that defines the custom commands and a project module where the plugin is applied to 
+  This is both a plugin module that defines the custom commands and a project module where the plugin is enabled to 
   register those commands. It's a bit strange, but we don't have real project-level plugins or commands support yet.
 
 apply:
@@ -12,11 +12,15 @@ apply:
 pluginInfo:
   settingsClass: ProjectCommandsSettings
 
+dependencies:
+  - ../../sources/libraries/async-processes
+  - $libs.kotlinx.coroutines.core
+
 plugins:
   project-commands:
     enabled: true
     versions:
-      bootstrapAmperVersion: 0.11.0-dev-3856 # AUTO-UPDATED BY THE CI
+      bootstrapVersion: 0.12.0-dev-4007 # AUTO-UPDATED BY THE CI
       # To find the latest version, check:
       # https://api.azul.com/metadata/v1/zulu/packages/?java_version=25&java_package_type=jre&latest=true&release_status=ga&page=1&page_size=1
       amperJre:
@@ -26,14 +30,27 @@ plugins:
       # to lower our minimum supported JDK to 17 right now.
       minSupportedJUnitPlatform: 1.14.3
       defaultsForUsers:
+        # https://github.com/JetBrains/compose-multiplatform/releases
+        # Also, update the mapping between Compose and Material3 versions in composeMaterial3VersionForCMPVersion()
         compose: 1.10.3
-        composeHotReload: 1.0.0
+        # https://github.com/JetBrains/compose-hot-reload/releases
+        composeHotReload: 1.1.1
+        # https://www.oracle.com/nl/java/technologies/downloads/
         jdk: 21
-        junitPlatform: 6.0.1
-        kotlin: 2.3.20
+        # https://github.com/junit-team/junit-framework/releases
+        junitPlatform: 6.0.3
+        # https://kotlinlang.org/docs/releases.html
+        # Also check AGP compatibility: https://developer.android.com/build/kotlin-support
+        kotlin: 2.3.21
+        # https://github.com/Kotlin/kotlinx-rpc/releases
         kotlinxRpc: 0.10.2
+        # https://github.com/Kotlin/kotlinx.serialization/releases
         kotlinxSerialization: 1.10.0
-        ksp: 2.3.6
-        ktor: 3.4.1
-        lombok: 1.18.38
-        springBoot: 4.0.5
+        # https://github.com/google/ksp/releases
+        ksp: 2.3.7
+        # https://github.com/ktorio/ktor/releases
+        ktor: 3.4.3
+        # https://projectlombok.org/download
+        lombok: 1.18.46
+        # https://spring.io/projects/spring-boot#learn
+        springBoot: 4.0.6

@@ -1,0 +1,12 @@
+apply:
+  - ./dr.amper.common.module-template.yaml
+
+plugins:
+  dokka:
+    enabled: true
+    html:
+      customAssets:
+        - ../.dokka/logo-icon.svg
+      templatesDir: ../.dokka/templates/
+      footerMessage: |
+        Copyright © 2000-2025 JetBrains s.r.o. and contributors
