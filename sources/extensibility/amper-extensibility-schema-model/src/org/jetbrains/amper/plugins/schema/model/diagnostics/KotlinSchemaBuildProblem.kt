@@ -126,8 +126,8 @@ sealed class KotlinSchemaBuildProblem : BuildProblem, DiagnosticId {
     }
 
     @Serializable
-    class ForbiddenTaskActionContextReceivers(override val source: SourceLocation) : KotlinSchemaBuildProblem() {
-        override val messageKey get() = "schema.forbidden.task.action.context.receivers"
+    class ForbiddenTaskActionContextParameters(override val source: SourceLocation) : KotlinSchemaBuildProblem() {
+        override val messageKey get() = "schema.forbidden.task.action.context.parameters"
     }
 
     @Serializable

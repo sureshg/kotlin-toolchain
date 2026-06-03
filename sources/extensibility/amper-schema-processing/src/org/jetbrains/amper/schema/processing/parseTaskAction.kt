@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.schema.processing
@@ -38,7 +38,9 @@ internal fun parseTaskAction(function: KtNamedFunction): PluginData.TaskInfo? {
         }
     }
     function.typeParameterList?.let { report(it, KotlinSchemaBuildProblem::ForbiddenTaskActionGeneric) }
-    function.contextReceiverList?.let { report(it, KotlinSchemaBuildProblem::ForbiddenTaskActionContextReceivers) }
+    function.modifierList?.contextParameterList?.let {
+        report(it, KotlinSchemaBuildProblem::ForbiddenTaskActionContextParameters)
+    }
 
     val returnType = with(session) { function.returnType }
     if (with(session) { !returnType.isUnitType }) {
