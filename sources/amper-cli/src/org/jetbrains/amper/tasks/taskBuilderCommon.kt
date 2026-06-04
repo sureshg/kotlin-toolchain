@@ -80,36 +80,34 @@ fun ProjectTasksBuilder.setupCommonTasks() {
             )
         }
 
-    allFragments().forEach {
-        val taskName = CommonFragmentTaskType.CompileMetadata.getTaskName(it)
-        tasks.registerTask(
-            MetadataCompileTask(
-                taskName = taskName,
-                module = it.module,
-                fragment = it,
-                userCacheRoot = context.userCacheRoot,
-                taskOutputRoot = context.getTaskOutputPath(taskName),
-                incrementalCache = context.incrementalCache,
-                tempRoot = context.projectTempRoot,
-                jdkProvider = context.jdkProvider,
-                processRunner = context.processRunner,
+    allFragments()
+        // Metadata compilation is done for multi-platform main fragments.
+        // todo (AB) : [AMPER-721] "android+jvm", "webMuain" should be also skipped.
+        .filter { it.platforms.size > 1 && !it.isTest }
+        .forEach {
+            val taskName = CommonFragmentTaskType.CompileMetadata.getTaskName(it)
+            tasks.registerTask(
+                MetadataCompileTask(
+                    taskName = taskName,
+                    module = it.module,
+                    moduleDependencies = moduleDependenciesMap[it.module]!!,
+                    fragment = it,
+                    userCacheRoot = context.userCacheRoot,
+                    taskOutputRoot = context.getTaskOutputPath(taskName),
+                    incrementalCache = context.incrementalCache,
+                    tempRoot = context.projectTempRoot,
+                    jdkProvider = context.jdkProvider,
+                    processRunner = context.processRunner,
+                )
             )
-        )
-        // TODO make dependency resolution a module-wide task instead (when contexts support sets of platforms)
-        it.platforms.forEach { leafPlatform ->
-            tasks.registerDependency(
-                taskName = taskName,
-                dependsOn = CommonTaskType.Dependencies.getTaskName(it.module, leafPlatform)
-            )
-        }
 
-        it.allSourceFragmentCompileDependencies.forEach { otherFragment ->
-            tasks.registerDependency(
-                taskName = taskName,
-                dependsOn = CommonFragmentTaskType.CompileMetadata.getTaskName(otherFragment)
-            )
+            it.allSourceFragmentCompileDependencies.forEach { otherFragment ->
+                tasks.registerDependency(
+                    taskName = taskName,
+                    dependsOn = CommonFragmentTaskType.CompileMetadata.getTaskName(otherFragment)
+                )
+            }
         }
-    }
 
     allModules()
         .alsoPlatforms()

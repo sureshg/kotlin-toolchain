@@ -64,8 +64,6 @@ internal suspend fun CliReportingMavenResolver.doResolveExternalDependencies(
     isTest: Boolean,
     moduleDependencies: ModuleDependencies,
 ): ExternalDependenciesResolutionResult {
-    val resolveSourceMoniker = "module ${moduleDependencies.module.userReadableName}"
-
     val allLeafPlatformsGraph = moduleDependencies.allLeafPlatformsGraph(isTest)
     val platformCompileDepsIndex = allLeafPlatformsGraph.children.indexOfFirst {
         it.context.settings.platforms.single() == platform.toResolutionPlatform()
@@ -77,7 +75,7 @@ internal suspend fun CliReportingMavenResolver.doResolveExternalDependencies(
                 && it.context.settings.scope == ResolutionScope.RUNTIME
     }.takeIf { it != -1 }
 
-    val resolvedGraph = resolve(moduleDependencies = moduleDependencies, isTest = isTest, resolveSourceMoniker = resolveSourceMoniker)
+    val resolvedGraph = resolve(moduleDependencies = moduleDependencies, isTest = isTest)
     val resolvedChildren = resolvedGraph.root.children
     return ExternalDependenciesResolutionResult(
         resolvedChildren[platformCompileDepsIndex],

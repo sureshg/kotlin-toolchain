@@ -936,6 +936,96 @@ class BuildGraphTest : BaseDRTest() {
         downloadAndAssertFiles(testInfo, root = root)
     }
 
+    /**
+     * This test checks that kotlin-stdlib commonMain sourceSet is resolved in native + non-native context.
+     */
+    @Test
+    fun `org_jetbrains_kotlin kotlin-stdlib 2_2_20 mixed native and non-native multiplatform context `(testInfo: TestInfo) = runDrTest {
+        val root = doTest(
+            testInfo,
+            dependency = "org.jetbrains.kotlin:kotlin-stdlib:2.2.20",
+            platform = setOf(
+                ResolutionPlatform.IOS_ARM64,
+                ResolutionPlatform.IOS_X64,
+                ResolutionPlatform.IOS_SIMULATOR_ARM64,
+                ResolutionPlatform.LINUX_X64,
+                ResolutionPlatform.LINUX_ARM64,
+                ResolutionPlatform.MINGW_X64,
+                ResolutionPlatform.JVM,
+            ),
+            expected = """
+                root
+                ╰─── org.jetbrains.kotlin:kotlin-stdlib:2.2.20
+            """.trimIndent()
+        )
+
+        downloadAndAssertFiles(
+            listOf("kotlin-stdlib-commonMain-2.2.20.klib"),
+            root,
+        )
+    }
+
+    /**
+     * This test checks that kotlin-stdlib commonMain sourceSet is YET resolved in native only multiplatform context.
+     */
+    @Test
+    fun `org_jetbrains_kotlin kotlin-stdlib 2_2_10 native only multiplatform context`(testInfo: TestInfo) = runDrTest {
+        val root = doTest(
+            testInfo,
+            dependency = "org.jetbrains.kotlin:kotlin-stdlib:2.2.10",
+            platform = setOf(
+                ResolutionPlatform.IOS_ARM64,
+                ResolutionPlatform.IOS_X64,
+                ResolutionPlatform.IOS_SIMULATOR_ARM64,
+                ResolutionPlatform.LINUX_X64,
+                ResolutionPlatform.LINUX_ARM64,
+                ResolutionPlatform.MINGW_X64,
+            ),
+            expected = """
+                root
+                ╰─── org.jetbrains.kotlin:kotlin-stdlib:2.2.10
+            """.trimIndent()
+        )
+
+        downloadAndAssertFiles(
+            listOf("kotlin-stdlib-commonMain-2.2.10.klib"),
+            root,
+        )
+    }
+
+    /**
+     * This test checks that kotlin-stdlib commonMain sourceSet is NOT resolved in native only multiplatform context.
+     *
+     * Starting from 2.2.20, the JSON metadata descriptor of the kotlin-stdlib metadata library
+     * no longer maps nativeApiElements variant to any sourceSet.
+     *
+     * Metadata is intended to be taken from prebuilt K/Native compiler distribution.
+     */
+    @Test
+    fun `org_jetbrains_kotlin kotlin-stdlib 2_2_20 native only multiplatform context`(testInfo: TestInfo) = runDrTest {
+        val root = doTest(
+            testInfo,
+            dependency = "org.jetbrains.kotlin:kotlin-stdlib:2.2.20",
+            platform = setOf(
+                ResolutionPlatform.IOS_ARM64,
+                ResolutionPlatform.IOS_X64,
+                ResolutionPlatform.IOS_SIMULATOR_ARM64,
+                ResolutionPlatform.LINUX_X64,
+                ResolutionPlatform.LINUX_ARM64,
+                ResolutionPlatform.MINGW_X64,
+            ),
+            expected = """
+                root
+                ╰─── org.jetbrains.kotlin:kotlin-stdlib:2.2.20
+            """.trimIndent()
+        )
+
+        downloadAndAssertFiles(
+            emptyList(),
+            root,
+        )
+    }
+
     @Test
     fun `org_jetbrains_kotlin kotlin-test-annotations-common 1_9_0`(testInfo: TestInfo) = runDrTest {
         val root = doTest(

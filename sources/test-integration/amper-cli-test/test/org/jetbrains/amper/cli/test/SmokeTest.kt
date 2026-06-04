@@ -58,10 +58,6 @@ class SmokeTest : AmperCliTestBase() {
             ERROR: Task 'compile' was not found in the project, maybe you meant one of:
                :jvm-kotlin-test-smoke:compileJvm
                :jvm-kotlin-test-smoke:compileJvmTest
-               :jvm-kotlin-test-smoke:compileMetadataCommon
-               :jvm-kotlin-test-smoke:compileMetadataCommonTest
-               :jvm-kotlin-test-smoke:compileMetadataJvm
-               :jvm-kotlin-test-smoke:compileMetadataJvmTest
         """.trimIndent()
 
         assertTrue("Expected stderr to contain the message:\n$errorMessage\n\nActual stderr:\n${r.stderr}") {

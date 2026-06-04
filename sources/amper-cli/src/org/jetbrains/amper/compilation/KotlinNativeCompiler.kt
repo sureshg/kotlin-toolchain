@@ -85,7 +85,7 @@ class KotlinNativeCompiler(
                         programArgs = listOf("konanc", "@${argFile}"),
                         argsMode = ArgsMode.ArgFile(tempRoot = tempRoot)
                     )
-                    processNativeCompilerCommandResult(span, result)
+                    processNativeCompilerCommandResult(span, result, "native compilation")
                 }
             }
     }
@@ -104,13 +104,14 @@ class KotlinNativeCompiler(
                     programArgs = listOf("cinterop") + args,
                     argsMode = ArgsMode.CommandLine,
                 )
-                processNativeCompilerCommandResult(span, result)
+                processNativeCompilerCommandResult(span, result, "cinterop")
             }
     }
 
     private fun processNativeCompilerCommandResult(
         span: Span,
         result: ProcessResult,
+        moniker: String
     ) {
         // TODO this is redundant with the java span of the external process run. Ideally, we
         //  should extract higher-level information from the raw output and use that in this span.
@@ -122,7 +123,7 @@ class KotlinNativeCompiler(
                 .filter { it.startsWith("error: ") || it.startsWith("exception: ") }
                 .joinToString("\n")
             val errorsPart = if (errors.isNotEmpty()) ":\n\n$errors" else ""
-            userReadableError("cinterop failed$errorsPart")
+            userReadableError("$moniker failed$errorsPart")
         }
     }
 

@@ -4,12 +4,15 @@
 
 package org.jetbrains.amper.compilation
 
+import org.apache.maven.artifact.versioning.ComparableVersion
 import org.jetbrains.amper.cli.AmperProjectTempRoot
+import org.jetbrains.amper.dependency.resolution.ResolutionPlatform
 import org.jetbrains.amper.engine.BuildTask
 import org.jetbrains.amper.frontend.AmperModule
 import org.jetbrains.amper.frontend.Fragment
 import org.jetbrains.amper.frontend.FragmentDependencyType
 import org.jetbrains.amper.frontend.Platform
+import org.jetbrains.amper.frontend.dr.resolver.flow.toPlatform
 import org.jetbrains.amper.frontend.isDescendantOf
 import org.jetbrains.amper.frontend.schema.KotlinVersion
 import org.jetbrains.amper.tasks.SourceRoot
@@ -31,12 +34,15 @@ import kotlin.io.path.writeText
 
 internal val validSourceFileExtensions = setOf("kt", "java")
 
+private val logger = org.slf4j.LoggerFactory.getLogger("compilation/KotlinCompilerArgs")
+
 private fun kotlinCommonCompilerArgs(
     isMultiplatform: Boolean,
     kotlinUserSettings: KotlinUserSettings,
     fragments: List<Fragment>,
     additionalSourceRoots: List<SourceRoot>,
     compilerPlugins: List<ResolvedCompilerPlugin>,
+    isMetadataCompilation: Boolean = false,
 ): List<String> = buildList {
     val languageVersion = kotlinUserSettings.languageVersion
 
@@ -45,7 +51,9 @@ private fun kotlinCommonCompilerArgs(
 
         // When languageVersion == null, we don't pass anything to the compiler, so it uses its own default.
         // This case is similar to languageVersion >= 2.0 because we forbid compiler versions < 2.0.0 in the frontend.
-        if (languageVersion == null || languageVersion >= KotlinVersion.Kotlin20) {
+        if (!isMetadataCompilation
+            && (languageVersion == null || languageVersion >= KotlinVersion.Kotlin20)
+        ) {
             val additionalSourceRootsByFragmentName = additionalSourceRoots.groupBy(
                 keySelector = { it.fragmentName },
                 valueTransform = { it.path },
@@ -116,7 +124,7 @@ private fun kotlinCommonCompilerArgs(
 private fun Fragment.allSourceFiles(additionalSourceRoots: List<Path>): List<Path> =
     (sourceRoots + additionalSourceRoots).flatMap { srcRoot ->
         // In Kotlin >= 2.2, we need to list all source files (not just dirs).
-        // Also, we don't want swift or plist files here
+        // Also, we don't want Swift or plist files here
         srcRoot.walk().filter { it.extension in validSourceFileExtensions }
     }
 
@@ -200,10 +208,12 @@ internal fun kotlinNativeCompilerArgs(
     fragments: List<Fragment>,
     sourceFiles: List<Path>,
     additionalSourceRoots: List<SourceRoot>,
+    refinesPaths: List<Path> = emptyList(),
     binaryOptions: Map<String, String>,
     outputPath: Path,
     compilationType: KotlinCompilationType,
     include: Path?,
+    fragmentPlatforms: Set<Platform> = setOf(task.platform),
 ): List<String> = buildList {
     if (kotlinUserSettings.debug ?: (buildType == BuildType.Debug)) {
         add("-g")
@@ -217,10 +227,33 @@ internal fun kotlinNativeCompilerArgs(
 
     add("-ea")
     add("-produce=${compilationType.argName}")
-    add("-target=${task.platform.nameForCompiler}")
+
+    // todo (AB) : [AMPER-721] This is replicated from KGP logic, though it seems to be some outdated stuff
+    //  https://jetbrains.team/p/kt/repositories/kotlin/revision/686d00ddf54aa082ed98ad87747befa04ed9168f?file=libraries%2Ftools%2Fkotlin-gradle-plugin%2Fsrc%2Fmain%2Fkotlin%2Forg%2Fjetbrains%2Fkotlin%2Fgradle%2Ftargets%2Fnative%2FKotlinNativeCompilation.kt&from-line=NEW%3A105
+    add("-target=${fragmentPlatforms.first().nameForCompiler}")
+
+    if (refinesPaths.isNotEmpty()) {
+        add("-Xrefines-paths=${refinesPaths.joinToString(",")}")
+    }
 
     // TODO full module path including entire hierarchy? -Xshort-module-name)
-    add("-module-name=${compilationType.moduleName(task.module, task.isTest)}")
+    val isMetadataCompilation = fragmentPlatforms.size > 1 && fragments.size == 1
+    if (isMetadataCompilation) {
+        add("-module-name=${compilationType.moduleName(task.module, task.isTest)}_${fragments.single().name}")
+        add("-Xshort-module-name=${compilationType.moduleName(task.module, task.isTest)}_${fragments.single().name}")
+
+        add("-Xmetadata-klib")
+
+        // The following flags are ported from the KGP plugin.
+        add("-no-default-libs")
+        add("-no-endorsed-libs")
+        add("-nopack")
+        add("-nostdlib")
+        add("-Xexport-kdoc")
+    } else {
+        add("-module-name=${compilationType.moduleName(task.module, task.isTest)}")
+    }
+
 
     if (compilationType != KotlinCompilationType.LIBRARY) {
         if (task.isTest) {
@@ -256,6 +289,7 @@ internal fun kotlinNativeCompilerArgs(
         fragments = fragments,
         additionalSourceRoots = additionalSourceRoots,
         compilerPlugins = compilerPlugins,
+        isMetadataCompilation = isMetadataCompilation,
     ))
 
     if (include != null) add("-Xinclude=${include.pathString}")
@@ -268,6 +302,9 @@ internal fun kotlinNativeCompilerArgs(
     if (compilationType != KotlinCompilationType.IOS_FRAMEWORK) {
         addAll(sourceFiles.map { it.pathString })
     }
+
+    logger.debug("Native metadata compilation args:")
+    logger.debug(joinToString(System.lineSeparator()) { it })
 }
 
 internal fun kotlinWasmCompilerArgs(
@@ -409,10 +446,21 @@ internal fun kotlinMetadataCompilerArgs(
     fragments: List<Fragment>,
     sourceFiles: List<Path>,
     additionalSourceRoots: List<SourceRoot>,
+    fragmentPlatforms: Set<ResolutionPlatform>,
 ): List<String> = buildList {
     // TODO full module path including entire hierarchy? -Xshort-module-name)
     add("-module-name=$moduleName")
-    add("-classpath=${classpath.joinToString(File.pathSeparator)}")
+    if (classpath.isNotEmpty()) {
+        add("-classpath=${classpath.joinToString(File.pathSeparator)}")
+    }
+
+    add("-Xmetadata-klib")
+
+    val kotlinVersion = ComparableVersion(kotlinUserSettings.compilerVersion)
+    val targetPlatforms = fragmentPlatforms.mapNotNull { it.toPlatform().toXTargetPlatform(kotlinVersion) }.toSet()
+    if (targetPlatforms.isNotEmpty()) {
+        add("-Xtarget-platform=${targetPlatforms.joinToString(",")}")
+    }
 
     if (friendPaths.isNotEmpty()) {
         // KT-34277 Kotlinc processes -Xfriend-paths differently for Javascript vs. JVM, using different list separators
@@ -431,14 +479,18 @@ internal fun kotlinMetadataCompilerArgs(
         fragments = fragments,
         additionalSourceRoots = additionalSourceRoots,
         compilerPlugins = compilerPlugins,
+        isMetadataCompilation = true,
     ))
 
     // -d is after freeCompilerArgs because we don't allow overriding the output dir (it breaks task dependencies)
     // (specifying -d multiple times generates a warning, and only the last value is used)
-    // TODO forbid -d in freeCompilerArgs in the frontend, so it's clearer for the users
+    // TODO forbid -d in freeCompilerArgs in the frontendC:\Sources\Git\git.jetbrains.team\amper-branch\build\metadataCompiled\, so it's clearer for the users
     add("-d=${outputPath.pathString}")
 
     addAll(sourceFiles.map { it.pathString })
+
+    logger.debug("Common metadata compilation args:")
+    logger.debug(joinToString(System.lineSeparator()) { it })
 }
 
 inline fun <R> withKotlinCompilerArgFile(args: List<String>, tempRoot: AmperProjectTempRoot, block: (Path) -> R): R {
@@ -460,3 +512,23 @@ inline fun <R> withKotlinCompilerArgFile(args: List<String>, tempRoot: AmperProj
         argFile.deleteExisting()
     }
 }
+
+private enum class XTargetPlatform {
+    JVM, JS, WasmJs, WasmWasi, Native;
+
+    val since: ComparableVersion = ComparableVersion("2.3.20-Beta1")
+}
+
+/**
+ * All platforms supported by the compiler argument '-Xtarget-platform'
+ */
+private fun Platform.toXTargetPlatform(kotlinVersion: ComparableVersion): XTargetPlatform? =
+    when {
+        this == Platform.JVM  -> XTargetPlatform.JVM
+        this == Platform.ANDROID -> XTargetPlatform.JVM
+        this == Platform.JS -> XTargetPlatform.JS
+        this == Platform.WASM_JS -> XTargetPlatform.WasmJs
+        this == Platform.WASM_WASI -> XTargetPlatform.WasmWasi
+        this.isDescendantOf(Platform.NATIVE)-> XTargetPlatform.Native
+        else -> null
+    }?.takeIf { it.since <= kotlinVersion }

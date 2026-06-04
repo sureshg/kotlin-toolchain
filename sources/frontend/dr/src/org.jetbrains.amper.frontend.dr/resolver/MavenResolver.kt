@@ -109,13 +109,14 @@ open class MavenResolver(
     suspend fun resolve(
         moduleDependencies: ModuleDependencies,
         isTest: Boolean,
-        resolveSourceMoniker: String,
+        resolveSourceMoniker: String = "module ${moduleDependencies.module.userReadableName}",
+        leafPlatformsOnly: Boolean = true,
         resolutionDepth: ResolutionDepth = ResolutionDepth.GRAPH_FULL,
     ): ResolvedGraph = resolveAndReport(resolveSourceMoniker) {
         ModuleDependencies.resolveModuleDependencies(
             moduleDependenciesList = listOf(moduleDependencies),
             resolutionRunSettings = ResolutionRunSettings(resolutionDepth = resolutionDepth),
-            leafPlatformsOnly = true,
+            leafPlatformsOnly = leafPlatformsOnly,
             filter = ModuleResolutionFilter(resolutionType = if(isTest) ResolutionType.TEST else ResolutionType.MAIN),
         )
     }

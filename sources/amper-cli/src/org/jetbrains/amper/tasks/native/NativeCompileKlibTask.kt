@@ -95,7 +95,6 @@ internal class NativeCompileKlibTask(
             error("Zero fragments in module ${module.userReadableName} for platform $platform isTest=$isTest")
         }
 
-        // TODO The native compiler needs recursive dependencies
         val externalDependencies = dependenciesResult
             .filterIsInstance<ResolveExternalDependenciesTask.Result>()
             .flatMap { it.compileClasspath } // compiler dependencies including transitive
