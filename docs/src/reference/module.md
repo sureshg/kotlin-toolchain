@@ -459,14 +459,10 @@ Supported values for `distributions` and `acknowledgedLicenses`:
 - `microsoft` (Microsoft)
 - `bisheng` (BiSheng)
 - `dragonwell` (Alibaba Dragonwell)
-- `kona` (Tencent Kona)
 - `liberica` (BellSoft Liberica)
-- `openLogic` (Perforce OpenLogic)
 - `sapMachine` (SapMachine)
 - `semeru` (IBM Semeru Open Edition)
 - `oracle` (Oracle JDK; requires license)
-- `zuluPrime` (Azul Zulu Prime; requires license)
-- `semeruCertified` (IBM Semeru Certified; requires license)
 
 Values for `selectionMode`:
 
