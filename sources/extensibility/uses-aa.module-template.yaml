@@ -1,3 +1,6 @@
+apply:
+  - ../common.module-template.yaml
+
 repositories:
   - id: kotlin-ide-plugin-dependencies
     url: https://maven.pkg.jetbrains.space/kotlin/p/kotlin/kotlin-ide-plugin-dependencies
