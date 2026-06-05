@@ -40,9 +40,7 @@ settings:
     powerAssert: enabled
     freeCompilerArgs:
       - -Wextra
-      - -Xannotation-default-target=param-property
-      - -Xconsistent-data-class-copy-visibility
-      - -Xcontext-parameters
+      - -Xconsistent-data-class-copy-visibility # generates copy() with the same visibility as the constructor
       - -Xrender-internal-diagnostic-names
       - -Xreturn-value-checker=check
       - -Xwarning-level=REDUNDANT_ELSE_IN_WHEN:error
