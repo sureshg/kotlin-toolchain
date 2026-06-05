@@ -124,7 +124,7 @@ internal fun AmperProjectContext.doReadProjectModel(
         modules.forEach { diagnostic.analyze(it.module, problemReporter) }
     }
     val model = DefaultModel(
-        projectRoot = projectRootDir.toNioPath(),
+        projectRoot = projectRoot.path,
         modules = modules.map { it.module },
         unreadableModuleFiles = unreadableModuleFiles,
         amperPlugins = amperPlugins,

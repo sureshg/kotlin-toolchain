@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.frontend.aomBuilder.plugins
@@ -37,7 +37,7 @@ internal fun buildAndApplyPlugins(
     val allTasksDescriptions: List<TaskFromPluginDescription> = modules.flatMap { it.module.tasksFromPlugins }
     val context = TaskGraphBuildContext(
         buildDir = projectContext.projectBuildDir,
-        projectRootDir = projectContext.projectRootDir.toNioPath(),
+        projectRootDir = projectContext.projectRoot.path,
     )
     context(context) {
         for (task in allTasksDescriptions) {

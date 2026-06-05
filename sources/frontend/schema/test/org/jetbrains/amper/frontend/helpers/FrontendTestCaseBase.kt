@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.frontend.helpers
@@ -21,8 +21,7 @@ abstract class FrontendTestCaseBase(
     val base: Path,
 ) {
     /**
-     * The path that is treated as a root of the test project by
-     * being passed to the [TestProjectContext.projectRootDir].
+     * The path that is treated as the root of the test project.
      */
     lateinit var buildDir: Path
 

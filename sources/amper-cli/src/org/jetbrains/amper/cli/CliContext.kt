@@ -30,7 +30,7 @@ class CliContext(
     val userCacheRoot: AmperUserCacheRoot,
     val terminal: Terminal,
 ) {
-    val projectRoot: AmperProjectRoot = AmperProjectRoot(projectContext.projectRootDir.toNioPath())
+    val projectRoot: AmperProjectRoot = AmperProjectRoot(projectContext.projectRoot.path)
 
     val buildOutputRoot: AmperBuildOutputRoot by lazy {
         AmperBuildOutputRoot(projectContext.projectBuildDir.createDirectories())

@@ -17,6 +17,7 @@ import org.jetbrains.amper.system.info.Arch
 import org.jetbrains.amper.system.info.OsFamily
 import org.jetbrains.amper.system.info.SystemInfo
 import java.nio.file.Path
+import kotlin.io.path.div
 import kotlin.test.fail
 
 class TestSystemInfo(
@@ -30,7 +31,7 @@ data class TestProjectContext(
     override val frontendPathResolver: FrontendPathResolver,
 ) : AmperProjectContext {
     override val enabledLocalAmperPluginModuleFiles = emptyList<VirtualFile>()
-    override val projectBuildDir: Path get() = projectRootDir.toNioPath()
+    override val projectBuildDir: Path get() = projectRoot.path / "build"
     override var projectVersionsCatalog: VersionCatalog? = null
     override val externalMavenPlugins = emptyList<MavenPlugin>()
 }

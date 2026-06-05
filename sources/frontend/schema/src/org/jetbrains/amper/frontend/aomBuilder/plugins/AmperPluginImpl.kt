@@ -129,7 +129,7 @@ class AmperPluginImpl(
                 // TODO: Maybe at include test-settings here also?
             }
             project {
-                rootDir(projectContext.projectRootDir.toNioPath())
+                rootDir(projectContext.projectRoot.path)
             }
             tasks {
                 for ((taskName, taskBuildRoot) in taskDirs) {
