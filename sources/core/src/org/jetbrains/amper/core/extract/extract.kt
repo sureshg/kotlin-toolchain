@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.core.extract
@@ -96,7 +96,9 @@ private fun extractFileWithFlag(
         // Update file modification time to maintain FIFO caches i.e.
         // in persistent cache folder on TeamCity agent
         val now = FileTime.from(Instant.now())
+        @Suppress("RETURN_VALUE_NOT_USED") // KT-86696
         targetDirectory.setLastModifiedTime(now)
+        @Suppress("RETURN_VALUE_NOT_USED") // KT-86696
         flagFile.setLastModifiedTime(now)
         return
     }
@@ -315,7 +317,7 @@ private fun genericExtract(archiveFile: Path, archive: ArchiveContent, target: P
             } else if (type == Entry.Type.FILE) {
                 entry.inputStream.use { fs -> Files.copy(fs, entryPath, StandardCopyOption.REPLACE_EXISTING) }
                 if (isPosixFs && entry.isExecutable) {
-                    @Suppress("SpellCheckingInspection")
+                    @Suppress("RETURN_VALUE_NOT_USED") // KT-86696
                     entryPath.setPosixFilePermissions(PosixFilePermissions.fromString("rwxr-xr-x"))
                 }
             } else {

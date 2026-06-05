@@ -38,6 +38,7 @@ fun downloadBinary(
         }
         when (systemInfo.os) {
             SystemInfo.Os.Linux, SystemInfo.Os.Mac -> {
+                @Suppress("RETURN_VALUE_NOT_USED") // KT-86696
                 to.setPosixFilePermissions(to.getPosixFilePermissions() + PosixFilePermission.OWNER_EXECUTE)
             }
             SystemInfo.Os.Windows -> {}

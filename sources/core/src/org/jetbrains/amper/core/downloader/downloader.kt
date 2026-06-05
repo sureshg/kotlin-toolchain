@@ -83,6 +83,7 @@ object Downloader {
 
                 // update file modification time to maintain FIFO caches, i.e., in persistent cache folder on TeamCity agent
                 try {
+                    @Suppress("RETURN_VALUE_NOT_USED") // KT-86696
                     target.setLastModifiedTime(FileTime.from(Instant.now()))
                 } catch (t: Throwable) {
                     logger.warn("Unable to update mtime: $target", t)

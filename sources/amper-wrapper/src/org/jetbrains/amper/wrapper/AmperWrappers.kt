@@ -147,6 +147,7 @@ object AmperWrappers {
         )
 
         if (executable && path.fileSystem.supportedFileAttributeViews().contains("posix")) {
+            @Suppress("RETURN_VALUE_NOT_USED") // KT-86696
             path.setPosixFilePermissions(path.getPosixFilePermissions() + PosixFilePermission.OWNER_EXECUTE)
         }
         return path

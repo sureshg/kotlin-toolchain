@@ -158,6 +158,7 @@ class IosBuildTask(
             .resolve("xcbeautify")
         if (!executable.isExecutable()) {
             val permissions = executable.getPosixFilePermissions()
+            @Suppress("RETURN_VALUE_NOT_USED") // KT-86696
             executable.setPosixFilePermissions(permissions + PosixFilePermission.OWNER_EXECUTE)
         }
         return executable
