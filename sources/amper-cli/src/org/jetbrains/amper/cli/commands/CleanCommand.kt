@@ -10,6 +10,7 @@ import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import org.jetbrains.amper.cli.options.ProjectLayoutOptions
 import org.jetbrains.amper.cli.project.findProjectContext
 import org.jetbrains.amper.cli.userReadableError
+import org.jetbrains.amper.cli.widgets.withIndeterminateProgress
 import kotlin.io.path.deleteRecursively
 import kotlin.io.path.exists
 
@@ -28,8 +29,9 @@ internal class CleanCommand : AmperSubcommand(name = "clean") {
         ) ?: userReadableError("No Kotlin project found, nothing to clean")
 
         if (projectContext.projectBuildDir.exists()) {
-            terminal.println("Deleting project build output and caches…")
-            projectContext.projectBuildDir.deleteRecursively()
+            terminal.withIndeterminateProgress("Deleting project build output and caches…") {
+                projectContext.projectBuildDir.deleteRecursively()
+            }
         }
         printSuccessfulCommandConclusion("Clean successful")
     }

@@ -16,6 +16,7 @@ import com.github.ajalt.clikt.parameters.types.path
 import org.jetbrains.amper.buildinfo.AmperBuild
 import org.jetbrains.amper.cli.terminal.interactiveSelectList
 import org.jetbrains.amper.cli.userReadableError
+import org.jetbrains.amper.cli.widgets.withIndeterminateProgress
 import org.jetbrains.amper.system.info.OsFamily
 import org.jetbrains.amper.templates.AmperProjectTemplate
 import org.jetbrains.amper.templates.AmperProjectTemplates
@@ -44,10 +45,10 @@ internal class InitCommand : AmperSubcommand(name = "init") {
 
     override suspend fun run() {
         val selectedTemplate = template ?: promptForTemplate()
-        terminal.println("Extracting template ${terminal.theme.info(selectedTemplate.id)} to ${targetDir}…")
-
-        selectedTemplate.extractTo(outputDir = targetDir)
-        val wrappersGenerated = generateWrapperScripts(targetDir)
+        val wrappersGenerated = terminal.withIndeterminateProgress("Extracting template ${terminal.theme.info(selectedTemplate.id)} to ${targetDir}…") {
+            selectedTemplate.extractTo(outputDir = targetDir)
+            generateWrapperScripts(targetDir)
+        }
 
         printSuccessfulCommandConclusion("Project successfully generated")
 

@@ -11,7 +11,7 @@ import org.jetbrains.amper.cli.AmperProjectRoot
 import org.jetbrains.amper.cli.CliProblemReporter
 import org.jetbrains.amper.cli.logging.infoNoConsole
 import org.jetbrains.amper.cli.userReadableError
-import org.jetbrains.amper.cli.widgets.simpleSpinnerProgressIndicator
+import org.jetbrains.amper.cli.widgets.withIndeterminateProgress
 import org.jetbrains.amper.frontend.plugins.PluginManifest
 import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.incrementalcache.executeForSerializable
@@ -38,15 +38,15 @@ internal suspend fun doPreparePlugins(
     ) {
         logger.infoNoConsole("Processing local plugin schema for [${plugins.values.joinToString { it.id }}]...")
 
-        val widgetJob = simpleSpinnerProgressIndicator(terminal, "Pre-processing local plugins (will be cached)")
-        try {
+        terminal.withIndeterminateProgress(
+            message = terminal.theme.muted("Pre-processing local plugins (will be cached)"),
+            messageNonInteractive = null, // no message in case of redirected output, to avoid polluting the "real data"
+        ) {
             runAmperSchemaProcessor(
                 projectRoot = projectRoot,
                 plugins = plugins,
                 processRunner = processRunner,
             )
-        } finally {
-            widgetJob.cancel()
         }
     }
 
