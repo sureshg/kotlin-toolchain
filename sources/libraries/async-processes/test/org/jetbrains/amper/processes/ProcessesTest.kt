@@ -21,6 +21,7 @@ import kotlin.test.fail
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
+import kotlin.time.measureTimedValue
 
 private val isWindows = System.getProperty("os.name").startsWith("win", ignoreCase = true)
 
@@ -67,7 +68,7 @@ class ProcessesTest {
     @Test
     fun `awaitListening should terminate normally if the process is killed externally`() = runBlocking(Dispatchers.IO) {
         @Suppress("PROCESS_BUILDER_START_LEAK") // we're literally testing the mechanism
-        val process = ProcessBuilder(echoLoop(n = 100000, message = loremIpsum1000)).start()
+        val process = ProcessBuilder(echoLoop(n = 10_000_000, message = loremIpsum1000)).start()
 
         val firstOutputEvent = CompletableDeferred<Unit>()
         val capture = ProcessOutputListener.InMemoryCapture()
@@ -94,8 +95,13 @@ class ProcessesTest {
         process.waitFor(1, TimeUnit.SECONDS)
         assertTerminated(process, "The process should have terminated by now, because it was explicitly killed")
 
-        val exitCode = withTimeoutOrNull(500.milliseconds) { deferredExitCode.await() }
-        assertNotNull(exitCode, "The result should be returned quickly after the destruction of the process")
+        val (exitCode, time) = measureTimedValue {
+            withTimeoutOrNull(5.seconds) { deferredExitCode.await() }
+        }
+        assertTrue(time < 1.seconds, "The result should be returned quickly (<1s) after the destruction of the process, but it took $time")
+        check(exitCode != null) {
+            "The exitCode should not be null (which means timeout) it the assertion about the duration succeeded"
+        }
 
         // We don't assert anything on stderr, because the way the process is killed may lead to unpredictable stderr.
         // For example, on Windows, there seems to be races between the cleanup of the standard streams pipes and the
