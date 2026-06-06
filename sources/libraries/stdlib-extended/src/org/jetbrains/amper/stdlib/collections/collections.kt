@@ -115,7 +115,9 @@ inline fun <T, K, V : Any> Iterable<T>.associateByNotNull(keySelector: (T) -> K,
  * Iterates through the elements of the collection and applies the given [block] function to each element.
  *
  * The difference from regular [forEach] is that the [block] function also receives a boolean indicating whether
- * the current element is the last one in the collection.
+ * the current element is the last one in the iteration.
  */
-inline fun <T> Collection<T>.forEachEndAware(block: (isLast: Boolean, T) -> Unit) =
-    forEachIndexed { index, it -> block(index == size - 1, it) }
+inline fun <T> Collection<T>.forEachEndAware(block: (isLast: Boolean, item: T) -> Unit) =
+    forEachIndexed { index, item ->
+        block(index == size - 1, item)
+    }
