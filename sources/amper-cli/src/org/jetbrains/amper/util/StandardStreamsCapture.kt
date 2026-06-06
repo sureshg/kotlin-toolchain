@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.util
@@ -39,14 +39,14 @@ object StandardStreamsCapture {
             errStream to Interception(onStderrLine),
         )
         try {
-            for ((stream, interception) in streamToInterception) {
+            for ([stream, interception] in streamToInterception) {
                 check(stream.currentInterception == null) { "capturingStandardStreams is not reentrant!" }
                 stream.currentInterception = interception
             }
 
             return block()
         } finally {
-            for ((stream, interception) in streamToInterception) {
+            for ([stream, interception] in streamToInterception) {
                 stream.currentInterception = null
                 // Flush the remaining stuff if any
                 flushAllRemaining(interception)

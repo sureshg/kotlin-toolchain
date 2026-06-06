@@ -628,7 +628,7 @@ private class UnspecifiedMavenDependencyVersionHelper(val unspecifiedVersionProv
         return unversionedNodesByKey.values.flatMap { nodes ->
             val resolvedNodes = unspecifiedVersionProvider.resolveVersions(nodes)
 
-            resolvedNodes.forEach { (node, resolvedVersion) ->
+            resolvedNodes.forEach { [node, resolvedVersion] ->
                 node.updateDependency(node.context.createOrReuseDependency(node.dependency.coordinates.copy(version = resolvedVersion)))
                 node.versionFromBom = resolvedVersion
                 nodes.remove(node)

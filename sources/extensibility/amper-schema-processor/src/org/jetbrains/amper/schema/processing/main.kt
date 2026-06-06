@@ -87,11 +87,11 @@ internal fun runSchemaProcessor(
         }
     }
 
-    val results = modules.map { (sourceDir, module) ->
+    val results = modules.map { [sourceDir, module] ->
         analyze(module) {
             val request = request.requests.first { it.sourceDir == sourceDir }
             val diagnostics = mutableListOf<KotlinSchemaBuildProblem>()
-            val (declarations, parsedPluginSettingsName) = parsePluginDeclarations(
+            val [declarations, parsedPluginSettingsName] = parsePluginDeclarations(
                 files = session.modulesWithFiles[module]?.filterIsInstance<KtFile>().orEmpty(),
                 diagnostics = diagnostics,
                 isParsingAmperApi = request.isParsingAmperApi,

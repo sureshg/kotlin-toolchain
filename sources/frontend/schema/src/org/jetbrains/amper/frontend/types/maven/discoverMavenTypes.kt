@@ -37,7 +37,7 @@ internal fun createMavenPluginsSettingsDeclaration(pluginXmls: List<MavenPluginX
 private fun singleMavenPluginProperty(plugin: MavenPluginXml, mojo: Mojo): SchemaObjectDeclaration.Property {
     val mojoConfigProperties = mojo.parameters.filter { it.editable }.mapNotNull { parameter ->
         val isNullable = !parameter.required
-        val (type, defaultValue) = parameter.calculateTypeWithDefault() ?: return@mapNotNull null
+        val [type, defaultValue] = parameter.calculateTypeWithDefault() ?: return@mapNotNull null
         
         val propertyConfig = mojo.configuration.parameterValues.singleOrNull { it.parameterName == parameter.name }
         val finalDefault = if (isNullable) Default.Static(null)// Here default value is set only to calm Amper validation, since actual defaults

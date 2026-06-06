@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.engine
@@ -60,9 +60,9 @@ class TaskGraphBuilder {
         }
 
         builtBy.groupBy(
-            keySelector = { (artifact, _) -> artifact.path.normalize() },
-            valueTransform = { (_, task) -> task },
-        ).forEach { (path, tasks) ->
+            keySelector = { [artifact, _] -> artifact.path.normalize() },
+            valueTransform = { [_, task] -> task },
+        ).forEach { [path, tasks] ->
             if (tasks.size > 1) {
                 error("Artifact with $path is built by multiple tasks: ${tasks.map { it.taskName }}")
             }
@@ -74,7 +74,7 @@ class TaskGraphBuilder {
 
             artifactTask.consumes.forEach { query ->
                 val matchedArtifacts = mutableListOf<Artifact>()
-                for ((artifact, task) in builtBy) if (query.matches(artifact)) {
+                for ([artifact, task] in builtBy) if (query.matches(artifact)) {
                     taskDependencies += task
                     matchedArtifacts += artifact
                 }
@@ -83,7 +83,7 @@ class TaskGraphBuilder {
                 }
                 resolvedConsumes[query] = matchedArtifacts
             }
-            resolvedConsumes.forEach { (selector, resolved) ->
+            resolvedConsumes.forEach { [selector, resolved] ->
                 when(selector.quantifier) {
                     Quantifier.Single -> check(resolved.size == 1) { "Expected $selector, got ${resolved.size} artifacts" }
                     Quantifier.AtLeastOne -> check(resolved.isNotEmpty()) { "Expected $selector, got ${resolved.size} artifacts" }

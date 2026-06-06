@@ -257,7 +257,7 @@ internal fun <T : SchemaNode> parseAndGenerateSchemaNode(clazz: KClass<T>): Pars
                 }
 
                 // Generate builder helpers (named `ValueSinkPoint` accessors)
-                propertyDescriptors.entries.forEachIndexed { i, (propertyName, parsedType) ->
+                propertyDescriptors.entries.forEachIndexed { i, [propertyName, parsedType] ->
                     val descriptorTypeName = parsedType.toBuilderDescriptorTypeName()
                     val sinkPointType = ValueSinkPoint::class.asTypeName()
                         .parameterizedBy(descriptorTypeName, SchemaObjectDeclaration.Property::class.asTypeName())

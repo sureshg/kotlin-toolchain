@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.maven
@@ -23,7 +23,7 @@ internal class ProjectTreeMaterializer(private val amperForest: AmperForest) {
             options = arrayOf(StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING),
         )
 
-        amperForest.modules.forEach { (modulePath, moduleWithComments) ->
+        amperForest.modules.forEach { [modulePath, moduleWithComments] ->
             if (modulePath.exists() && !overwrite) {
                 throw FileAlreadyExistsException(modulePath.toFile())
             }

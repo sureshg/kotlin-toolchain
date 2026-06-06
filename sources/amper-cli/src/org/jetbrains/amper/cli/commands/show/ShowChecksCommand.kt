@@ -99,11 +99,11 @@ internal class ShowChecksCommand : AmperModelAwareCommand(name = "checks") {
     }
 
     private fun printPlain(checks: List<QualifiedName>) {
-        for ((name, pluginId) in checks) {
+        for ((simpleName, pluginId) in checks) {
             if (pluginId != null) {
-                terminal.println(Markdown("`$pluginId`:`$name`"))
+                terminal.println(Markdown("`$pluginId`:`$simpleName`"))
             } else {
-                terminal.println(Markdown("`$name`"))
+                terminal.println(Markdown("`$simpleName`"))
             }
         }
     }

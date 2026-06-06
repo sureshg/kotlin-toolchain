@@ -28,7 +28,7 @@ class SchemaTypingContext(
         valueTransform = { PluginDeclarations(it) },
     )
 
-    private val pluginYamlDeclarations = pluginDeclarations.mapValues { (_, declarations) ->
+    private val pluginYamlDeclarations = pluginDeclarations.mapValues { [_, declarations] ->
         DeclarationOfPluginYamlRoot(
             pluginSettingsPlaceholderDeclaration = declarations.settingsClassDeclaration,
             taskDeclaration = DeclarationOfTask(
@@ -64,7 +64,7 @@ class SchemaTypingContext(
         override val isExternalDependencyNotation = false
         override val qualifiedName get() = "org.jetbrains.amper.frontend.schema.PluginSettings"
         override fun createInstance() = PluginSettings()
-        override val properties: List<Property> = pluginDeclarations.map { (id, declarations) ->
+        override val properties: List<Property> = pluginDeclarations.map { [id, declarations] ->
             Property(
                 name = id.value,
                 type = declarations.settingsClassDeclaration.toType(isMarkedNullable = true),
@@ -287,7 +287,7 @@ private fun Defaults.toValue(): Any? = when(this) {
     is Defaults.StringDefault -> value
     is Defaults.IntDefault -> value
     is Defaults.ListDefault -> value.map { it.toValue() }
-    is Defaults.MapDefault -> value.mapValues { (_, it) -> it.toValue() }
+    is Defaults.MapDefault -> value.mapValues { it.value.toValue() }
     Defaults.Null -> null
 }
 

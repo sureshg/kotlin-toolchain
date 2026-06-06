@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.tasks.compose
@@ -30,7 +30,7 @@ private fun ProjectTasksBuilder.configureComposeResourcesGeneration() {
 
         // `expect` is generated in `common` only, while `actual` are generated in the refined fragments.
         //  do not separate `expect`/`actual` if the module only contains a single main fragment.
-        val (testFragments, mainFragments) = module.fragments.partition { it.isTest }
+        val [testFragments, mainFragments] = module.fragments.partition { it.isTest }
         val shouldSeparateExpectActual = mainFragments.size > 1 || testFragments.size > 1
 
         /*

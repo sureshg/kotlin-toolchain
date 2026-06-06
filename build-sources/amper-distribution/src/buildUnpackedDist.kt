@@ -26,10 +26,10 @@ fun buildUnpackedDist(
     (outputDir / "kotlin-cli.args").writeText(argFileContents())
 
     copyWithDeduplication(outputDir / "lib", baseClasspath.resolvedFiles)
-    extraClasspaths.forEach { (key, classpath) ->
+    extraClasspaths.forEach { [key, classpath] ->
         copyWithDeduplication(outputDir / key, classpath.resolvedFiles)
     }
-    extraFilteredClasspaths.forEach { (key, classpath) ->
+    extraFilteredClasspaths.forEach { [key, classpath] ->
         copyWithDeduplication(outputDir / key, classpath.resolvedFiles)
     }
 

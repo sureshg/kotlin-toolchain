@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.frontend.api
@@ -24,11 +24,11 @@ fun SchemaNode.toStableJsonLikeString(): String = backingTree.toStableJsonLikeSt
 
 fun CompleteObjectNode.toStableJsonLikeString(): String = refinedChildren
     .entries
-    .sortedBy { (k, _) -> k }
+    .sortedBy { it.key }
     .joinToString(
         prefix = "{",
         postfix = "}",
-        transform = { (k, kv) -> "$k: ${serializeToJsonLike(kv.value)}" },
+        transform = { [k, kv] -> "$k: ${serializeToJsonLike(kv.value)}" },
     )
 
 private fun serializeToJsonLike(node: CompleteTreeNode): String = when (node) {
@@ -41,7 +41,7 @@ private fun serializeToJsonLike(node: CompleteTreeNode): String = when (node) {
     is CompleteMapNode -> node.refinedChildren.entries.joinToString(
         prefix = "{",
         postfix = "}",
-        transform = { (k, kv) -> "$k: ${serializeToJsonLike(kv.value)}" }
+        transform = { [k, kv] -> "$k: ${serializeToJsonLike(kv.value)}" }
     )
 
     is CompleteObjectNode -> node.toStableJsonLikeString()

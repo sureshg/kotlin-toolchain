@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.tasks.custom
@@ -51,7 +51,7 @@ class ValueMarshaller(
                 value.children.map(::marshallValue)
             }
             is CompleteMapNode -> withValueCache(value) {
-                value.refinedChildren.mapValues { (_, v) -> marshallValue(v.value) }
+                value.refinedChildren.mapValues { [_, v] -> marshallValue(v.value) }
             }
             is CompleteObjectNode -> withValueCache(value) {
                 createProxy(

@@ -27,7 +27,7 @@ class TestCollectorTest {
         }
 
         assertEquals(2, spans.size)
-        val (span1, span2) = spans.sortedBy { it.name }
+        val [span1, span2] = spans.sortedBy { it.name }
 
         assertEquals("span1", span1.name)
         assertEquals("key1=value1", span1.attributes.asMap().map { "${it.key}=${it.value}" }.joinToString(" "))

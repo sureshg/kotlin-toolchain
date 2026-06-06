@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.frontend.helpers
@@ -50,14 +50,14 @@ fun annotateTextWithDiagnostics(
         }
     }
 
-    val (diagnosticsWithOffsetsUntyped, diagnosticsWithoutOffsets) = locationToDiagnosticMap.partition { (source, _) ->
+    val [diagnosticsWithOffsetsUntyped, diagnosticsWithoutOffsets] = locationToDiagnosticMap.partition { [source] ->
         source is FileWithRangesBuildProblemSource
     }
     @Suppress("UNCHECKED_CAST") // we just checked this
     val diagnosticsWithOffsets = diagnosticsWithOffsetsUntyped as List<Pair<FileWithRangesBuildProblemSource, BuildProblem>>
 
     return buildString {
-        appendFileDiagnostics(diagnosticsWithoutOffsets.filter { (source, _) ->
+        appendFileDiagnostics(diagnosticsWithoutOffsets.filter { [source] ->
             source is FileBuildProblemSource && source.file == origin
         }.map { it.second }, sanitizeDiagnostic)
         appendFileTextDecoratedWithDiagnostics(origin, intoText, diagnosticsWithOffsets, sanitizeDiagnostic)
@@ -99,7 +99,7 @@ private fun StringBuilder.appendFileTextDecoratedWithDiagnostics(
 ) {
     val sortedDiagnostics = diagnostics.sortedWith(diagnosticComparator)
 
-    val diagnosticPoints: List<DiagnosticPoint> = sortedDiagnostics.flatMap { (source, diagnostic) ->
+    val diagnosticPoints: List<DiagnosticPoint> = sortedDiagnostics.flatMap { [source, diagnostic] ->
         if (source.file == origin) {
             val startOffset = source.offsetRange.first
             val endOffset = source.offsetRange.last

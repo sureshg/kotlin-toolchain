@@ -198,11 +198,11 @@ class InitialMavenPhaseTask(parameters: PhaseTaskParameters) : BeforeMavenPhaseT
             .filterIsInstance<MavenDependencyNode>()
             // Filter out all dependencies without files.
             .mapNotNull { it.dependency.files().firstOrNull()?.path?.to(it) }
-            .map { (path, it) ->
+            .map { [path, node] ->
                 DefaultMavenArtifact(
-                    groupId = it.dependency.group,
-                    artifactId = it.dependency.module,
-                    version = it.dependency.version ?: "unspecified",
+                    groupId = node.dependency.group,
+                    artifactId = node.dependency.module,
+                    version = node.dependency.version ?: "unspecified",
                     scope = "runtime",
                     type = "jar",
                     isAddedToClasspath = true

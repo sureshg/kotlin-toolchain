@@ -11,7 +11,6 @@ import org.jetbrains.amper.cli.test.utils.runSlowTest
 import org.jetbrains.amper.processes.ProcessInput
 import org.jetbrains.amper.system.info.OsFamily
 import org.jetbrains.amper.test.AmperCliResult
-import org.jetbrains.amper.test.LocalAmperPublication
 import org.junit.jupiter.api.Disabled
 import java.nio.file.FileSystemException
 import java.nio.file.Path
@@ -57,9 +56,9 @@ class AmperUpdateTest : AmperCliTestBase() {
     fun `update command without options replaces existing wrappers with latest release`() = runSlowTest {
         val projectDir = newEmptyProjectDir(setupWrappers = true)
 
-        val (bashVersion, batVersion, result) = runAmperUpdateAndAwaitWinWrapper(projectDir)
+        val (bashVersion, batVersion, commandResult) = runAmperUpdateAndAwaitWinWrapper(projectDir)
 
-        assertTrue(result.stdout.contains("Update successful"), "Update should be successful")
+        assertTrue(commandResult.stdout.contains("Update successful"), "Update should be successful")
         assertNotEquals("1.0-SNAPSHOT", bashVersion, "kotlin bash script should have the new version")
         assertNotEquals("1.0-SNAPSHOT", batVersion, "kotlin bat script should have the new version")
         assertFalse(bashVersion.contains("-dev-"), "kotlin bash script should not get a dev version, got $bashVersion")
@@ -70,9 +69,9 @@ class AmperUpdateTest : AmperCliTestBase() {
     fun `update --dev command replaces existing wrappers with latest dev version`() = runSlowTest {
         val projectDir = newEmptyProjectDir(setupWrappers = true)
 
-        val (bashVersion, batVersion, result) = runAmperUpdateAndAwaitWinWrapper(projectDir, "--dev")
+        val (bashVersion, batVersion, commandResult) = runAmperUpdateAndAwaitWinWrapper(projectDir, "--dev")
 
-        assertTrue(result.stdout.contains("Update successful"), "Update should be successful")
+        assertTrue(commandResult.stdout.contains("Update successful"), "Update should be successful")
         // This is not technically correct: right after a release, the release version should be picked up
         // (it's the latest among all versions, release + dev)
         assertTrue(bashVersion.contains("-dev-"), "kotlin bash script new version should contain '-dev-', got $bashVersion")
@@ -83,9 +82,9 @@ class AmperUpdateTest : AmperCliTestBase() {
     fun `update --target-version command replaces existing wrappers with specific version`() = runSlowTest {
         val projectDir = newEmptyProjectDir(setupWrappers = true)
 
-        val (bashVersion, batVersion, result) = runAmperUpdateAndAwaitWinWrapper(projectDir, "--target-version=0.11.0-dev-3939")
+        val (bashVersion, batVersion, commandResult) = runAmperUpdateAndAwaitWinWrapper(projectDir, "--target-version=0.11.0-dev-3939")
 
-        assertTrue(result.stdout.contains("Update successful"), "Update should be successful")
+        assertTrue(commandResult.stdout.contains("Update successful"), "Update should be successful")
         assertEquals("0.11.0-dev-3939", bashVersion, "kotlin bash script should have the new version")
         assertEquals("0.11.0-dev-3939", batVersion, "kotlin bat script should have the new version")
     }
@@ -95,9 +94,9 @@ class AmperUpdateTest : AmperCliTestBase() {
     fun `can downgrade from current to 0_11_0-dev-3939`() = runSlowTest {
         val projectDir = newEmptyProjectDir(setupWrappers = true)
 
-        val (bashVersion, batVersion, result) = runAmperUpdateAndAwaitWinWrapper(projectDir, "--target-version=0.11.0-dev-3939")
+        val (bashVersion, batVersion, commandResult) = runAmperUpdateAndAwaitWinWrapper(projectDir, "--target-version=0.11.0-dev-3939")
 
-        assertTrue(result.stdout.contains("Update successful"), "Update should be successful")
+        assertTrue(commandResult.stdout.contains("Update successful"), "Update should be successful")
         assertEquals("0.11.0-dev-3939", bashVersion, "kotlin bash script should have the new version")
         assertEquals("0.11.0-dev-3939", batVersion, "kotlin bat script should have the new version")
     }

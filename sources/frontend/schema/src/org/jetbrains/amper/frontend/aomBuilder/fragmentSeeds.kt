@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.frontend.aomBuilder
@@ -83,7 +83,7 @@ fun Module.buildFragmentSeeds(): Set<FragmentSeed> {
 
     // Extract part of the hierarchy that will be used to create fragments.
     val applicableHierarchy = Platform.naturalHierarchyExt.entries
-        .filter { (_, v) -> declaredLeafPlatforms.intersect(v).isNotEmpty() }
+        .filter { declaredLeafPlatforms.intersect(it.value).isNotEmpty() }
         // Limit leaf platforms in values by actually declared platforms.
         .associate { it.key to (it.value intersect declaredLeafPlatforms) }
 
@@ -91,7 +91,7 @@ fun Module.buildFragmentSeeds(): Set<FragmentSeed> {
     val resultSeeds = buildSet {
 
         // Add seeds for applicable hierarchy.
-        applicableHierarchy.forEach { (hierarchyPlatform, platforms) ->
+        applicableHierarchy.forEach { [hierarchyPlatform, platforms] ->
             this += FragmentSeed(
                 platforms,
                 if (hierarchyPlatform == Platform.COMMON) "" else "@${hierarchyPlatform.pretty}",
@@ -100,7 +100,7 @@ fun Module.buildFragmentSeeds(): Set<FragmentSeed> {
         }
 
         // Add seeds for declared aliases.
-        aliases2leaves.forEach { (alias, platforms) ->
+        aliases2leaves.forEach { [alias, platforms] ->
             this += FragmentSeed(
                 platforms,
                 "@$alias",

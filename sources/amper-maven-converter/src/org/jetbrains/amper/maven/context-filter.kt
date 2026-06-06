@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.maven
@@ -63,7 +63,7 @@ fun TreeNode.filterByContext(
 
 private fun listsAreEqual(a: List<TreeNode>, b: List<TreeNode>): Boolean {
     if (a.size != b.size) return false
-    return a.zip(b).all { (aChild, bChild) -> treesAreEqual(aChild, bChild) }
+    return a.zip(b).all { (first, second) -> treesAreEqual(first, second) }
 }
 
 private fun treesAreEqual(a: TreeNode, b: TreeNode): Boolean {

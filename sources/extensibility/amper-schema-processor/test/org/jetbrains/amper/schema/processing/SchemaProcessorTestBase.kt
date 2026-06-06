@@ -89,15 +89,17 @@ abstract class SchemaProcessorTestBase {
         val result = runSchemaProcessor(PluginDeclarationsRequest(listOf(request))).single()
 
         for (source in sources) {
-            val markers = mutableListOf<Pair<String, Int>>()
+            data class Marker(val contents: String, val position: Int)
+
+            val markers = mutableListOf<Marker>()
             for (error in result.diagnostics) {
                 for (range in error.source.offsetRangesInFile(source.path)) {
-                    markers += "/*{{*/" to range.first
-                    markers += "/*}} ${error.message} */" to range.last
+                    markers += Marker(contents = "/*{{*/", position = range.first)
+                    markers += Marker(contents = "/*}} ${error.message} */", position = range.last)
                 }
             }
             // Sorting all the markers to insert them one-by-one from the end to avoid offsets recalculation
-            markers.sortByDescending { (_, position) -> position }
+            markers.sortByDescending { it.position }
 
             val markedContents = StringBuilder(source.contentsWithoutComments).run {
                 for ((contents, position) in markers) {

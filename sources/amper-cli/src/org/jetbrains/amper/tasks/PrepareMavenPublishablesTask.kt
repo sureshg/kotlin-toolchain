@@ -76,7 +76,7 @@ class PrepareMavenPublishablesTask(
 
             assertNoDirectories(modulePublishablesFromOtherTasks)
 
-            val poms = coordsPerPlatform.map { (platform, coords) ->
+            val poms = coordsPerPlatform.map { [platform, coords] ->
                 generatePomFile(module, platform, depsCoordinatesOverrides).toMavenPublishable(coords)
             }
             val meaningfulPublishables = poms + modulePublishablesFromOtherTasks

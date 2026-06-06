@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.dependency.resolution
@@ -130,7 +130,7 @@ private fun Set<DependencyNode>.addDecisiveParents(
         }
 
         groupedByCoordinates.flatMap { entry ->
-            val (group, module) = entry.key
+            val [group, module] = entry.key
             val dependenciesAndConstraints = entry.value
 
             val effectiveNodes = dependenciesAndConstraints.filter {

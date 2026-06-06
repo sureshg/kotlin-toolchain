@@ -80,7 +80,7 @@ internal abstract class AbstractResolveJvmExternalDependenciesTask(
                 })
                 .use {
                     val externalDependenciesCoordinates = externalUnscopedDependencies.map {
-                        val (dependencyCoordinates, isBom) = when(it) {
+                        val [dependencyCoordinates, isBom] = when(it) {
                             is UnscopedExternalMavenDependency -> it to false
                             is UnscopedBomDependency -> it.bom as UnscopedExternalMavenDependency to true
                             else -> error("Unexpected dependency type: ${it::class.qualifiedName}")

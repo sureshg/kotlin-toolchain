@@ -86,7 +86,7 @@ class MavenCentralPublishTask(
                     // TODO get additional information from the status object? There is supposedly an 'errors' field in this case.
                     DeploymentState.FAILED -> userReadableError{
                         appendLine("Maven Central publication failed for module ${module.userReadableName} (deployment ID: '$deploymentId'):")
-                        it.errors.forEach { (group, messages) ->
+                        it.errors.forEach { [group, messages] ->
                             appendLine("  $group:")
                             messages.forEach {
                                 appendLine("   - $it")

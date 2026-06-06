@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.tasks.ios
@@ -35,7 +35,7 @@ internal val Platform.sdk
     }
 
 internal fun Map<String, *>.toPlist(): Plist = Plist().also { plist ->
-    for ((k, v) in this) {
+    for ([k, v] in this) {
         @Suppress("UNCHECKED_CAST") // non-string keys will fail in toPlist() when used as Strings
         plist[k] = when (v) {
             is Map<*, *> -> (v as Map<String, *>).toPlist()

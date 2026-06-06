@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package kotlinx.validation.api
@@ -337,7 +337,7 @@ fun List<ClassBinarySignature>.retainExplicitlyIncludedIfDeclared(
     val classesPaths = publicClasses.map(::toSlashSeparatedPath).toSet()
     val markerAnnotations = publicMarkerAnnotations.map(::replaceDots).toSet()
 
-    val (includedByPackageOrClass, potentiallyAnnotated) = this.partition { signature ->
+    val [includedByPackageOrClass, potentiallyAnnotated] = this.partition { signature ->
         signature.isInClasses(classesPaths) || signature.isInPackages(packagePaths)
     }
 

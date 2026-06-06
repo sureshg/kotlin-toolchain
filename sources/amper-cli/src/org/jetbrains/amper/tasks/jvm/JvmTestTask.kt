@@ -158,7 +158,7 @@ class JvmTestTask(
                 add("-Djunit.vintage.discovery.issue.reporting.enabled=false")
             }
 
-            addAll(jvmTestSettings.systemProperties.map { (k, v) -> "-D${k.value}=${v.value}" })
+            addAll(jvmTestSettings.systemProperties.map { [k, v] -> "-D${k.value}=${v.value}" })
             addAll(jvmTestSettings.freeJvmArgs)
 
             addAll(runSettings.userJvmArgs)
@@ -185,7 +185,7 @@ class JvmTestTask(
         val workingDirectory = module.source.moduleDir
 
         val environment = jvmTestSettings.extraEnvironment
-            .map { (k, v) -> k.value to v.value }
+            .map { [k, v] -> k.value to v.value }
             .toMap()
 
         return spanBuilder("junit-platform-console-standalone")

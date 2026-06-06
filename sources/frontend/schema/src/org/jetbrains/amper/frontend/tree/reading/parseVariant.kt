@@ -189,7 +189,7 @@ context(_: Contexts, _: ParsingConfig, _: ProblemReporter)
 internal fun tryInferTypeFromKnownKeys(value: YamlValue.Mapping): DependencyTypeInferenceResult? {
     val yamlKeys = value.keyValues.mapNotNull { parsePropertyKeyContexts(it.key)?.first }.toSet()
     return knownPropertiesDiscriminatedTypes.entries
-        .firstOrNull { (uniqueKeys, _) -> yamlKeys.any { it in uniqueKeys } }
+        .firstOrNull { [uniqueKeys, _] -> yamlKeys.any { it in uniqueKeys } }
         ?.value
 }
 

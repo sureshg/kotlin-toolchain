@@ -32,17 +32,19 @@ import kotlin.io.path.writeText
 
 internal object AndroidToolsInstaller {
 
+    private data class License(val name: String, val hash: String)
+
     // from https://github.com/thyrlian/AndroidSDK/blob/master/android-sdk/license-accepter.sh
-    private val licensesToAccept: List<Pair<String, String>> = listOf(
-        "android-googletv-license" to "601085b94cd77f0b54ff86406957099ebe79c4d6",
-        "android-sdk-license" to "8933bad161af4178b1185d1a37fbf41ea5269c55",
-        "android-sdk-license" to "d56f5187479451eabf01fb78af6dfcb131a6481e",
-        "android-sdk-license" to "24333f8a63b6825ea9c5514f83c2829b004d1fee",
-        "android-sdk-preview-license" to "84831b9409646a918e30573bab4c9c91346d8abd",
-        "android-sdk-preview-license" to "504667f4c0de7af1a06de9f4b1727b84351f2910",
-        "google-gdk-license" to "33b6a2b64607f11b759f320ef9dff4ae5c47d97a",
-        "intel-android-extra-license" to "d975f751698a77b662f1254ddbeed3901e976f5a",
-        "android-sdk-arm-dbt-license" to "859f317696f67ef3d7f30a50a5560e7834b43903",
+    private val licensesToAccept: List<License> = listOf(
+        License(name = "android-googletv-license", hash = "601085b94cd77f0b54ff86406957099ebe79c4d6"),
+        License(name = "android-sdk-license", hash = "8933bad161af4178b1185d1a37fbf41ea5269c55"),
+        License(name = "android-sdk-license", hash = "d56f5187479451eabf01fb78af6dfcb131a6481e"),
+        License(name = "android-sdk-license", hash = "24333f8a63b6825ea9c5514f83c2829b004d1fee"),
+        License(name = "android-sdk-preview-license", hash = "84831b9409646a918e30573bab4c9c91346d8abd"),
+        License(name = "android-sdk-preview-license", hash = "504667f4c0de7af1a06de9f4b1727b84351f2910"),
+        License(name = "google-gdk-license", hash = "33b6a2b64607f11b759f320ef9dff4ae5c47d97a"),
+        License(name = "intel-android-extra-license", hash = "d975f751698a77b662f1254ddbeed3901e976f5a"),
+        License(name = "android-sdk-arm-dbt-license", hash = "859f317696f67ef3d7f30a50a5560e7834b43903"),
     )
 
     private val toolsToInstall = listOf(
@@ -77,7 +79,7 @@ internal object AndroidToolsInstaller {
             inputValues = mapOf(
                 "androidSdkHomePath" to androidSdkHome.pathString,
                 "cmdlineToolsRevision" to getCmdlineToolsPkgRevision(commandLineToolsZip),
-                "licensesToAccept" to licensesToAccept.joinToString(" ") { "${it.first}-${it.second}" },
+                "licensesToAccept" to licensesToAccept.joinToString(" ") { "${it.name}-${it.hash}" },
                 "toolsToInstall" to toolsToInstall.joinToString(" "),
             ),
             inputFiles = emptyList()

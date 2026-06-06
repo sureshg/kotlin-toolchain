@@ -20,13 +20,14 @@ object TemplateNameWithoutPostfix : TreeDiagnosticFactory {
 
     override fun analyze(root: TreeNode, minimalModule: MinimalModule, problemReporter: ProblemReporter) =
         root.visitListProperties(Module::apply) { _, templatesRaw ->
-            templatesRaw.children.map { it to (it as? PathNode)?.value }.forEach { (tValue, template) ->
+            templatesRaw.children.forEach { node ->
+                val template = (node as? PathNode)?.value
                 if (template?.exists() == true &&
                     template.extension != "amper" &&
                     !template.pathString.endsWith(".module-template.yaml")
                 ) {
                     problemReporter.reportBundleError(
-                        source = tValue.trace.asBuildProblemSource(),
+                        source = node.trace.asBuildProblemSource(),
                         diagnosticId = FrontendDiagnosticId.TemplateNameWithoutPostfix,
                         messageKey = "template.name.without.postfix",
                     )

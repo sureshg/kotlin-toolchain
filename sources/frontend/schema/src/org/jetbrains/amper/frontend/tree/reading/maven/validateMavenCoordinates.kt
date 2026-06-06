@@ -73,7 +73,7 @@ private fun reportIfCoordinatesAreGradleLike(
 ) {
     val probableGradleScope = GradleScope.parseGradleScope(coordinates)
     if (probableGradleScope != null) {
-        val (gradleScope, trimmedCoordinates) = probableGradleScope
+        val [gradleScope, trimmedCoordinates] = probableGradleScope
         reporter.reportMessage(
             DependencyCoordinatesInGradleFormat(
                 element = origin,

@@ -42,8 +42,8 @@ internal fun mapAliasesToLeaves(
     product: ModuleProduct,
 ): Map<TraceableString, Set<Platform>> = buildMap {
     val productLeafPlatforms = product.platforms.leaves
-    for ((alias, aliasPlatforms) in declaredAliases) {
-        val (declaredLeafPlatforms, nonLeafPlatforms) = aliasPlatforms.partition { it.value.isLeaf }
+    for ([alias, aliasPlatforms] in declaredAliases) {
+        val [declaredLeafPlatforms, nonLeafPlatforms] = aliasPlatforms.partition { it.value.isLeaf }
         for (nonLeafPlatform in nonLeafPlatforms) {
             val canBeExpandedTo = (nonLeafPlatform.value.leaves intersect productLeafPlatforms).takeIf { it.isNotEmpty() }
             problemReporter.reportMessage(AliasUsesNonLeafPlatform(alias, nonLeafPlatform, canBeExpandedTo))

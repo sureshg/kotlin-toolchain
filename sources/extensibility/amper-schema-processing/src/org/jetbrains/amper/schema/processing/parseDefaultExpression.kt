@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.schema.processing
@@ -67,7 +67,7 @@ internal fun parseDefaultExpression(
         is PluginData.Type.ListType -> (call as? KaFunctionCall<*>)?.let { call ->
             when (call.symbol.callableId) {
                 EMPTY_LIST -> Defaults.ListDefault(emptyList())
-                LIST_OF -> Defaults.ListDefault(call.argumentMapping.mapNotNull { (e, _) ->
+                LIST_OF -> Defaults.ListDefault(call.argumentMapping.mapNotNull { [e] ->
                     parseDefaultExpression(e, type.elementType, nestedExpression = true)
                 })
                 else -> null

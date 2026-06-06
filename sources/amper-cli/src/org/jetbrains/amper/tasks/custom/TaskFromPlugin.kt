@@ -69,25 +69,25 @@ class TaskFromPlugin(
     override val consumes: List<ArtifactSelector<*, *>> = emptyList()
 
     override val produces: List<Artifact> = description.outputs
-        .mapNotNull { (output, mark) ->
-            when (mark?.kind) {
+        .mapNotNull { (path, outputMark) ->
+            when (outputMark?.kind) {
                 null -> null
                 GeneratedPathKind.KotlinSources,
                 GeneratedPathKind.JavaSources,
                     -> ExternalTaskGeneratedKotlinJavaSourcesArtifact(
                     buildOutputRoot = buildOutputRoot,
-                    fragment = mark.associateWith,
-                    path = output.value,
+                    fragment = outputMark.associateWith,
+                    path = path.value,
                 )
                 GeneratedPathKind.JvmResources -> ExternalTaskGeneratedJvmResourcesArtifact(
                     buildOutputRoot = buildOutputRoot,
-                    fragment = mark.associateWith,
-                    path = output.value,
+                    fragment = outputMark.associateWith,
+                    path = path.value,
                 )
                 GeneratedPathKind.CinteropDefFile -> ExternalTaskGeneratedCinteropDefFileArtifact(
                     buildOutputRoot = buildOutputRoot,
-                    fragment = mark.associateWith,
-                    path = output.value,
+                    fragment = outputMark.associateWith,
+                    path = path.value,
                 )
             }
         }
@@ -171,8 +171,8 @@ class TaskFromPlugin(
         val actionMethod = actionFacade.methods.first { it.name == description.actionFunctionJvmName }.kotlinFunction!!
         val marshaller = ValueMarshaller(classLoader)
         val argumentsMap = description.actionArguments.refinedChildren.entries.associateBy(
-            keySelector = { (name, _) -> actionMethod.parameters.first { it.name == name } },
-            valueTransform = { (_, kv) -> marshaller.marshallValue(kv.value) },
+            keySelector = { [name, _] -> actionMethod.parameters.first { it.name == name } },
+            valueTransform = { [_, kv] -> marshaller.marshallValue(kv.value) },
         )
 
         spanBuilder("Run task '${description.name}' from plugin '${description.pluginId.value}'")

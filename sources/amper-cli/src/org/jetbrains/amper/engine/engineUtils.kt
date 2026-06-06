@@ -37,7 +37,7 @@ private fun Map<TaskId, ExecutionResult>.resultsOrThrowCombinedError(): Map<Task
         exceptions.drop(1).forEach { e -> firstException.addSuppressed(e) }
         throw firstException
     }
-    return mapValues { (_, result) ->
+    return mapValues { [_, result] ->
         (result as? ExecutionResult.Success)?.result
             ?: error("All tasks should be successful here, because we throw in case of failure")
     }

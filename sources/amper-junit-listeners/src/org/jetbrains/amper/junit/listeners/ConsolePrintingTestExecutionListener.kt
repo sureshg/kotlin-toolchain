@@ -72,7 +72,7 @@ class ConsolePrintingTestExecutionListener(
         if (shouldIgnore(testIdentifier)) {
             return
         }
-        val (outputEntries, reportEntries) = entry.keyValuePairs.entries.partition {
+        val [outputEntries, reportEntries] = entry.keyValuePairs.entries.partition {
             it.key in setOf(StreamingOutputKeys.STDOUT, StreamingOutputKeys.STDERR)
         }
 
@@ -86,7 +86,7 @@ class ConsolePrintingTestExecutionListener(
 
         if (reportEntries.isNotEmpty()) {
             printEvent(event = TestEvent.Reported, testIdentifier)
-            reportEntries.forEach { (key, value) ->
+            reportEntries.forEach { [key, value] ->
                 printlnMessage(TestEvent.Reported.style, key, value)
             }
         }

@@ -74,8 +74,7 @@ internal object CliProblemReporter : ProblemReporter {
 
         message.keyValues.groupBy { it.value.renderValue() }
             .entries
-            .forEachEndAware { isLast, entry ->
-                val (renderedValue, keyValues) = entry
+            .forEachEndAware { isLast, [renderedValue, keyValues] ->
                 appendLine(CliBundle.message("conflicting.properties.line", renderedValue))
                 appendMultipleSources(keyValues.mapNotNull { it.value.trace.asBuildProblemSource() as? FileBuildProblemSource }, indent = 4)
                 if (!isLast) appendLine()

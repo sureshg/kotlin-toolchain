@@ -68,7 +68,7 @@ internal class InputOutputCollector(
         location: List<String>,
     ) {
         when(value) {
-            is CompleteObjectNode -> value.refinedChildren.forEach { (name, keyValue) ->
+            is CompleteObjectNode -> value.refinedChildren.forEach { [name, keyValue] ->
                 gatherPaths(
                     value = keyValue.value,
                     mark = keyValue.propertyDeclaration.inputOutputMark ?: mark,
@@ -80,7 +80,7 @@ internal class InputOutputCollector(
                     is ShadowCompilationArtifact -> _compilationArtifactNodes.add(instance)
                 }
             }
-            is CompleteMapNode-> value.refinedChildren.forEach { (key, keyValue) ->
+            is CompleteMapNode-> value.refinedChildren.forEach { [key, keyValue] ->
                 gatherPaths(value = keyValue.value, mark = mark, location = location + key)
             }
             is CompleteListNode -> value.children.forEachIndexed { i, value ->

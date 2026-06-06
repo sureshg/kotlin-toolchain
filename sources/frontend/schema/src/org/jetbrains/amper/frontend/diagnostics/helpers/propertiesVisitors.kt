@@ -122,7 +122,7 @@ private class ObjectPropertiesVisitorRecurring(
  */
 fun TreeNode.collectScalarPropertiesWithOwners() = AllScalarPropertiesCollector.visit(this)
 
-private typealias PropertyWithOwner = Pair<MappingNode, KeyValue>
+internal data class PropertyWithOwner(val owner: MappingNode, val scalarProp: KeyValue)
 private typealias PropertiesWithOwner = List<PropertyWithOwner>
 
 private object AllScalarPropertiesCollector : RecurringTreeVisitor<PropertiesWithOwner>() {
@@ -132,6 +132,6 @@ private object AllScalarPropertiesCollector : RecurringTreeVisitor<PropertiesWit
     override fun visitReference(node: ReferenceNode) = emptyList<Nothing>()
     override fun visitStringInterpolation(node: StringInterpolationNode) = emptyList<Nothing>()
     override fun aggregate(node: TreeNode, childResults: List<PropertiesWithOwner>) = childResults.flatten()
-    override fun visitMap(node: MappingNode) = super.visitMap(node) +
-            node.children.filter { it.value is ScalarNode }.map { node to it }
+    override fun visitMap(node: MappingNode): PropertiesWithOwner = super.visitMap(node) +
+            node.children.filter { it.value is ScalarNode }.map { PropertyWithOwner(owner = node, scalarProp = it) }
 }

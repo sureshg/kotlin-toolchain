@@ -35,7 +35,7 @@ fun CompleteObjectNode.mavenXmlDump(
         val newIdent = "$indent  "
         return when (this) {
             is CompleteMappingNode -> {
-                for ((k, kv) in refinedChildren) {
+                for ([k, kv] in refinedChildren) {
                     if ((kv.propertyDeclaration?.type as? SchemaType.StringType)?.semantics == SchemaType.StringType.Semantics.MavenPlexusConfigXml) {
                         val stringValue = kv.value as? StringNode ?: continue
                         sb.append(stringValue.value.replaceIndent(indent).trim())

@@ -91,7 +91,7 @@ internal class YamlSerializer(
         if (map.refinedChildren.isEmpty()) {
             return "{}" + traceComment(map.trace)
         }
-        return map.refinedChildren.entries.joinToString("\n") { (key, kv) ->
+        return map.refinedChildren.entries.joinToString("\n") { [key, kv] ->
             serializeKeyValue(
                 key = "\"$key\"", // we quote map keys to distinguish them from property names and avoid escaping
                 value = kv.value,

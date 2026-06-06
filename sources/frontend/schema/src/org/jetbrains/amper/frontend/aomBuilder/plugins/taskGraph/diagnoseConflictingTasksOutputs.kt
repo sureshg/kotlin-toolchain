@@ -23,16 +23,18 @@ internal fun diagnoseConflictingTasksOutputs(
         task.outputs.map { it.path to task }
     }
     taskOutputs.groupByRoots(
-        pathSelector = { (path, _) -> path.value },
-    ).forEach { (root: Path, taskOutputs) ->
-        val tasksToOutputs = taskOutputs.groupBy { (_, task) -> task }
+        pathSelector = { [path, _] -> path.value },
+    ).forEach { [root: Path, taskOutputs] ->
+        val tasksToOutputs = taskOutputs.groupBy(
+            keySelector = { [_, task] -> task },
+            valueTransform = { [path, _] -> path },
+        )
         if (tasksToOutputs.size > 1) {
             // conflicting outputs
             val source = MultipleLocationsBuildProblemSource(
-                sources = tasksToOutputs.values.map { outputs ->
+                sources = tasksToOutputs.values.map { paths ->
                     // We choose `first()` here because conflicting paths per single tasks are reported elsewhere
-                    val (path: TraceablePath, _) = outputs.first()
-                    path.asBuildProblemSource() as PsiBuildProblemSource
+                    paths.first().asBuildProblemSource() as PsiBuildProblemSource
                 },
                 groupingMessage = SchemaBundle.message("plugin.tasks.output.produced.by.multiple.grouping")
             )

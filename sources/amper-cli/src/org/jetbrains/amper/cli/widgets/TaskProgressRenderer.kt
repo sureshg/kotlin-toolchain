@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.cli.widgets
@@ -128,7 +128,7 @@ class TaskProgressRenderer(
             }
         })
 
-        for ((task, _, elapsed) in state.taskEntries.take(maxTasksOnScreen)) {
+        for ((val task, val elapsed) in state.taskEntries.take(maxTasksOnScreen)) {
             cell(horizontalLayout {
                 cell(">") {
                     style = terminal.theme.muted
@@ -184,8 +184,6 @@ class TaskProgressRenderer(
             }
         }
     }
-
-    private val logger: Logger = LoggerFactory.getLogger(javaClass)
 }
 
 private fun Duration.roundToTheSecond(): Duration = inWholeSeconds.seconds

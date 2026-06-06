@@ -226,7 +226,7 @@ private fun buildAmperModules(
         val moduleFragments = createFragments(seeds, module) {
             it.resolveInternalDependency(dir2module, reportedUnresolvedModules)
         }
-        val (leaves, testLeaves) = moduleFragments.filterIsInstance<DefaultLeafFragment>().partition { !it.isTest }
+        val [leaves, testLeaves] = moduleFragments.filterIsInstance<DefaultLeafFragment>().partition { !it.isTest }
 
         module.module.apply {
             mavenPluginSettings = module.moduleCtxModule.mavenPlugins

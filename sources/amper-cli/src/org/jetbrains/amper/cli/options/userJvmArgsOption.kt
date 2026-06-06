@@ -24,7 +24,7 @@ internal fun String.splitArgsHonoringQuotes(): List<String> {
     var escaping = false
     var hasPendingArg = false
 
-    for ((i, c) in withIndex()) {
+    for ([i, c] in withIndex()) {
         if (escaping) {
             currentArg.append(c)
             hasPendingArg = true

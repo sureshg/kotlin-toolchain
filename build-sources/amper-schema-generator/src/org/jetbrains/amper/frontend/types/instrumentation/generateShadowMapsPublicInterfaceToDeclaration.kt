@@ -37,7 +37,7 @@ internal fun generateShadowMapsPublicInterfaceToDeclaration() {
                 PropertySpec.builder("_publicInterfaceToDeclaration", propertyType, KModifier.PRIVATE)
                     .initializer(CodeBlock.builder().apply {
                         beginControlFlow("buildMap")
-                        ShadowMaps.PublicInterfaceToShadowNodeClass.forEach { (publicInterfaceName, klass) ->
+                        ShadowMaps.PublicInterfaceToShadowNodeClass.forEach { [publicInterfaceName, klass] ->
                             addStatement("put(%S, %T)", publicInterfaceName, ensureParsed(klass).declarationName)
                         }
                         endControlFlow()

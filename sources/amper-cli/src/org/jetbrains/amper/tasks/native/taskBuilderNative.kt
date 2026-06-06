@@ -82,7 +82,7 @@ fun ProjectTasksBuilder.setupNativeTasks() {
                 },
             )
             if (needsLinkedExecutable(module, isTest)) {
-                val (linkTaskName, compilationType) = getNativeLinkTaskDetails(platform, module, isTest, buildType)
+                val [linkTaskName, compilationType] = getNativeLinkTaskDetails(platform, module, isTest, buildType)
                 tasks.registerTask(
                     task = NativeLinkTask(
                         module = module,

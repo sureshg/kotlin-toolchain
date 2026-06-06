@@ -21,7 +21,7 @@ internal fun diagnoseOverlappingPaths(
     fun reportOverlappingPaths(paths: List<TraceablePath>) {
         paths.groupByRoots(
             pathSelector = { it.value }
-        ).forEach { (root, nested) ->
+        ).forEach { [root, nested] ->
             if (nested.size > 1) {
                 val source = MultipleLocationsBuildProblemSource(
                     sources = nested.map { traceablePath ->
@@ -38,6 +38,6 @@ internal fun diagnoseOverlappingPaths(
             }
         }
     }
-    reportOverlappingPaths(task.outputs.map { (path, _) -> path })
+    reportOverlappingPaths(task.outputs.map { it.path })
     reportOverlappingPaths(task.inputs.map { it.path })
 }

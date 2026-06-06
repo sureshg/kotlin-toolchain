@@ -89,14 +89,14 @@ class ModuleDependencies private constructor(
         mainDepsPerPlatforms = perPlatformDependencies(false)
         testDepsPerPlatforms = perPlatformDependencies(true)
 
-        mainDepsPerLeafPlatform = mainDepsPerPlatforms.mapNotNull { (platforms, deps) -> platforms.singleOrNull()?.let { it to deps} }.toMap()
-        testDepsPerLeafPlatform = testDepsPerPlatforms.mapNotNull { (platforms, deps) -> platforms.singleOrNull()?.let { it to deps} }.toMap()
+        mainDepsPerLeafPlatform = mainDepsPerPlatforms.mapNotNull { [platforms, deps] -> platforms.singleOrNull()?.let { it to deps} }.toMap()
+        testDepsPerLeafPlatform = testDepsPerPlatforms.mapNotNull { [platforms, deps] -> platforms.singleOrNull()?.let { it to deps} }.toMap()
     }
 
     private fun perPlatformDependencies(isTest: Boolean): Map<Set<Platform>, PerFragmentDependencies> =
         buildMap {
             val depsPerFragment = if (isTest) testDepsPerFragment else mainDepsPerFragment
-            depsPerFragment.forEach { (fragment, dependencies) ->
+            depsPerFragment.forEach { [fragment, dependencies] ->
                 if (fragment.fragmentDependants.none { it.target.isTest == isTest && it.target.platforms == fragment.platforms }) {
                     // most specific fragment corresponding to the platforms set
                     put(fragment.platforms, dependencies)
@@ -369,7 +369,7 @@ class ModuleDependencies private constructor(
             resolutionRunSettings: ResolutionRunSettings,
             projectRoot: Path,
         ): ResolvedGraph {
-            val (openTelemetry, incrementalCache, fileCacheBuilder) = moduleDependenciesList.firstOrNull()
+            val [openTelemetry, incrementalCache, fileCacheBuilder] = moduleDependenciesList.firstOrNull()
                 ?.let {
                     Triple(it.resolutionSettings.openTelemetry,
                         it.resolutionSettings.incrementalCache,

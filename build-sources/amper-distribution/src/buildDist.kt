@@ -47,8 +47,8 @@ fun buildDist(
         println("Writing CLI distribution to $cliTgz")
         cliTgz.writeDistTarGz(
             cliRuntimeClasspath = cliRuntimeClasspath.resolvedFiles,
-            extraClasspaths = extraClasspaths.mapValues { (_, classpath) -> classpath.resolvedFiles } +
-                    extraFilteredClasspaths.mapValues { (_, classpath) -> classpath.resolvedFiles },
+            extraClasspaths = extraClasspaths.mapValues { [_, classpath] -> classpath.resolvedFiles } +
+                    extraFilteredClasspaths.mapValues { [_, classpath] -> classpath.resolvedFiles },
             mergeFrom = listOf(
                 stagingDir,
                 thirdPartyStagingDir,
@@ -79,7 +79,7 @@ private fun Path.writeDistTarGz(
     TarArchiveOutputStream(GZIPOutputStream(outputStream().buffered())).use { tarStream ->
         tarStream.writeFile(contents = argFileContents(), pathInTar = "kotlin-cli.args")
         tarStream.writeDir(cliRuntimeClasspath, targetDirName = "lib")
-        extraClasspaths.forEach { (name, paths) ->
+        extraClasspaths.forEach { [name, paths] ->
             tarStream.writeDir(paths, targetDirName = name)
         }
         mergeFrom.forEach { stagingDir ->

@@ -62,7 +62,7 @@ internal fun readPlugins(
         )
     }
 
-    for ((id, traceableIds) in seenPluginIds) {
+    for ([id, traceableIds] in seenPluginIds) {
         if (traceableIds.size < 2) continue
         val source = MultipleLocationsBuildProblemSource(
             sources = traceableIds.map { it.asBuildProblemSource() as FileBuildProblemSource },

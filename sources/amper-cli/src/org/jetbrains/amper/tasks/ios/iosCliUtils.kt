@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.tasks.ios
@@ -140,8 +140,8 @@ private object SimCtl {
         )
 
         return SimCtlOutputFormat.decodeFromString<SimCtlListOutput>(simcltListOut).devices
-            .filter { (runtimeId, _) -> runtimeId.startsWith(SIM_RUNTIME_PREFIX_IOS) }
-            .flatMap { (runtimeId, devices) ->
+            .filterKeys { runtimeId -> runtimeId.startsWith(SIM_RUNTIME_PREFIX_IOS) }
+            .flatMap { [runtimeId, devices] ->
                 devices
                     .filter { it.isAvailable }
                     .map { it.toDevice(runtimeId) }

@@ -131,8 +131,8 @@ class VersionUpdater(val amperRootDir: Path) {
             val textWithVersion = initialText
                 .replaceRegexGroup1(Regex("""^\s*zulu_version=(\S+)""", RegexOption.MULTILINE), zuluVersion)
                 .replaceRegexGroup1(Regex("""^\s*java_version=(\S+)""", RegexOption.MULTILINE), javaVersion)
-            jres.fold(textWithVersion) { text, (os, arch, checksum) ->
-                text.replaceRegexGroup1(Regex(""""${os.filenameValue} ${arch.filenameValue}"\)\s+jre_sha256=(\w+)"""), checksum)
+            jres.fold(textWithVersion) { text, (os, arch, sha256) ->
+                text.replaceRegexGroup1(Regex(""""${os.filenameValue} ${arch.filenameValue}"\)\s+jre_sha256=(\w+)"""), sha256)
             }
         }
 
@@ -142,10 +142,9 @@ class VersionUpdater(val amperRootDir: Path) {
             val textWithVersion = initialText
                 .replaceRegexGroup1(Regex("""^\s*set\s+zulu_version=(\S+)""", RegexOption.MULTILINE), zuluVersion)
                 .replaceRegexGroup1(Regex("""^\s*set\s+java_version=(\S+)""", RegexOption.MULTILINE), javaVersion)
-            jres.filter { it.os == AzulApi.Os.Windows }.fold(textWithVersion) { text, (_, arch, checksum) ->
-                text.replaceRegexGroup1(Regex("""set jre_arch=${arch.filenameValue}\s+set jre_sha256=(\S+)""", RegexOption.MULTILINE), checksum)
+            jres.filter { it.os == AzulApi.Os.Windows }.fold(textWithVersion) { text, (val arch, val sha256) ->
+                text.replaceRegexGroup1(Regex("""set jre_arch=${arch.filenameValue}\s+set jre_sha256=(\S+)""", RegexOption.MULTILINE), sha256)
             }
         }
     }
-
 }

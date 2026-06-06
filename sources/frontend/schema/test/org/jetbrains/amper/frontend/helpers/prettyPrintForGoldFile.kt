@@ -89,7 +89,7 @@ internal fun AmperModule.prettyPrintForGoldFile(printDefaults: Boolean = false):
     val taskSettingsMap = parts[ModuleTasksPart::class.java]?.settings ?: emptyMap()
     if (taskSettingsMap.isNotEmpty()) {
         appendLine("Task:")
-        taskSettingsMap.forEach { (taskName, settings) ->
+        taskSettingsMap.forEach { [taskName, settings] ->
             appendLine("  - name: $taskName")
             appendLine("    dependsOn: ${settings.dependsOn.joinToString(", ")}")
         }
@@ -127,7 +127,7 @@ private class HumanReadableSerializerVisitor(
 
     override fun visitMap(node: CompleteMapNode) {
         appendBlock(start = "{", end = "}") {
-            node.refinedChildren.forEach { (k, kv) ->
+            node.refinedChildren.forEach { [k, kv] ->
                 builder.append('"')
                 builder.append(k)
                 builder.append('"')

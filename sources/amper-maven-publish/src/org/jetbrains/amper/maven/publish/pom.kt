@@ -85,7 +85,7 @@ private fun generatePomModel(
     val publishSettings = fragment.settings.publishing
 
     // FIXME [distinct] can be error prone here, because we (I guess) have no guarantees about [externalDependencies] equality.
-    val (bomDependencies, regularDependencies) = fragment.ancestralPath()
+    val [bomDependencies, regularDependencies] = fragment.ancestralPath()
         .flatMap { it.externalDependencies }
         .distinct()
         .partition { it is BomDependency }

@@ -290,7 +290,7 @@ private class ReferenceResolutionSession(
         val preciseExpectedType = when (val type = interpolationNode.expectedType) {
             is SchemaType.UndefinedType -> {
                 // Use "path" type if at least one reference part resolves to a path
-                val resolvesToAnyPaths = resolvedReferenceParts.any { (_, result) ->
+                val resolvesToAnyPaths = resolvedReferenceParts.any { [_, result] ->
                     when (result) {
                         is ResolutionStep.Hole -> result.type
                         is ResolutionStep.Value -> result.value.inferPossibleExpectedTypeBestEffort()

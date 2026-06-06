@@ -95,7 +95,7 @@ private fun parseMavenCoordinates(
         artifactId to SchemaMavenCoordinates::artifactId.name,
         version to SchemaMavenCoordinates::version.name,
         classifier to SchemaMavenCoordinates::classifier.name,
-    ).mapNotNull { (keyValue, keyName) ->
+    ).mapNotNull { [keyValue, keyName] ->
         KeyValue(
             key = keyName,
             keyTrace = key.asTrace(),
@@ -175,7 +175,7 @@ context(contexts: Contexts, config: ParsingConfig, reporter: ProblemReporter)
 private fun parseObjectFromMap(value: YamlValue.Mapping, type: SchemaType.ObjectType): MappingNode {
     fun parseObjectProperty(keyValue: YamlKeyValue): KeyValue? {
         val key = keyValue.key
-        val (propertyName, propertyContexts) = parsePropertyKeyContexts(key)
+        val [propertyName, propertyContexts] = parsePropertyKeyContexts(key)
             ?: return null
         val property = type.declaration.getProperty(propertyName)
             ?.takeUnless { it.isFromKeyAndTheRestNested }
@@ -245,7 +245,7 @@ private fun parseObjectFromScalarShorthand(
         }
     }
 
-    val (property, result) = parseScalarShorthandValue() ?: run {
+    val [property, result] = parseScalarShorthandValue() ?: run {
         reportUnexpectedValue(scalar, type)
         return errorNode(scalar, type)
     }
@@ -312,7 +312,7 @@ internal fun parsePropertyKeyContexts(
             )
             return null
         }
-        val (mappedName, requiresTestContext) = when (keyWithoutContext) {
+        val [mappedName, requiresTestContext] = when (keyWithoutContext) {
             "test-settings" -> "settings" to true
             "test-dependencies" -> "dependencies" to true
             else -> keyWithoutContext to false

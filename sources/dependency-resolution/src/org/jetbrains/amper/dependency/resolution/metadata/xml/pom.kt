@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.dependency.resolution.metadata.xml
@@ -62,7 +62,7 @@ object MavenPomPropertiesXmlSerializer : KSerializer<Properties> {
 
     private fun XmlWriter.encodeProperties(properties: Map<String, String?>) {
         startTag(POM_XML_NAMESPACE_4_0_0, "properties", "")
-        properties.forEach { (k, v) ->
+        properties.forEach { [k, v] ->
             startTag(POM_XML_NAMESPACE_4_0_0, k, "")
             v?.let { text(v) }
             endTag(POM_XML_NAMESPACE_4_0_0, k, "")

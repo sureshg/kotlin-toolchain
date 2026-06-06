@@ -95,9 +95,7 @@ internal fun Fragment.serializableKotlinSettings(): KotlinUserSettings = KotlinU
 private fun Fragment.serializableJavaSettings(): JavaUserSettings = JavaUserSettings(
     parameters = settings.jvm.storeParameterNames,
     freeCompilerArgs = settings.java.freeCompilerArgs.values(),
-    annotationProcessorOptions = settings.java.annotationProcessing.processorOptions.mapValues {
-        (_, value) -> value.value
-    },
+    annotationProcessorOptions = settings.java.annotationProcessing.processorOptions.mapValues { it.value.value },
     compileIncrementally = settings.java.compileIncrementally,
 )
 

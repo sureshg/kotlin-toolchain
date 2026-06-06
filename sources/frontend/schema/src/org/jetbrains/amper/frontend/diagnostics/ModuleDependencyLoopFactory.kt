@@ -85,7 +85,7 @@ object ModuleDependencyLoopFactory : AomModelDiagnosticFactory {
                     selfDependency = selfDependent.edges().first { it.module == selfDependent },
                 )
             } else {
-                val loopWithEdges = loop.plus(loop.first()).windowed(2).map { (from: AmperModule, to: AmperModule) ->
+                val loopWithEdges = loop.plus(loop.first()).windowed(2).map { [from: AmperModule, to: AmperModule] ->
                     from to from.edges().first { edge: LocalModuleDependency -> edge.module == to }
                 }.let { it + it.first() }
                 ModuleDependencyLoopProblem(

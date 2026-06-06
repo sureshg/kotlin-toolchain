@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.test
@@ -60,8 +60,8 @@ internal fun sortPropertiesFileContent(content: String): String {
 
     return blocks
         .sortedBy { parsePropertyKey(it.meaningfulFragment.toString()) }
-        .joinToString("\n") { (precedingLines, property) ->
-            (precedingLines + property.toString()).joinToString("\n")
+        .joinToString("\n") { (precedingCommentsAndEmptyLines, meaningfulFragment) ->
+            (precedingCommentsAndEmptyLines + meaningfulFragment.toString()).joinToString("\n")
         } + trailingSuffix
 }
 

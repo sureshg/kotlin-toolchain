@@ -46,7 +46,7 @@ sealed class TomlLiteralKind(val node: ASTNode) {
 }
 
 fun offsetsForTomlText(node: ASTNode): LiteralOffsets {
-    val (quote, needEscape) = when (node.elementType) {
+    val [quote, needEscape] = when (node.elementType) {
         BASIC_STRING -> "\"" to true
         MULTILINE_BASIC_STRING -> "\"\"\""  to true
         LITERAL_STRING -> "'"  to false
@@ -57,11 +57,11 @@ fun offsetsForTomlText(node: ASTNode): LiteralOffsets {
     val openDelimEnd = doLocate(node, 0) { if (it.startsWith(quote)) quote.length else 0 }
     val valueEnd = doLocate(node, openDelimEnd) { text ->
         var escape = false
-        for ((i, ch) in text.withIndex()) {
+        for ((val index, val ch = value) in text.withIndex()) {
             when {
                 escape -> escape = false
                 needEscape && ch == '\\' -> escape = true
-                text.startsWith(quote, i) -> return@doLocate i
+                text.startsWith(quote, index) -> return@doLocate index
             }
         }
         text.length

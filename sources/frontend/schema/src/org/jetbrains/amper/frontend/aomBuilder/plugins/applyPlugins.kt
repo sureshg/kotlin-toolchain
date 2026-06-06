@@ -47,7 +47,7 @@ internal fun applyPlugins(
             module = moduleBuildCtx,
         ) ?: continue
 
-        val taskNameToPathCollector = appliedPlugin.tasks.entries.associate { (name, task) ->
+        val taskNameToPathCollector = appliedPlugin.tasks.entries.associate { [name, task] ->
             name to InputOutputCollector(task.action.backingTree)
         }
 
@@ -58,7 +58,7 @@ internal fun applyPlugins(
             moduleBuildCtx = moduleBuildCtx,
         )
 
-        for ((name, task) in appliedPlugin.tasks) {
+        for ([name, task] in appliedPlugin.tasks) {
             val pathsCollector = taskNameToPathCollector.getValue(name)
             val outputsToMarks = pathsCollector.allOutputPaths.map { path: TraceablePath ->
                 topLevelMarkedOutputs[path.value] ?: TaskFromPluginDescription.OutputPath(
@@ -78,12 +78,12 @@ internal fun applyPlugins(
                 inputs = pathsCollector.allInputPaths.map { (path, inferTaskDependency) ->
                     TaskFromPluginDescription.InputPath(path, inferTaskDependency)
                 },
-                requestedModuleSources = pathsCollector.moduleSourcesNodes.mapNotNull { (node, location) ->
+                requestedModuleSources = pathsCollector.moduleSourcesNodes.mapNotNull { (node, propertyLocation) ->
                     val module = node.from.resolve(allModules) ?: return@mapNotNull null
                     TaskFromPluginDescription.ModuleSourcesRequest(
                         node = node,
                         from = module,
-                        propertyLocation = location,
+                        propertyLocation = propertyLocation,
                     )
                 },
                 requestedClasspaths = pathsCollector.classpathNodes.map { (node, propertyLocation) ->

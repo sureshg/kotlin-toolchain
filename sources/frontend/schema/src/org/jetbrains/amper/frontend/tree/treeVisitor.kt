@@ -225,7 +225,7 @@ abstract class RefinedTreeTransformer : RefinedTreeVisitor<RefinedTreeNode?> {
 
     override fun visitMap(node: RefinedMappingNode) =
         node.copy(refinedChildren = buildMap {
-            for ((key, property) in node.refinedChildren) {
+            for ([key, property] in node.refinedChildren) {
                 visit(property.value)?.let { put(key, property.copyWithValue(value = it)) }
             }
         })

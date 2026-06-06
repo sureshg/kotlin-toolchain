@@ -101,8 +101,8 @@ internal class ShowCustomCommandsCommand : AmperModelAwareCommand(name = "comman
     }
 
     private fun printPlain(commands: List<QualifiedName>) {
-        for ((name, pluginId) in commands) {
-            terminal.println(Markdown("`$pluginId`:`$name`"))
+        for ((simpleName, pluginId) in commands) {
+            terminal.println(Markdown("`$pluginId`:`$simpleName`"))
         }
     }
 }

@@ -106,7 +106,7 @@ private fun mavenPluginsIncrementalCache(
 )
 
 private fun checkUniqueModuleNames(modules: List<AmperModule>) {
-    for ((moduleUserReadableName, moduleList) in modules.groupBy { it.userReadableName }) {
+    for ([moduleUserReadableName, moduleList] in modules.groupBy { it.userReadableName }) {
         if (moduleList.size > 1) {
             val joinToString = moduleList.joinToString("\n") {
                 it.source.buildFile.pathString

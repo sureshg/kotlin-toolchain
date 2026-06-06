@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.compose.resources
@@ -42,7 +42,7 @@ fun prepareResources(
                     output.parentFile.mkdirs()
                     try {
                         convert(f, output)
-                    } catch (e: SAXParseException) {
+                    } catch (_: SAXParseException) {
                         error("XML file ${f.absolutePath} is not valid. Check the file content.")
                     } catch (e: Exception) {
                         error("XML file ${f.absolutePath} is not valid. ${e.message}")
@@ -91,7 +91,7 @@ private fun convert(original: File, converted: File) {
     //check there are no duplicates type + key
     records.groupBy { it.key }
         .filter { it.value.size > 1 }
-        .forEach { (key, records) ->
+        .forEach { [key, records] ->
             val allTypes = records.map { it.type }
             require(allTypes.size == allTypes.toSet().size) { "Duplicated key '$key'." }
         }

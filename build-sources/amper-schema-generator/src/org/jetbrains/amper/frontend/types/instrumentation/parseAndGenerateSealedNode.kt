@@ -50,7 +50,7 @@ internal fun parseAndGenerateSealedNode(clazz: KClass<out SchemaNode>): ParsedDe
                     add("listOf(\n")
                     withIndent {
                         clazz.sealedSubclasses.forEach { sealedSubclass ->
-                            val (typeName, parsed) = if (sealedSubclass.isSealed) {
+                            val [typeName, parsed] = if (sealedSubclass.isSealed) {
                                 SubVariant::class to generator.ensureSealedSchemaNodeParsed(sealedSubclass)
                             } else {
                                 LeafVariant::class to generator.ensureSchemaNodeParsed(sealedSubclass).also {

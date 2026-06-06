@@ -106,7 +106,7 @@ class ManageXCodeProjectTask(
             }
 
         val manipulator = pbxProjectFile.manipulator
-        val (target, amperPhase) = manipulator.allTargets.mapNotNull { target ->
+        val [target, amperPhase] = manipulator.allTargets.mapNotNull { target ->
             target.buildPhases.find { phase ->
                 phase.type == PBXBuildPhase.Type.SHELL_SCRIPT &&
                         AMPER_PHASE_MAGIC in (phase["shellScript"] as? String).orEmpty()

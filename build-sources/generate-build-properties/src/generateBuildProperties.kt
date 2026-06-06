@@ -43,7 +43,7 @@ fun generateBuildProperties(
 
     // We run without global Git config to avoid issues with people who use config parameters that JGit does not
     // support. For example, the 'patience' diff algorithm isn't supported.
-    val (commitHash, commitShortHash, commitDate) = runWithoutGlobalGitConfig {
+    val [commitHash, commitShortHash, commitDate] = runWithoutGlobalGitConfig {
         Git.open(actualDotGitRepository.toFile()).use { git ->
             val repo = git.repository
             val head = repo.refDatabase.getReflogReader("HEAD").lastEntry

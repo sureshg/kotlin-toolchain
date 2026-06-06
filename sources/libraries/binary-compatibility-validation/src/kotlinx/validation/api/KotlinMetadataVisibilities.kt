@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package kotlinx.validation.api
@@ -176,7 +176,7 @@ internal fun Map<String, ClassNode>.readKotlinVisibilities(visibilityFilter: (St
      * 3) Post-process each value and set facade/companion
      */
     entries
-        .mapNotNull { (name, classNode) ->
+        .mapNotNull { [name, classNode] ->
             if (!visibilityFilter(name)) return@mapNotNull null
             val visibility = classNode.toClassVisibility() ?: return@mapNotNull null
             name to visibility

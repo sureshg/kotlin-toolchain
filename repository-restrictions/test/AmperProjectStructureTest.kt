@@ -174,7 +174,7 @@ class AmperProjectStructureTest {
         if (invalidLines.isNotEmpty()) {
             fail(
                 "Some Amper-agnostic library modules contain the word 'Amper'.\n\n" +
-                    invalidLines.joinToString("\n\n") { (module, linesWithAmper) ->
+                    invalidLines.joinToString("\n\n") { [module, linesWithAmper] ->
                         "Module '${module.userReadableName}' uses the word 'Amper':\n" +
                                 linesWithAmper.joinToString("\n") { "  - $it" }
                     } + "\n\nMake sure these modules are Amper-agnostic.")
@@ -195,8 +195,8 @@ class AmperProjectStructureTest {
     private val amperExceptInPackageRegex = Regex("""(?<!org\.jetbrains\.)[aA]mper""")
     private fun Path.linesWithTheWordAmper(): List<String> = readLines()
         .withIndex()
-        .filter { (_, line) -> line.contains(amperExceptInPackageRegex) }
-        .map { (i, line) -> "${absolutePathString()}:$i: $line" }
+        .filter { it.value.contains(amperExceptInPackageRegex) }
+        .map { (index, value) -> "${absolutePathString()}:$index: $value" }
 
     @Test
     fun `Amper-agnostic library modules don't depend on Amper-aware modules`() = runTestWithMdc {
@@ -208,7 +208,7 @@ class AmperProjectStructureTest {
         if (invalidDeps.isNotEmpty()) {
             fail(
                 "Some Amper-agnostic library modules depend on Amper-aware modules.\n\n" +
-                        invalidDeps.joinToString("\n\n") { (module, dependencies) ->
+                        invalidDeps.joinToString("\n\n") { [module, dependencies] ->
                             "Module '${module.userReadableName}' depends on Amper-aware module(s):\n" +
                                     dependencies.joinToString("\n") { "  - $it" }
                         } + "\n\nRemove these dependencies or move the modules out of the 'libraries' directory.")

@@ -25,7 +25,7 @@ internal fun diagnoseCyclicReferences(
     )
 
     for (classDataLoop in loops) {
-        val properties = (classDataLoop + classDataLoop.first()).zipWithNext().mapNotNull { (class1, class2) ->
+        val properties = (classDataLoop + classDataLoop.first()).zipWithNext().mapNotNull { [class1, class2] ->
             class1.properties.first {
                 // It's guaranteed to be at least one, because the loop is formed.
                 it.type == PluginData.Type.ObjectType(class2.name)

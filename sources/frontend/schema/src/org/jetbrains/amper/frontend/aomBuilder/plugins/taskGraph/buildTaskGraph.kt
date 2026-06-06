@@ -138,7 +138,7 @@ internal fun buildTaskGraph(
             if (!inputPath.inferTaskDependency)
                 continue
 
-            val producedBy = taskOutputs.filter { (path, _) ->
+            val producedBy = taskOutputs.filter { [path, _] ->
                 // TODO: optimize this
                 path.value.startsWith(inputPath.path.value) || inputPath.path.value.startsWith(path.value)
             }
@@ -154,7 +154,7 @@ internal fun buildTaskGraph(
                 }
                 continue
             }
-            for ((path, task) in producedBy) {
+            for ([path, task] in producedBy) {
                 dependencies += TaskGraph.Edge(TaskGraph.Node.PluginTask(task), path.trace) {
                     FrontendTaskGraphBundle.message(
                         "task.graph.reasons.input.output.matched",

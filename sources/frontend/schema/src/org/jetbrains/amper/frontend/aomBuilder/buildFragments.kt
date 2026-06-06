@@ -254,7 +254,7 @@ internal fun createFragments(
     }
 
     // Set fragment dependencies.
-    initial.entries.forEach { (seed, bundle) ->
+    initial.forEach { [seed, bundle] ->
         // Main fragment dependency.
         bundle.mainFragment.fragmentDependencies += seed.dependencies.map { initial[it]!!.mainFragment.asRefine() }
         seed.dependencies.forEach { initial.getValue(it).mainFragment.fragmentDependants += bundle.mainFragment.asRefine() }

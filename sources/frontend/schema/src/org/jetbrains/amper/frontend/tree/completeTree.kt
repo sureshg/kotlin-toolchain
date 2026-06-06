@@ -62,7 +62,7 @@ private fun ensureCompleteTreeNode(
         }
         is RefinedMappingNode -> when (val declaration = node.declaration) {
             null -> {  // Map
-                val completeKeyValues = node.refinedChildren.mapValues { (key, keyValue) ->
+                val completeKeyValues = node.refinedChildren.mapValues { [key, keyValue] ->
                     val completeValue = ensureCompleteTreeNode(
                         keyValue.value,
                         valuePath + key,

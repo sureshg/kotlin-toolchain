@@ -89,7 +89,7 @@ class AmperPluginImpl(
         val taskDirs = (pluginTree[PluginYamlRoot::tasks] as? RefinedMappingNode)
             ?.refinedChildren
             ?.filterValues { it.value !is ErrorNode }
-            ?.mapValues { (name, _) ->
+            ?.mapValues { [name, _] ->
                 projectContext.getTaskOutputRoot(taskIdFor(module.module, name))
             }.orEmpty()
 
@@ -132,7 +132,7 @@ class AmperPluginImpl(
                 rootDir(projectContext.projectRoot.path)
             }
             tasks {
-                for ((taskName, taskBuildRoot) in taskDirs) {
+                for ([taskName, taskBuildRoot] in taskDirs) {
                     put[taskName] {
                         taskOutputDir(taskBuildRoot)
                     }

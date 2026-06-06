@@ -69,7 +69,7 @@ internal class CatalogVersionsSubstitutor(
             ExternalMavenDependency::groupId.name to catalogCoordinates.groupId,
             ExternalMavenDependency::artifactId.name to catalogCoordinates.artifactId,
             ExternalMavenDependency::version.name to catalogCoordinates.version?.value,
-        ).mapNotNull { (propName, value) ->
+        ).mapNotNull { [propName, value] ->
             val property = checkNotNull(substituted.getProperty(propName)) { "Missing `$propName` property in the dependency type" }
             val newNode = StringNode(
                 value = value ?: return@mapNotNull null,

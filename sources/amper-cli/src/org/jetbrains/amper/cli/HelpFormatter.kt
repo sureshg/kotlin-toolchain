@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.cli
@@ -29,7 +29,7 @@ class AmperHelpFormatter(context: Context) : MordantMarkdownHelpFormatter(contex
         val groupsByName = parameters.filterIsInstance<ParameterHelp.Group>().associateBy { it.name }
         return parameters.filterIsInstance<ParameterHelp.Option>()
             .groupBy { it.groupName }.toList()
-            .filter { it.second.isNotEmpty() }.map { (title, params) ->
+            .filter { it.second.isNotEmpty() }.map { [title, params] ->
                 val renderedTitle = renderSectionTitle(title ?: localization.optionsTitle())
                 val content = renderOptionGroup(groupsByName[title]?.help, params)
                 RenderedSection(styleSectionTitle(renderedTitle), content)

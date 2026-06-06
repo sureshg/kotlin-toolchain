@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.compose.resources
@@ -65,7 +65,7 @@ fun generateResourceAccessors(
                 .flatten()
         }
         .groupBy { it.type }
-        .mapValues { (_, items) -> items.groupBy { it.name } }
+        .mapValues { [_, items] -> items.groupBy { it.name } }
 
     getAccessorsSpecs(
         resources = resources,
@@ -100,7 +100,7 @@ private fun getAccessorsSpecs(
     val files = mutableListOf<FileSpec>()
 
     //we need to sort it to generate the same code on different platforms
-    sortResources(resources).forEach { (type, idToResources) ->
+    sortResources(resources).forEach { [type, idToResources] ->
         val chunks = idToResources.keys.chunked(ITEMS_PER_FILE_LIMIT)
 
         chunks.forEachIndexed { index, ids ->
@@ -167,7 +167,7 @@ private fun getChunkFileSpec(
                 .build()
         )
 
-        idToResources.forEach { (resName, items) ->
+        idToResources.forEach { [resName, items] ->
             val accessor = PropertySpec.builder(resName, type.getClassName(), resModifier)
                 .receiver(ClassName(packageName, resClassName, type.accessorName))
                 .getter(FunSpec.getterBuilder().addStatement("return $chunkClassName.%N", resName).build())
@@ -271,12 +271,10 @@ private fun sortResources(
 ): TreeMap<ResourceType, TreeMap<String, List<ResourceItem>>> {
     val result = TreeMap<ResourceType, TreeMap<String, List<ResourceItem>>>()
     resources
-        .entries
-        .forEach { (type, items) ->
+        .forEach { [type, items] ->
             val typeResult = TreeMap<String, List<ResourceItem>>()
             items
-                .entries
-                .forEach { (name, resItems) ->
+                .forEach { [name, resItems] ->
                     typeResult[name] = resItems.sortedBy { it.path }
                 }
             result[type] = typeResult

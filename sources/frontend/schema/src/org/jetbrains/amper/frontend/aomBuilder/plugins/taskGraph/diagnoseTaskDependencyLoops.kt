@@ -58,7 +58,7 @@ internal fun diagnoseTaskDependencyLoops(
         */
         val renderedLoop = buildString {
             var previousReasonLineLength = Int.MAX_VALUE
-            (loop + loop.first()).zipWithNextOrNull().forEachIndexed { i, (from: TaskGraph.Node, to: TaskGraph.Node?) ->
+            (loop + loop.first()).zipWithNextOrNull().forEachIndexed { i, [from: TaskGraph.Node, to: TaskGraph.Node?] ->
                 val nodeString = from.stringRepresentation()
 
                 val nodeLine = buildString {

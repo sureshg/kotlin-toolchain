@@ -14,7 +14,7 @@ import kotlin.io.path.useLines
 internal fun Path.readReleaseInfo(): ReleaseInfo {
     val properties = useLines { lines ->
         lines.associate { line ->
-            val (key, value) = line.split('=')
+            val [key, value] = line.split('=')
             key to value.trim().removeSurrounding("\"")
         }
     }

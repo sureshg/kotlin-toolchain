@@ -29,7 +29,7 @@ inline fun parseStringCharacters(
 ): Boolean {
     val outOffset = outChars.length
     var index = 0
-    for ((type, text) in chars.tokenize(lexer)) {
+    for ([type, text] in chars.tokenize(lexer)) {
         // Set offset for the decoded character to the beginning of the escape sequence.
         sourceOffsets[outChars.length - outOffset] = index
         sourceOffsets[outChars.length - outOffset + 1] = index + 1

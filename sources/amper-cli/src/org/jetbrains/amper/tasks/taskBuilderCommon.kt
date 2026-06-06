@@ -260,7 +260,7 @@ internal fun publishTaskNameFor(module: AmperModule, repository: RepositoriesMod
 fun ProjectTasksBuilder.setupCustomTaskDependencies() {
     allModules().withEach {
         val tasksSettings = module.parts.filterIsInstance<ModuleTasksPart>().singleOrNull() ?: return@withEach
-        for ((taskName, taskSettings) in tasksSettings.settings) {
+        for ([taskName, taskSettings] in tasksSettings.settings) {
             val thisModuleTaskName = TaskId.moduleTask(module, taskName)
 
             for (dependsOnTaskName in taskSettings.dependsOn) {

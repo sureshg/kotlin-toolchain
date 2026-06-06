@@ -59,7 +59,7 @@ fun <T, K> Iterable<T>.distinctBy(
     onDuplicates: (key: K, items: List<T>) -> Unit,
 ): List<T> {
     return groupBy(selector)
-        .onEach { (key, items) ->
+        .onEach { [key, items] ->
             if (items.size > 1) {
                 onDuplicates(key, items)
             }

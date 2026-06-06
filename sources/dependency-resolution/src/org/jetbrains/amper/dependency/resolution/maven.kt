@@ -1134,7 +1134,7 @@ class MavenDependencyImpl internal constructor(
                 }
             } else {
                 // Multiplatform case
-                val (kotlinMetadataVariant, kmpMetadataFile) =
+                val [kotlinMetadataVariant, kmpMetadataFile] =
                     detectKotlinMetadataLibrary(
                         context,
                         ResolutionPlatform.COMMON,

@@ -393,7 +393,7 @@ private const val REGEX_PREFIX: String = "regex:"
 private fun ActivationFile.isActive(dynamicInputs: DynamicInputs): Boolean {
     // todo (AB) : Support interpolation
     // todo (AB) : See https://github.com/apache/maven/blob/f1cada5c1248dc0cd6252e737c292d018bfcfa80/compat/maven-model-builder/src/main/java/org/apache/maven/model/profile/activation/FileProfileActivator.java#L90
-    val (actualPath, existing) = if (!exists.isNullOrBlank()) {
+    val [actualPath, existing] = if (!exists.isNullOrBlank()) {
         exists.toPath()  to true
     } else if (!missing.isNullOrBlank()) {
         missing.toPath()  to false

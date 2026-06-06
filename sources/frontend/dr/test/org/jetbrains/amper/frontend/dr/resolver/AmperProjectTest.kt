@@ -246,7 +246,7 @@ class AmperProjectDependenciesTest: AbstractDependencyInsightsTest() {
                         var content = Files.readString(yamlFile)
                         var changed = false
 
-                        for ((oldName, newName) in renamedFilesMap) {
+                        for ([oldName, newName] in renamedFilesMap) {
                             // Replace the full filename including extension
                             val newContent = content.replace(oldName, newName)
                             if (newContent != content) {

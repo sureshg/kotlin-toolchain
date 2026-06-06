@@ -102,7 +102,7 @@ internal fun DefaultModule.addImplicitDependencies() {
     fragments.associateWith {
         // Precompute allExternalMavenDependencies because addImplicitDependencies would affect these.
         it.allExternalMavenDependencies().mapTo(hashSetOf()) { it.coordinates.groupAndArtifact }
-    }.forEach { (fragment, deps) -> fragment.addImplicitDependencies(deps) }
+    }.forEach { [fragment, deps] -> fragment.addImplicitDependencies(deps) }
 
     parts = parts.map {
         if (it is RepositoriesModulePart) {

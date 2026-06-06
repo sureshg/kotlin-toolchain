@@ -49,10 +49,10 @@ class BuildAmperPluginInfoTask(
 
         val globalResult = dependenciesResult.requireSingleDependency<PreProcessAmperPluginsTask.Result>()
         val modulePath = PluginData.Source.Local(module.source.moduleDir)
-        val (pluginData, problems) = globalResult.result.first { it.pluginData.source == modulePath }
+        val (pluginData, diagnostics) = globalResult.result.first { it.pluginData.source == modulePath }
 
-        problems.forEach(CliProblemReporter::reportMessage)
-        if (problems.any { it.level == Level.Error }) {
+        diagnostics.forEach(CliProblemReporter::reportMessage)
+        if (diagnostics.any { it.level == Level.Error }) {
             userReadableError("Plugin Kotlin schema processing failed, see the errors above.")
         }
 

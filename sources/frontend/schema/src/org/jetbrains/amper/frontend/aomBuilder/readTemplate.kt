@@ -157,7 +157,7 @@ private fun analyzeAndReportTemplateLoops(
     loops.forEach { loop ->
         val traceableLoop = buildList {
             val loopPath = loop.plusElement(loop.first())
-            loopPath.zipWithNext().forEach { (t1, t2) ->
+            loopPath.zipWithNext().forEach { [t1, t2] ->
                 val t1Applications = templateEdges[t1] ?: return@forEach
                 val application = t1Applications.find { it.value == t2 } ?: return@forEach
                 add(application)

@@ -34,7 +34,7 @@ class UselessSettingValue(
     override fun analyze(root: TreeNode, minimalModule: MinimalModule, problemReporter: ProblemReporter) {
         // TODO There an optimization can be made.
         //  Here we can group by not by key name, but by key path.
-        val groupedScalars = root.collectScalarPropertiesWithOwners().groupBy { it.second.key }.map { (_, it) -> it }
+        val groupedScalars = root.collectScalarPropertiesWithOwners().groupBy { it.scalarProp.key }.map { it.value }
         val hasPotentialOverrides = groupedScalars.filter { it.size > 1 }
         hasPotentialOverrides.forEach { group ->
             // TODO There an optimization can be made.

@@ -146,7 +146,7 @@ internal class ProjectTreeBuilder(val projectPath: Path, mavenPlugins: List<Mave
             projectTree = projectTree?.let { mergeTrees(listOf(it, otherProjectTree)) } ?: otherProjectTree
         }
 
-        for ((path, otherModuleBuilder) in other.modules) {
+        for ([path, otherModuleBuilder] in other.modules) {
             val existingModuleBuilder = modules[path]
             if (existingModuleBuilder != null) {
                 existingModuleBuilder.merge(otherModuleBuilder)
@@ -163,7 +163,7 @@ internal class ProjectTreeBuilder(val projectPath: Path, mavenPlugins: List<Mave
     fun build(): AmperForest = AmperForest(
         projectPath = projectPath,
         projectTree = projectTree ?: buildTree(DeclarationOfProject) { },
-        modules = modules.mapValues { (_, builder) ->
+        modules = modules.mapValues { [_, builder] ->
             builder.build()
         }
     )

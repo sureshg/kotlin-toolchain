@@ -42,7 +42,7 @@ suspend fun runAmperSchemaProcessor(
     val outputCaptor = ProcessOutputListener.InMemoryCapture()
     val request = PluginDeclarationsRequest(
         librariesPaths = apiClasspath,
-        requests = plugins.map { (pluginRootPath, pluginInfo) ->
+        requests = plugins.map { [pluginRootPath, pluginInfo] ->
             PluginDeclarationsRequest.Request(
                 moduleName = pluginRootPath.relativeTo(projectRoot.path).joinToString(":"),
                 sourceDir = pluginRootPath / "src",

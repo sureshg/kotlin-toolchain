@@ -156,7 +156,7 @@ object Downloader {
     ): Nothing {
         val message = buildString {
             appendLine("Cannot download")
-            appendLine(response.headers.entries().joinToString("\n") { (name, values) -> "Header: $name: $values" })
+            appendLine(response.headers.entries().joinToString("\n") { [name, values] -> "Header: $name: $values" })
             appendLine()
             if (tempFile.exists()) {
                 val firstBytes = tempFile.inputStream().use { it.readNBytes(1024) }
