@@ -20,6 +20,8 @@ internal class TaskCommand : AmperModelAwareCommand(name = "task") {
 
     override fun help(context: Context): String = "Run a task and its dependencies from the task graph"
 
+    override val hiddenFromHelp: Boolean = true
+
     override suspend fun run(cliContext: CliContext, model: Model) {
         withBackend(cliContext, model) { backend ->
             backend.runTasks(taskNames.map { TaskId(it) }.toSet())
