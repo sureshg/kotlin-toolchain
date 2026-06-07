@@ -24,8 +24,8 @@ internal abstract class AmperProjectAwareCommand(name: String) : AmperSubcommand
 
     final override suspend fun run() {
         val cliContext = createCliProjectContext(
-            explicitProjectDir = commonOptions.explicitProjectRoot ?: layoutOptions.explicitProjectDir,
-            explicitBuildDir = commonOptions.explicitBuildOutputRoot ?: layoutOptions.explicitBuildDir,
+            explicitProjectDir = layoutOptions.explicitProjectDir,
+            explicitBuildDir = layoutOptions.explicitBuildDir,
         )
 
         spanBuilder("Switch telemetry to project-local build directory").use {

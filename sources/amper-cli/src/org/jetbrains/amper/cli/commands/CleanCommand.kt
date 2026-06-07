@@ -23,8 +23,8 @@ internal class CleanCommand : AmperSubcommand(name = "clean") {
 
     override suspend fun run() {
         val projectContext = findProjectContext(
-            explicitProjectDir = commonOptions.explicitProjectRoot ?: layoutOptions.explicitProjectDir,
-            explicitBuildDir = commonOptions.explicitBuildOutputRoot ?: layoutOptions.explicitBuildDir,
+            explicitProjectDir = layoutOptions.explicitProjectDir,
+            explicitBuildDir = layoutOptions.explicitBuildDir,
         ) ?: userReadableError("No Kotlin project found, nothing to clean")
 
         if (projectContext.projectBuildDir.exists()) {

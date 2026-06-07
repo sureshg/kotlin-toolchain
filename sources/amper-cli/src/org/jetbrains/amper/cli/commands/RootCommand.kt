@@ -84,10 +84,6 @@ internal class RootCommand : SuspendingCliktCommand(name = "kotlin") {
         }
     }
 
-    private val root by option(help = "Kotlin project root")
-        .path(mustExist = true, canBeFile = false, canBeDir = true)
-        .deprecated("WARN: `--root` is deprecated. Use `--project-dir` after the Kotlin CLI subcommand instead")
-
     private val consoleLogLevel by option(
         "--log-level",
         help = "Console logging level"
@@ -111,41 +107,23 @@ internal class RootCommand : SuspendingCliktCommand(name = "kotlin") {
         // Detecting this path eagerly allows showing the default value in the help.
         .default(AmperUserCacheRoot.fromCurrentUserResult().unwrap())
 
-    private val sharedCachesRoot by option(
-        "--shared-caches-root",
-        help = "Path to the cache directory shared between all Kotlin projects",
-    )
-        .path(canBeFile = false)
-        .convert { AmperUserCacheRoot(it.toAbsolutePath()) }
-        .deprecated("WARN: `--shared-caches-root` was renamed to `--shared-cache-dir`. " +
-                "Please use the new name instead. The old name will no longer be accepted in future versions.")
-
-    private val buildOutputRoot by option(
-        "--build-output",
-        help = "Root directory for build outputs. By default, this is the `build` directory under the project root."
-    ).path(mustExist = false, canBeFile = false, canBeDir = true)
-        .deprecated("WARN: `--build-output` is deprecated. Use `--build-dir` after the Kotlin CLI subcommand instead")
-
     private val debuggingOptions by DebuggingOptions()
 
     override suspend fun run() {
-        val effectiveSharedCacheDir = sharedCachesRoot ?: sharedCacheDir
 
         // Ensure we're writing traces to the configured user cache (we start with the default in early telemetry).
         // For commands that have a project context, the traces will eventually be moved to the project build logs dir.
-        TelemetryEnvironment.setUserCacheRoot(effectiveSharedCacheDir)
+        TelemetryEnvironment.setUserCacheRoot(sharedCacheDir)
 
         currentContext.obj = CommonOptions(
-            explicitProjectRoot = root,
             consoleLogLevel = consoleLogLevel,
-            sharedCachesRoot = effectiveSharedCacheDir,
-            explicitBuildOutputRoot = buildOutputRoot,
+            sharedCachesRoot = sharedCacheDir,
         )
 
         if (debuggingOptions.profilerEnabled) {
             spanBuilder("Setup profiler").use {
                 Profiler.start(
-                    userCacheRoot = effectiveSharedCacheDir,
+                    userCacheRoot = sharedCacheDir,
                     snapshotFile = debuggingOptions.profilerSnapshotPath,
                 )
             }
@@ -169,13 +147,8 @@ internal class RootCommand : SuspendingCliktCommand(name = "kotlin") {
     }
 
     data class CommonOptions(
-        /**
-         * The explicit project root provided by the user, or null if the root should be discovered.
-         */
-        val explicitProjectRoot: Path?,
         val consoleLogLevel: Level,
         val sharedCachesRoot: AmperUserCacheRoot,
-        val explicitBuildOutputRoot: Path?,
     )
 
     /**
