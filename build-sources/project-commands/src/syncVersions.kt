@@ -142,7 +142,7 @@ class VersionUpdater(val amperRootDir: Path) {
             val textWithVersion = initialText
                 .replaceRegexGroup1(Regex("""^\s*set\s+zulu_version=(\S+)""", RegexOption.MULTILINE), zuluVersion)
                 .replaceRegexGroup1(Regex("""^\s*set\s+java_version=(\S+)""", RegexOption.MULTILINE), javaVersion)
-            jres.filter { it.os == AzulApi.Os.Windows }.fold(textWithVersion) { text, (val arch, val sha256) ->
+            jres.filter { it.os == AzulApi.Os.Windows }.fold(textWithVersion) { text, (arch, sha256) ->
                 text.replaceRegexGroup1(Regex("""set jre_arch=${arch.filenameValue}\s+set jre_sha256=(\S+)""", RegexOption.MULTILINE), sha256)
             }
         }

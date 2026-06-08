@@ -41,7 +41,7 @@ settings:
     freeCompilerArgs:
       - -Wextra
       - -Xconsistent-data-class-copy-visibility # generates copy() with the same visibility as the constructor
-      - -Xname-based-destructuring=name-mismatch
+      - -Xname-based-destructuring=complete
       - -Xrender-internal-diagnostic-names
       - -Xreturn-value-checker=check
       - -Xwarning-level=REDUNDANT_ELSE_IN_WHEN:error

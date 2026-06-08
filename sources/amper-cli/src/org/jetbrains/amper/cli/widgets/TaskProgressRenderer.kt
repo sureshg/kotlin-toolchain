@@ -128,7 +128,7 @@ class TaskProgressRenderer(
             }
         })
 
-        for ((val task, val elapsed) in state.taskEntries.take(maxTasksOnScreen)) {
+        for ((task, elapsed) in state.taskEntries.take(maxTasksOnScreen)) {
             cell(horizontalLayout {
                 cell(">") {
                     style = terminal.theme.muted

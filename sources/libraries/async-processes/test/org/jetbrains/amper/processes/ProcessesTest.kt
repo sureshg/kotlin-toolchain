@@ -95,7 +95,7 @@ class ProcessesTest {
         process.waitFor(1, TimeUnit.SECONDS)
         assertTerminated(process, "The process should have terminated by now, because it was explicitly killed")
 
-        (val exitCode = value, val duration) = measureTimedValue {
+        val (exitCode = value, duration) = measureTimedValue {
             withTimeoutOrNull(5.seconds) { deferredExitCode.await() }
         }
         assertTrue(duration < 1.seconds, "The result should be returned quickly (<1s) after the destruction of the process, but it took $duration")
