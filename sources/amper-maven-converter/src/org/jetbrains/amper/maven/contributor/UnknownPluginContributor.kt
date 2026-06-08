@@ -84,7 +84,7 @@ private fun ProjectTreeBuilder.ModuleTreeBuilder.contributeUnknownPlugin(
         }
     }
 
-    val duplicateGoals = goalToExecution.filter { it.value.size > 1 }.keys
+    val duplicateGoals = goalToExecution.filterValues { it.size > 1 }.keys
 
     duplicateGoals.forEach { goal ->
         val convertedExecution = goalToExecution[goal]?.firstOrNull()

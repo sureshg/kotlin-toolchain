@@ -90,7 +90,7 @@ private fun convert(original: File, converted: File) {
 
     //check there are no duplicates type + key
     records.groupBy { it.key }
-        .filter { it.value.size > 1 }
+        .filterValues { it.size > 1 }
         .forEach { [key, records] ->
             val allTypes = records.map { it.type }
             require(allTypes.size == allTypes.toSet().size) { "Duplicated key '$key'." }

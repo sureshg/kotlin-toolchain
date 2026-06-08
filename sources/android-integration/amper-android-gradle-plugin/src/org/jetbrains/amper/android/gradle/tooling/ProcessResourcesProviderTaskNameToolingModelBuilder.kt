@@ -67,6 +67,6 @@ class ProcessResourcesProviderTaskNameToolingModelBuilder : ToolingModelBuilder 
                         }
                     })
                 }
-            }.filter { it.value.isNotEmpty() })
+            }.filterValues { it.isNotEmpty() })
     }
 }

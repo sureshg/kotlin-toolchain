@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.dependency.resolution
@@ -2312,7 +2312,7 @@ class BuildGraphTest : BaseDRTest() {
         // 2. Checking the absence of duplicates.
         root.distinctBfsSequence()
             .groupBy { it }
-            .filter { it.value.size > 1 }
+            .filterValues { it.size > 1 }
             .let {
                 assertTrue(
                     it.isEmpty(),
