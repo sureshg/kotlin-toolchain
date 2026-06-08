@@ -11,8 +11,11 @@ import org.jetbrains.amper.cli.test.utils.assertStdoutDoesNotContain
 import org.jetbrains.amper.cli.test.utils.getTaskOutputPath
 import org.jetbrains.amper.cli.test.utils.readTelemetrySpans
 import org.jetbrains.amper.cli.test.utils.runSlowTest
+import org.jetbrains.amper.cli.test.utils.withTelemetrySpans
 import org.jetbrains.amper.test.AmperCliResult
 import org.jetbrains.amper.test.spans.assertEachKotlinNativeCompilationSpan
+import org.jetbrains.amper.test.spans.kotlinJvmCompilationSpans
+import org.jetbrains.amper.test.spans.withAmperModule
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import java.nio.file.Path
@@ -21,10 +24,14 @@ import java.util.jar.JarFile
 import kotlin.io.path.Path
 import kotlin.io.path.div
 import kotlin.io.path.exists
+import kotlin.io.path.getLastModifiedTime
 import kotlin.io.path.isRegularFile
+import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.name
 import kotlin.io.path.pathString
+import kotlin.io.path.readText
 import kotlin.io.path.walk
+import kotlin.io.path.writeText
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -61,12 +68,42 @@ class AmperBuildTest : AmperCliTestBase() {
     }
 
     @Test
-    fun `build succeeds on a lib with all platforms`() = runSlowTest {
-        runCli(
-            projectDir = testProject("multiplatform-all-platforms"),
-            "build",
-            configureAndroidHome = true,
-        )
+    fun `incremental jvm build`() = runSlowTest {
+        val projectDir = testProject("multi-module")
+        val result1 = runCli(projectDir = projectDir, "build")
+        result1.withTelemetrySpans {
+            kotlinJvmCompilationSpans.withAmperModule("shared").assertTimes(2) // main & test
+            kotlinJvmCompilationSpans.withAmperModule("app").assertSingle() // no tests
+        }
+
+        val result2 = runCli(projectDir = projectDir, "build")
+        result2.withTelemetrySpans {
+            kotlinJvmCompilationSpans.assertNone() // no recompilation (avoidance)
+        }
+
+        val resultRun = runCli(projectDir = projectDir, "run")
+        resultRun.assertStdoutContains("Hello, World!")
+
+        val appClasses = resultRun.buildDir / "artifacts/CompiledJvmArtifact/appjvm/kotlin-output"
+        val appClassesState = computeFileStates(appClasses)
+
+        projectDir.resolve("shared/src/World.kt").replaceInText("\"World\"", "\"New World\"")
+        val resultModifiedRun = runCli(projectDir = projectDir, "run")
+        resultModifiedRun.withTelemetrySpans {
+            kotlinJvmCompilationSpans.withAmperModule("shared").assertSingle() // tests don't need recompilation
+            // we still have a span for the main compilation because IC operates inside it
+            kotlinJvmCompilationSpans.withAmperModule("app").assertSingle()
+        }
+        resultModifiedRun.assertStdoutContains("Hello, New World!")
+        assertEquals(appClassesState, computeFileStates(appClasses), "Classes in 'app' module shouldn't have changed thanks to incremental compilation")
+    }
+
+    private fun computeFileStates(dir: Path): List<String> = dir.listDirectoryEntries()
+        .map { "${it.name}-${it.getLastModifiedTime().toInstant()}" }
+        .sorted()
+
+    private fun Path.replaceInText(oldValue: String, newValue: String) {
+        writeText(readText().replace(oldValue, newValue))
     }
 
     @RunWithAndWithoutJic
@@ -89,7 +126,7 @@ class AmperBuildTest : AmperCliTestBase() {
             val expectedEntriesInOrder = listOf(
                 "META-INF/MANIFEST.MF",
                 "META-INF/",
-                "META-INF/main.kotlin_module",
+                "META-INF/java-kotlin-mixed.kotlin_module",
                 "apkg/",
                 "apkg/AClass.class",
                 "bpkg/",

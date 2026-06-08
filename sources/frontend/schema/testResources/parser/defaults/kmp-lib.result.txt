@@ -92,6 +92,7 @@ Fragments:
         }
         allWarningsAsErrors: <default> false
         apiVersion: <default> null
+        compileIncrementally: <default> true
         compilerPlugins: <default> [
         ]
         debug: <default> null
@@ -278,6 +279,7 @@ Fragments:
         }
         allWarningsAsErrors: <default> false
         apiVersion: <default> null
+        compileIncrementally: <default> true
         compilerPlugins: <default> [
         ]
         debug: <default> null
@@ -460,6 +462,7 @@ Fragments:
         }
         allWarningsAsErrors: <default> false
         apiVersion: <default> null
+        compileIncrementally: <default> true
         compilerPlugins: <default> [
         ]
         debug: <default> null
@@ -645,6 +648,7 @@ Fragments:
         }
         allWarningsAsErrors: <default> false
         apiVersion: <default> null
+        compileIncrementally: <default> true
         compilerPlugins: <default> [
         ]
         debug: <default> null
@@ -826,6 +830,7 @@ Fragments:
         }
         allWarningsAsErrors: <default> false
         apiVersion: <default> null
+        compileIncrementally: <default> true
         compilerPlugins: <default> [
         ]
         debug: <default> null
@@ -1010,6 +1015,7 @@ Fragments:
         }
         allWarningsAsErrors: <default> false
         apiVersion: <default> null
+        compileIncrementally: <default> true
         compilerPlugins: <default> [
         ]
         debug: <default> null
@@ -1192,6 +1198,7 @@ Fragments:
         }
         allWarningsAsErrors: <default> false
         apiVersion: <default> null
+        compileIncrementally: <default> true
         compilerPlugins: <default> [
         ]
         debug: <default> null
@@ -1374,6 +1381,7 @@ Fragments:
         }
         allWarningsAsErrors: <default> false
         apiVersion: <default> null
+        compileIncrementally: <default> true
         compilerPlugins: <default> [
         ]
         debug: <default> null
@@ -1559,6 +1567,7 @@ Fragments:
         }
         allWarningsAsErrors: <default> false
         apiVersion: <default> null
+        compileIncrementally: <default> true
         compilerPlugins: <default> [
         ]
         debug: <default> null
@@ -1744,6 +1753,7 @@ Fragments:
         }
         allWarningsAsErrors: <default> false
         apiVersion: <default> null
+        compileIncrementally: <default> true
         compilerPlugins: <default> [
         ]
         debug: <default> null
@@ -1926,6 +1936,7 @@ Fragments:
         }
         allWarningsAsErrors: <default> false
         apiVersion: <default> null
+        compileIncrementally: <default> true
         compilerPlugins: <default> [
         ]
         debug: <default> null
@@ -2111,6 +2122,7 @@ Fragments:
         }
         allWarningsAsErrors: <default> false
         apiVersion: <default> null
+        compileIncrementally: <default> true
         compilerPlugins: <default> [
         ]
         debug: <default> null
@@ -2293,6 +2305,7 @@ Fragments:
         }
         allWarningsAsErrors: <default> false
         apiVersion: <default> null
+        compileIncrementally: <default> true
         compilerPlugins: <default> [
         ]
         debug: <default> null
@@ -2477,6 +2490,7 @@ Fragments:
         }
         allWarningsAsErrors: <default> false
         apiVersion: <default> null
+        compileIncrementally: <default> true
         compilerPlugins: <default> [
         ]
         debug: <default> null
@@ -2659,6 +2673,7 @@ Fragments:
         }
         allWarningsAsErrors: <default> false
         apiVersion: <default> null
+        compileIncrementally: <default> true
         compilerPlugins: <default> [
         ]
         debug: <default> null
@@ -2844,6 +2859,7 @@ Fragments:
         }
         allWarningsAsErrors: <default> false
         apiVersion: <default> null
+        compileIncrementally: <default> true
         compilerPlugins: <default> [
         ]
         debug: <default> null
@@ -3026,6 +3042,7 @@ Fragments:
         }
         allWarningsAsErrors: <default> false
         apiVersion: <default> null
+        compileIncrementally: <default> true
         compilerPlugins: <default> [
         ]
         debug: <default> null
@@ -3211,6 +3228,7 @@ Fragments:
         }
         allWarningsAsErrors: <default> false
         apiVersion: <default> null
+        compileIncrementally: <default> true
         compilerPlugins: <default> [
         ]
         debug: <default> null
@@ -3393,6 +3411,7 @@ Fragments:
         }
         allWarningsAsErrors: <default> false
         apiVersion: <default> null
+        compileIncrementally: <default> true
         compilerPlugins: <default> [
         ]
         debug: <default> null
@@ -3578,6 +3597,7 @@ Fragments:
         }
         allWarningsAsErrors: <default> false
         apiVersion: <default> null
+        compileIncrementally: <default> true
         compilerPlugins: <default> [
         ]
         debug: <default> null

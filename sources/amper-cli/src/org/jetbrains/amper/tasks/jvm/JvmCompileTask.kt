@@ -26,13 +26,15 @@ import org.jetbrains.amper.compilation.KotlinArtifactsDownloader
 import org.jetbrains.amper.compilation.TerminalCompilerMessageRenderer
 import org.jetbrains.amper.compilation.TerminalPrintingKotlinLogger
 import org.jetbrains.amper.compilation.asKotlinLogger
+import org.jetbrains.amper.compilation.bta.makeClasspathEntrySnapshot
 import org.jetbrains.amper.compilation.downloadCompilerPlugins
 import org.jetbrains.amper.compilation.kotlinJvmCompilerArgs
+import org.jetbrains.amper.compilation.kotlinModuleName
 import org.jetbrains.amper.compilation.loadMaybeCachedImpl
 import org.jetbrains.amper.compilation.serializableCompilationSettings
 import org.jetbrains.amper.compilation.singleLeafFragment
+import org.jetbrains.amper.concurrency.mapConcurrently
 import org.jetbrains.amper.core.AmperUserCacheRoot
-import org.jetbrains.amper.core.extract.cleanDirectory
 import org.jetbrains.amper.engine.BuildTask
 import org.jetbrains.amper.engine.TaskGraphExecutionContext
 import org.jetbrains.amper.engine.TaskName
@@ -66,21 +68,29 @@ import org.jetbrains.amper.telemetry.setListAttribute
 import org.jetbrains.amper.telemetry.spanBuilder
 import org.jetbrains.amper.telemetry.use
 import org.jetbrains.amper.util.BuildType
-import org.jetbrains.kotlin.buildtools.api.BaseCompilationOperation
+import org.jetbrains.kotlin.buildtools.api.BaseCompilationOperation.Companion.COMPILER_MESSAGE_RENDERER
 import org.jetbrains.kotlin.buildtools.api.CompilationResult
 import org.jetbrains.kotlin.buildtools.api.ExperimentalBuildToolsApi
+import org.jetbrains.kotlin.buildtools.api.KotlinLogger
 import org.jetbrains.kotlin.buildtools.api.KotlinToolchains
+import org.jetbrains.kotlin.buildtools.api.SourcesChanges
 import org.jetbrains.kotlin.buildtools.api.getToolchain
+import org.jetbrains.kotlin.buildtools.api.jvm.ClassSnapshotGranularity
 import org.jetbrains.kotlin.buildtools.api.jvm.JvmPlatformToolchain
+import org.jetbrains.kotlin.buildtools.api.jvm.jvmCompilationOperation
+import org.jetbrains.kotlin.buildtools.api.jvm.operations.JvmCompilationOperation.Companion.INCREMENTAL_COMPILATION
+import org.jetbrains.kotlin.buildtools.api.jvm.operations.snapshotBasedIcConfiguration
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.createDirectories
+import kotlin.io.path.deleteRecursively
 import kotlin.io.path.div
 import kotlin.io.path.exists
 import kotlin.io.path.extension
 import kotlin.io.path.isDirectory
 import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.name
 import kotlin.io.path.pathString
 import kotlin.io.path.walk
 
@@ -135,6 +145,9 @@ internal class JvmCompileTask(
     )
 
     val taskOutputRoot get() = compiledJvmArtifact.path
+
+    // This path is voluntarily not tied to the current module, so the snapshots are shared
+    private val icSnapshotsDir: Path = buildOutputRoot.path / "ic-cache/classpath-snapshots"
 
     override suspend fun run(dependenciesResult: List<TaskResult>, executionContext: TaskGraphExecutionContext): TaskResult {
         require(fragments.isNotEmpty()) {
@@ -206,13 +219,18 @@ internal class JvmCompileTask(
         val inputFiles = sources + resources + classpath + javaAnnotationProcessorClasspath
 
         val result = incrementalCache.execute(taskName.id.value, inputValues, inputFiles) {
-            cleanDirectory(javaAnnotationProcessorsGeneratedDir)
-            if (!shouldCompileJavaIncrementally(userSettings.java, javaAnnotationProcessorClasspath)) {
-                cleanDirectory(taskOutputRoot)
+            javaAnnotationProcessorsGeneratedDir.deleteRecursively()
+            compiledJvmArtifact.resourcesRoot.deleteRecursively() // we want to remove obsolete resources
+            val compileJavaIncrementally =
+                shouldCompileJavaIncrementally(userSettings.java, javaAnnotationProcessorClasspath)
+            if (!compileJavaIncrementally) { // we keep compiler outputs to update incrementally
+                compiledJvmArtifact.javaCompilerOutputRoot.deleteRecursively()
+                compiledJvmArtifact.jicDataDir.deleteRecursively()
             }
-            compiledJvmArtifact.javaCompilerOutputRoot.createDirectories()
-            compiledJvmArtifact.kotlinCompilerOutputRoot.createDirectories()
-            compiledJvmArtifact.resourcesRoot.createDirectories()
+            if (!userSettings.kotlin.compileIncrementally) { // we keep compiler outputs to update incrementally
+                compiledJvmArtifact.kotlinCompilerOutputRoot.deleteRecursively()
+                compiledJvmArtifact.kotlinIcDataDir.deleteRecursively()
+            }
 
             val nonEmptySourceDirs = sources
                 .filter {
@@ -225,8 +243,6 @@ internal class JvmCompileTask(
                 }
 
             val outputPaths = mutableListOf<Path>()
-            outputPaths.add(compiledJvmArtifact.javaCompilerOutputRoot.toAbsolutePath())
-            outputPaths.add(compiledJvmArtifact.kotlinCompilerOutputRoot.toAbsolutePath())
 
             if (nonEmptySourceDirs.isNotEmpty()) {
                 logger.infoNoConsole("Compiling module '${module.userReadableName}' for platform '${platform.pretty}'...")
@@ -241,6 +257,12 @@ internal class JvmCompileTask(
                     javaAnnotationProcessorsGeneratedDir = javaAnnotationProcessorsGeneratedDir,
                     tempRoot = tempRoot,
                 )
+                if (compiledJvmArtifact.kotlinCompilerOutputRoot.exists()) {
+                    outputPaths.add(compiledJvmArtifact.kotlinCompilerOutputRoot.toAbsolutePath())
+                }
+                if (compiledJvmArtifact.javaCompilerOutputRoot.exists()) {
+                    outputPaths.add(compiledJvmArtifact.javaCompilerOutputRoot.toAbsolutePath())
+                }
                 if (javaAnnotationProcessorsGeneratedDir.exists()) {
                     outputPaths.add(javaAnnotationProcessorsGeneratedDir)
                 }
@@ -250,6 +272,10 @@ internal class JvmCompileTask(
             }
 
             val presentResources = resources.filter { it.exists() }
+            if (presentResources.isNotEmpty()) {
+                compiledJvmArtifact.resourcesRoot.createDirectories()
+                outputPaths.add(compiledJvmArtifact.resourcesRoot.toAbsolutePath())
+            }
             for (resource in presentResources) {
                 val dest = if (resource.isDirectory()) {
                     compiledJvmArtifact.resourcesRoot
@@ -259,7 +285,7 @@ internal class JvmCompileTask(
                 logger.debug("Copying resources from '{}' to '{}'...", resource, dest)
 
                 // if we compile incrementally, then we don't clean the output dir => overwrite instead of failing that a file exists
-                val overwrite = shouldCompileJavaIncrementally(userSettings.java, javaAnnotationProcessorClasspath)
+                val overwrite = compileJavaIncrementally || userSettings.kotlin.compileIncrementally
                 BuildPrimitives.copy(from = resource, to = dest, overwrite = overwrite)
             }
 
@@ -270,8 +296,10 @@ internal class JvmCompileTask(
             classesOutputRoots = listOf(
                 compiledJvmArtifact.javaCompilerOutputRoot,
                 compiledJvmArtifact.kotlinCompilerOutputRoot,
-                compiledJvmArtifact.resourcesRoot
-            ).map { it.toAbsolutePath() },
+                compiledJvmArtifact.resourcesRoot,
+            )
+                .filter { it.exists() }
+                .map { it.toAbsolutePath() },
             module = module,
             isTest = isTest,
             changes = result.changes,
@@ -369,6 +397,7 @@ internal class JvmCompileTask(
         )
 
         val compilerArgs = kotlinJvmCompilerArgs(
+            moduleName = module.kotlinModuleName(isTest),
             isMultiplatform = isMultiplatform,
             userSettings = userSettings,
             classpath = classpath,
@@ -388,25 +417,30 @@ internal class JvmCompileTask(
             .use {
                 // TODO capture compiler errors/warnings in incremental result
                 // TODO maybe share the build session with the whole Amper build (across all JVM compile tasks)?
-                kotlinToolchains.createBuildSession().use {
-                    val compilationOperation = kotlinToolchains.getToolchain<JvmPlatformToolchain>()
-                        .jvmCompilationOperationBuilder(
-                            sources = sourceFiles,
-                            destinationDirectory = compiledJvmArtifact.kotlinCompilerOutputRoot,
-                        ).apply {
-                            compilerArguments.applyArgumentStrings(compilerArgs)
-                            if (isCompilerMessageRendererAPIAvailable) {
-                                set(
-                                    BaseCompilationOperation.COMPILER_MESSAGE_RENDERER,
-                                    TerminalCompilerMessageRenderer(terminal, projectRoot.path, module),
-                                )
-                            }
-                            // TODO configure incremental compilation here
-//                            set(JvmCompilationOperation.INCREMENTAL_COMPILATION,
-//                                JvmSnapshotBasedIncrementalCompilationConfiguration())
+                kotlinToolchains.createBuildSession().use { session ->
+                    val jvmToolchain = kotlinToolchains.getToolchain<JvmPlatformToolchain>()
+                    val classpathSnapshots = session.makeClasspathSnapshots(
+                        classpath = classpath,
+                        outputDir = icSnapshotsDir,
+                        kotlinLogger = compilationLogger,
+                    )
+                    val compilationOperation = jvmToolchain.jvmCompilationOperation(
+                        sources = sourceFiles,
+                        destinationDirectory = compiledJvmArtifact.kotlinCompilerOutputRoot,
+                    ) {
+                        compilerArguments.applyArgumentStrings(compilerArgs)
+                        if (isCompilerMessageRendererAPIAvailable) {
+                            this[COMPILER_MESSAGE_RENDERER] = TerminalCompilerMessageRenderer(terminal, projectRoot.path, module)
                         }
-                        .build()
-                    it.executeOperation(
+                        if (userSettings.kotlin.compileIncrementally) {
+                            this[INCREMENTAL_COMPILATION] = snapshotBasedIcConfiguration(
+                                workingDirectory = compiledJvmArtifact.kotlinIcDataDir.createDirectories(),
+                                sourcesChanges = SourcesChanges.ToBeCalculated,
+                                dependenciesSnapshotFiles = classpathSnapshots,
+                            )
+                        }
+                    }
+                    session.executeOperation(
                         operation = compilationOperation,
                         executionPolicy = executionPolicy,
                         logger = compilationLogger,
@@ -416,6 +450,50 @@ internal class JvmCompileTask(
 
         if (kotlinCompilationResult != CompilationResult.COMPILATION_SUCCESS) {
             userReadableError("Kotlin compilation failed with ${errorsCollector.errors.size} errors (see above)")
+        }
+    }
+
+    /**
+     * Creates an ABI snapshot of the given [classpath], and writes the resulting files (per entry) in the given [outputDir].
+     *
+     * Currently, only JARs and directories of classes are supported.
+     *
+     * @return the paths to the saved snapshot files
+     */
+    @OptIn(ExperimentalBuildToolsApi::class)
+    internal suspend fun KotlinToolchains.BuildSession.makeClasspathSnapshots(
+        classpath: List<Path>,
+        outputDir: Path,
+        kotlinLogger: KotlinLogger?,
+    ): List<Path> {
+        val [snapshottableClasspath, nonSnapshottable] = classpath.partition { it.isDirectory() || it.extension == "jar" }
+        nonSnapshottable.forEach {
+            // We sometimes have .aar or .zip here. Maybe these are bugs that we should investigate
+            logger.warn("Unsupported extension .${it.extension} for classpath snapshotting, skipping entry $it")
+        }
+        return context(incrementalCache) {
+            snapshottableClasspath.mapConcurrently { entryPath ->
+                makeClasspathEntrySnapshot(
+                    entryPath = entryPath,
+                    entryMoniker = if (entryPath.isDirectory()) {
+                        // Directories are kotlin-output and java-output under a module name (in general), so we
+                        // prepend the module name to make it more recognizable
+                        "${module.userReadableName}${if (isTest) "-test" else ""}-${entryPath.name}"
+                    } else {
+                        entryPath.name
+                    },
+                    outputDir = outputDir,
+                    granularity = if (entryPath.isDirectory()) {
+                        // Directories are local modules, we want high granularity at the cost of higher snapshot size
+                        ClassSnapshotGranularity.CLASS_MEMBER_LEVEL
+                    } else {
+                        // JARs are usually external deps and change less often, so CLASS_LEVEL granularity is enough
+                        // and we can save on size
+                        ClassSnapshotGranularity.CLASS_LEVEL
+                    },
+                    logger = kotlinLogger,
+                )
+            }
         }
     }
 
@@ -457,6 +535,7 @@ internal class JvmCompileTask(
         val freeCompilerArgs = userSettings.java.freeCompilerArgs
 
         val success = if (shouldCompileJavaIncrementally(userSettings.java, processorClasspath)) {
+            compiledJvmArtifact.javaCompilerOutputRoot.createDirectories()
             compiledJvmArtifact.jicDataDir.createDirectories()
             val jicJavacArgs = commonArgs + freeCompilerArgs
             javacSpanBuilder(jicJavacArgs, jdk, incremental = true).use {

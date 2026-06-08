@@ -56,6 +56,7 @@ settings@android:
       presets: null  # default
     allWarningsAsErrors: false  # default
     apiVersion: null  # default, from ${languageVersion}
+    compileIncrementally: true  # default
     compilerPlugins: []  # default
     freeCompilerArgs: null  # default
     ksp:
@@ -158,6 +159,7 @@ settings@jvm:
       presets: null  # default
     allWarningsAsErrors: false  # default
     apiVersion: null  # default, from ${languageVersion}
+    compileIncrementally: true  # default
     compilerPlugins: []  # default
     freeCompilerArgs: null  # default
     ksp:
@@ -272,6 +274,7 @@ settings@jvm+android:
       presets: null  # default
     allWarningsAsErrors: false  # default
     apiVersion: null  # default, from ${languageVersion}
+    compileIncrementally: true  # default
     compilerPlugins: []  # default
     freeCompilerArgs: null  # default
     ksp:
@@ -379,6 +382,7 @@ settings@jvm:
       presets: null  # default
     allWarningsAsErrors: false  # default
     apiVersion: null  # default, from ${languageVersion}
+    compileIncrementally: true  # default
     compilerPlugins: []  # default
     freeCompilerArgs: null  # default
     ksp:
@@ -494,6 +498,7 @@ settings@android:
       presets: null  # default
     allWarningsAsErrors: false  # default
     apiVersion: null  # default, from ${languageVersion}
+    compileIncrementally: true  # default
     compilerPlugins: []  # default
     freeCompilerArgs: null  # default
     ksp:

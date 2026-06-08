@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.test.spans
@@ -21,15 +21,14 @@ data class FilteredSpans(
         filters = filters + description,
     )
 
-    fun assertSingle(): SpanData {
-        assertFalse(matchingSpans.isEmpty(), "No span matching the filters: $filtersDescription")
-        assertFalse(matchingSpans.size > 1, "More than 1 span matching the filters: $filtersDescription")
-        return matchingSpans.single()
-    }
+    fun assertSingle(): SpanData = assertTimes(1).single()
+
+    private fun SpanData.format() = "$name[\n${attributes.asMap().toSortedMap(compareBy { attr -> attr.key }).entries.joinToString("\n") { "  $it" }}\n]"
 
     fun assertTimes(times: Int): List<SpanData> {
         assertFalse(matchingSpans.isEmpty(), "No span matching the filters: $filtersDescription")
-        assertEquals(times, matchingSpans.size, "Not exactly $times spans matching the filters: $filtersDescription")
+        assertEquals(times, matchingSpans.size, "${matchingSpans.size} spans (instead of $times) matching the filters: $filtersDescription\n" +
+                matchingSpans.joinToString("\n") { it.format() })
         return matchingSpans
     }
 

@@ -25,5 +25,6 @@ class CompiledJvmArtifact(
     val kotlinCompilerOutputRoot get() = path / "kotlin-output"
     val resourcesRoot get() = path / "resources-output"
     val jicDataDir get() = path / "jic-data"
+    val kotlinIcDataDir get() = path / "kotlin-ic-data"
     override fun idComponents() = super.idComponents() + listOfNotNull(buildType?.value)
 }

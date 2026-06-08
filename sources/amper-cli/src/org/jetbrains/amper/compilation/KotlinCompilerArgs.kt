@@ -129,6 +129,7 @@ internal fun kotlinJvmCompilerArgs(
     friendPaths: List<Path>,
     fragments: List<Fragment>,
     additionalSourceRoots: List<SourceRoot>,
+    moduleName: String,
 ): List<String> = buildList {
     if (userSettings.jvmRelease != null) {
         add("-Xjdk-release=${userSettings.jvmRelease.releaseNumber}")
@@ -136,6 +137,7 @@ internal fun kotlinJvmCompilerArgs(
     add("-jdk-home=${jdkHome.pathString}")
     add("-classpath=${classpath.joinToString(File.pathSeparator)}")
     add("-no-stdlib") // that is specifically for the JVM
+    add("-module-name=$moduleName")
 
     if (friendPaths.isNotEmpty()) {
         // KT-34277 Kotlinc processes -Xfriend-paths differently for Javascript vs. JVM, using different list separators

@@ -38,6 +38,7 @@ settings@jvm:
       presets: null  # default
     allWarningsAsErrors: false  # default
     apiVersion: null  # default, from ${languageVersion}
+    compileIncrementally: true  # default
     compilerPlugins: []  # default
     freeCompilerArgs: null  # default
     ksp:

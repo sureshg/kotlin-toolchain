@@ -9,6 +9,7 @@ import org.jetbrains.amper.frontend.Platform
 import org.jetbrains.amper.frontend.SchemaEnum
 import org.jetbrains.amper.frontend.api.CanBeReferenced
 import org.jetbrains.amper.frontend.api.DefaultTrace
+import org.jetbrains.amper.frontend.api.DeprecatedSchema
 import org.jetbrains.amper.frontend.api.EnumOrderSensitive
 import org.jetbrains.amper.frontend.api.EnumValueFilter
 import org.jetbrains.amper.frontend.api.Misnomers
@@ -160,6 +161,11 @@ class KotlinSettings : SchemaNode() {
     @Misnomers("api-version", "sdkVersion", "sdk")
     @SchemaDoc("Allow using declarations only from the specified version of Kotlin bundled libraries")
     val apiVersion by referenceValue(::languageVersion)
+
+    @PlatformAgnostic
+    @Misnomers("avoidance")
+    @SchemaDoc("Whether Kotlin code should be compiled incrementally (only recompile what's necessary depending on the changes)")
+    val compileIncrementally by value(true)
 
     @Misnomers("Werror")
     @SchemaDoc("Turn any warnings into a compilation error")
