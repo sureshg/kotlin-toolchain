@@ -42,6 +42,7 @@ settings:
       - -Wextra
       - -Xconsistent-data-class-copy-visibility # generates copy() with the same visibility as the constructor
       - -Xexplicit-context-arguments
+      - -Xintrinsic-const-evaluation
       - -Xname-based-destructuring=complete
       - -Xrender-internal-diagnostic-names
       - -Xreturn-value-checker=check
