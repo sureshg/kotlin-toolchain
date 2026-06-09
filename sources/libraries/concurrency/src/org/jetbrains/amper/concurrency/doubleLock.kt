@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.concurrency
@@ -10,7 +10,6 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.yield
-import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.nio.channels.AsynchronousCloseException
 import java.nio.channels.ClosedChannelException
@@ -25,8 +24,6 @@ import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
-
-private val logger = LoggerFactory.getLogger("concurrency/doubleLock.kt")
 
 /**
  * Executes the given [block] under a double lock:
