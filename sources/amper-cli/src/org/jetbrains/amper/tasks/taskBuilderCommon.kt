@@ -20,6 +20,7 @@ import org.jetbrains.amper.frontend.mavenPublishRepositories
 import org.jetbrains.amper.frontend.publishingSettings
 import org.jetbrains.amper.frontend.shouldPublishSourcesJars
 import org.jetbrains.amper.tasks.ProjectTasksBuilder.Companion.getTaskOutputPath
+import org.jetbrains.amper.tasks.native.CommonizeNativeDistributionTask
 import org.jetbrains.amper.tasks.native.NativeTaskType
 import org.jetbrains.amper.tasks.publication.MavenCentralPublishTask
 import org.jetbrains.amper.tasks.publication.MavenPublishTask
@@ -107,6 +108,11 @@ fun ProjectTasksBuilder.setupCommonTasks() {
                     dependsOn = CommonFragmentTaskType.CompileMetadata.getTaskName(otherFragment)
                 )
             }
+
+            tasks.registerDependency(
+                taskName = taskName,
+                dependsOn = CommonizeNativeDistributionTask.TASK_NAME
+            )
         }
 
     allModules()

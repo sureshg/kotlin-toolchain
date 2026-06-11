@@ -12,6 +12,7 @@ import org.jetbrains.amper.cli.telemetry.setAmperModule
 import org.jetbrains.amper.cli.userReadableError
 import org.jetbrains.amper.compilation.KotlinArtifactsDownloader
 import org.jetbrains.amper.compilation.KotlinCompilationType
+import org.jetbrains.amper.compilation.KotlinNativeCompiler
 import org.jetbrains.amper.compilation.KotlinUserSettings
 import org.jetbrains.amper.compilation.downloadCompilerPlugins
 import org.jetbrains.amper.compilation.downloadNativeCompiler
@@ -28,15 +29,20 @@ import org.jetbrains.amper.engine.TaskGraphExecutionContext
 import org.jetbrains.amper.engine.TaskName
 import org.jetbrains.amper.frontend.AmperModule
 import org.jetbrains.amper.frontend.Fragment
+import org.jetbrains.amper.frontend.FragmentDependencyType
 import org.jetbrains.amper.frontend.Platform
+import org.jetbrains.amper.frontend.allFragmentDependencies
 import org.jetbrains.amper.frontend.dr.resolver.ModuleDependencies
 import org.jetbrains.amper.frontend.dr.resolver.ModuleDependencies.Companion.toRepository
 import org.jetbrains.amper.frontend.dr.resolver.ModuleDependencyNode
 import org.jetbrains.amper.frontend.dr.resolver.flow.toPlatform
 import org.jetbrains.amper.frontend.dr.resolver.flow.toResolutionPlatform
+import org.jetbrains.amper.frontend.dr.resolver.native.KonanDistribution
+import org.jetbrains.amper.frontend.dr.resolver.native.commonizedKlibs
+import org.jetbrains.amper.frontend.dr.resolver.native.compilerPlatforms
+import org.jetbrains.amper.frontend.dr.resolver.native.stdlibDir
 import org.jetbrains.amper.frontend.friends
 import org.jetbrains.amper.frontend.mavenResolveRepositories
-import org.jetbrains.amper.frontend.refinedFragments
 import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.jdk.provisioning.Jdk
 import org.jetbrains.amper.jdk.provisioning.JdkProvider
@@ -56,7 +62,6 @@ import org.slf4j.LoggerFactory
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.Path
-import kotlin.io.path.div
 import kotlin.io.path.exists
 import kotlin.io.path.extension
 import kotlin.io.path.isDirectory
@@ -98,9 +103,9 @@ internal class MetadataCompileTask(
      * Metadata compilation of shared fragment accepts the following input:
      * - fragment sources (cinterop sources are not included)
      * - fragment external compile dependencies
-     *   -- all suitable source sets from a dependnecy's common KLib, including commonized cinterop source sets
-     *   -- compile dependencies of a shared fragment that targets native platfroms ONLY, include transitive local module dependencies as well.
-     * - metadata compilation result of all same-module fragments refining this one (dependesOn closure)
+     *   -- all suitable source sets from a dependency's common KLib, including commonized cinterop source sets
+     *   -- compile dependencies of a shared fragment that targets native platforms ONLY, include transitive local module dependencies as well.
+     * - metadata compilation result of all same-module fragments refining this one (dependsOn closure)
      * - commonized cinterop sources of all target platforms
      */
     override suspend fun run(dependenciesResult: List<TaskResult>, executionContext: TaskGraphExecutionContext): Result {
@@ -130,10 +135,24 @@ internal class MetadataCompileTask(
             it.metadataOutputRoot.takeIf { !it.isEmptyDirectory() }
         }
 
+        val fragmentClasspath = localClasspath + mavenClasspath.dependencyPaths()
+
+        val refinesPaths = fragment
+            .allFragmentDependencies(dependencyType = FragmentDependencyType.REFINE)
+            .map { localDependencies.findMetadataResultForFragment(it).metadataOutputRoot }
+            .toList()
+
+        // todo (AB) : [AMPER-721] This is a closed party, friends are not invited I am afraid.
+        //  Test fragments are also not invited, neither are single-platform fragments (check if friends parameter is needed here)
+        val friendPaths =
+            fragment.friends.map { localDependencies.findMetadataResultForFragment(it).metadataOutputRoot }
+
+        val jdk = jdkProvider.getJdkOrUserError(jdkSettings = fragment.settings.jvm.jdk)
+
         return if (fragmentPlatforms.all { it.nativeTarget != null })   {
-            compileNativeMetadata(localClasspath, mavenClasspath, localDependencies, kotlinSettings, fragmentPlatforms)
+            compileNativeMetadata(fragmentClasspath, refinesPaths, friendPaths, kotlinSettings, fragmentPlatforms, jdk)
         } else {
-            compileCommonMetadata(localClasspath, mavenClasspath, localDependencies, kotlinSettings, fragmentPlatforms)
+            compileCommonMetadata(fragmentClasspath, refinesPaths, friendPaths, kotlinSettings, fragmentPlatforms, jdk)
         }
     }
 
@@ -142,23 +161,13 @@ internal class MetadataCompileTask(
     }
 
     private suspend fun compileCommonMetadata(
-        localClasspath: List<Path>,
-        mavenClasspath: ModuleDependencyNode,
-        localDependencies: List<Result>,
+        fragmentClasspath: List<Path>,
+        refinesPaths: List<Path>,
+        friendPaths: List<Path>,
         kotlinSettings: KotlinUserSettings,
         fragmentPlatforms: Set<ResolutionPlatform>,
+        jdk: Jdk,
     ): Result {
-        val classpath = localClasspath + mavenClasspath.dependencyPaths()
-        val refinesPaths =
-            fragment.refinedFragments.map { localDependencies.findMetadataResultForFragment(it).metadataOutputRoot }
-
-        // todo (AB) : [AMPER-721] This is a closed party, friends are not invited I am afraid.
-        //  Test fragments are also not invited, neither are single-platform fragments (see check above)
-        val friendPaths =
-            fragment.friends.map { localDependencies.findMetadataResultForFragment(it).metadataOutputRoot }
-
-        val jdk = jdkProvider.getJdkOrUserError(jdkSettings = fragment.settings.jvm.jdk)
-
         val inputValues = mapOf(
             "jdk.version" to jdk.version,
             "jdk.home" to jdk.homeDir.pathString,
@@ -168,7 +177,7 @@ internal class MetadataCompileTask(
 
         val sourceDirs =
             fragment.sourceRoots.map { it.toAbsolutePath() } + additionalKotlinJavaSourceDirs.map { it.path }
-        val inputFiles = sourceDirs + classpath + refinesPaths + friendPaths
+        val inputFiles = sourceDirs + fragmentClasspath + refinesPaths + friendPaths
 
         incrementalCache.execute(taskName.id.value, inputValues, inputFiles) {
             cleanDirectory(taskOutputRoot.path)
@@ -185,7 +194,7 @@ internal class MetadataCompileTask(
                     kotlinUserSettings = kotlinSettings,
                     sourceDirectories = sourceDirs,
                     additionalSourceRoots = additionalKotlinJavaSourceDirs.map { SourceRoot(it.fragmentName, it.path) },
-                    classpath = classpath,
+                    classpath = fragmentClasspath,
                     friendPaths = friendPaths,
                     refinesPaths = refinesPaths,
                     fragmentPlatforms = fragmentPlatforms,
@@ -205,14 +214,13 @@ internal class MetadataCompileTask(
     }
 
     private fun List<Result>.findMetadataResultForFragment(f: Fragment) =
-        // can't use identity check because some fragments are wrapped, and equals is not overridden
+        // can't use identity check because some fragments are wrapped, and [equals] is not overridden
         firstOrNull { it.module.userReadableName == f.module.userReadableName && it.fragment.name == f.name }
             ?: error("Metadata compilation result not found for dependency fragment ${f.module.userReadableName}:" +
                     "${f.name} of this fragment ${module.userReadableName}:${fragment.name}. Actual results: " +
                     map { "${it.module.userReadableName}:${it.fragment.name}" })
 
     private suspend fun compileNativeSharedSources(
-        jdk: Jdk,
         kotlinUserSettings: KotlinUserSettings,
         sourceDirectories: List<Path>,
         additionalSourceRoots: List<SourceRoot>,
@@ -220,6 +228,7 @@ internal class MetadataCompileTask(
         friendPaths: List<Path>,
         refinesPaths: List<Path>,
         fragmentPlatforms: Set<ResolutionPlatform>,
+        jdk: Jdk,
     ) {
         val kotlinSourceFiles = sourceDirectories.flatMap { it.walk() }.filter { it.extension == "kt" }.toList()
         if (kotlinSourceFiles.isEmpty()) {
@@ -227,16 +236,7 @@ internal class MetadataCompileTask(
         }
 
         val nativeCompiler = downloadNativeCompiler(kotlinUserSettings.compilerVersion, userCacheRoot, jdkProvider)
-
-        // Starting with 2.2.20,
-        // the kotlin-stdlib metadata JSON descriptor doesn't map common sourceSet to nativeApiElements variant.
-        // This way dependency on kotlin-stdlib is not resolved if at least one target platform is native.
-        // Fortunately, the commonMain metadata of kotlin-stdlib is shipped as a prebuilt klib with K/Native compiler.
-        // todo (AB) common sourceSet of kotlin-stdlib if still resolved for Native+non-native set of platforms
-        //  (check that this is expected, maybe it shouldn't and kotlin-stdlib metadata should be taken from platform commonizer output in this case)
-        val kotlinStdKlibCommonPath = nativeCompiler.kotlinNativeHome / "klib" / "common" / "stdlib"
-
-        val libraryPaths = classpath + listOf(kotlinStdKlibCommonPath)
+        val commonizedKlibs = commonizedKlibs(nativeCompiler, fragmentPlatforms, kotlinUserSettings)
 
         val compilerPlugins = kotlinArtifactsDownloader.downloadCompilerPlugins(
             plugins = kotlinUserSettings.compilerPlugins,
@@ -248,7 +248,7 @@ internal class MetadataCompileTask(
             kotlinUserSettings = kotlinUserSettings,
             compilerPlugins = compilerPlugins,
             entryPoint = null,
-            libraryPaths = libraryPaths,
+            libraryPaths = commonizedKlibs + classpath,
             exportedLibraryPaths = emptyList(),
             fragments = listOf(fragment),
             sourceFiles = sourceDirectories.flatMap { it.walk() }.toList(),
@@ -272,6 +272,29 @@ internal class MetadataCompileTask(
             }
     }
 
+    private fun commonizedKlibs(
+        nativeCompiler: KotlinNativeCompiler,
+        fragmentPlatforms: Set<ResolutionPlatform>,
+        kotlinUserSettings: KotlinUserSettings,
+    ): List<Path> {
+        // Starting with 2.2.20,
+        // the kotlin-stdlib metadata JSON descriptor doesn't map common sourceSet to nativeApiElements variant.
+        // This way dependency on kotlin-stdlib is not resolved if at least one target platform is native.
+        // Fortunately, the commonMain metadata of kotlin-stdlib is shipped as a prebuilt klib with K/Native compiler.
+        // todo (AB) common sourceSet of kotlin-stdlib is still resolved for Native+non-native set of platforms
+        //  (check that this is expected, maybe it shouldn't and kotlin-stdlib metadata should be taken from platform commonizer output in this case)
+        val konanDistribution = KonanDistribution(nativeCompiler.kotlinNativeHome)
+
+        val commonizedKlibs = buildList {
+            add(konanDistribution.stdlibDir)
+            addAll(konanDistribution.commonizedKlibs(fragmentPlatforms.map { it.toPlatform() }, kotlinUserSettings))
+        }
+        return commonizedKlibs
+    }
+
+    private fun KonanDistribution.commonizedKlibs(platforms: List<Platform>, kotlinUserSettings: KotlinUserSettings) =
+        commonizedKlibs(platforms.compilerPlatforms(), kotlinUserSettings.compilerVersion)
+
     private suspend fun compileCommonSources(
         jdk: Jdk,
         kotlinUserSettings: KotlinUserSettings,
@@ -287,6 +310,9 @@ internal class MetadataCompileTask(
             return
         }
 
+        val nativeCompiler = downloadNativeCompiler(kotlinUserSettings.compilerVersion, userCacheRoot, jdkProvider)
+        val commonizedKlibs = commonizedKlibs(nativeCompiler, fragmentPlatforms, kotlinUserSettings)
+
         val compilerJars = kotlinArtifactsDownloader.downloadKotlinCompilerEmbeddable(
             version = kotlinUserSettings.compilerVersion,
         )
@@ -297,7 +323,7 @@ internal class MetadataCompileTask(
         val compilerArgs = kotlinMetadataCompilerArgs(
             kotlinUserSettings = kotlinUserSettings,
             moduleName = module.kotlinModuleName(isTest),
-            classpath = classpath,
+            classpath = commonizedKlibs + classpath,
             compilerPlugins = compilerPlugins,
             outputPath = taskOutputRoot.path,
             friendPaths = friendPaths,
@@ -331,21 +357,13 @@ internal class MetadataCompileTask(
     }
 
     private suspend fun compileNativeMetadata(
-        localDepsMetadataCompilations: List<Path>,
-        mavenClasspath: ModuleDependencyNode,
-        localDependencies: List<Result>,
+        fragmentClasspath: List<Path>,
+        refinesPaths: List<Path>,
+        friendPaths: List<Path>,
         kotlinSettings: KotlinUserSettings,
         fragmentPlatforms: Set<ResolutionPlatform>,
+        jdk: Jdk,
     ): Result {
-        val classpath = localDepsMetadataCompilations + mavenClasspath.dependencyPaths()
-        val refinesPaths =
-            fragment.refinedFragments.map { localDependencies.findMetadataResultForFragment(it).metadataOutputRoot }
-
-        // todo (AB) : [AMPER-721] This is a closed party, friends are not invited I am afraid.
-        //  Test fragments are also not invited, neither are single-platform fragments (see check above)
-        val friendPaths =
-            fragment.friends.map { localDependencies.findMetadataResultForFragment(it).metadataOutputRoot }
-
         val jdk = jdkProvider.getJdkOrUserError(jdkSettings = fragment.settings.jvm.jdk)
 
         val inputValues = mapOf(
@@ -357,7 +375,7 @@ internal class MetadataCompileTask(
 
         val sourceDirs =
             fragment.sourceRoots.map { it.toAbsolutePath() } + additionalKotlinJavaSourceDirs.map { it.path }
-        val inputFiles = sourceDirs + classpath + refinesPaths + friendPaths
+        val inputFiles = sourceDirs + fragmentClasspath + refinesPaths + friendPaths
 
         incrementalCache.execute(taskName.id.value, inputValues, inputFiles) {
             cleanDirectory(taskOutputRoot.path)
@@ -370,14 +388,14 @@ internal class MetadataCompileTask(
                     }
                 }
                 compileNativeSharedSources(
-                    jdk = jdk,
                     kotlinUserSettings = kotlinSettings,
                     sourceDirectories = sourceDirs,
                     additionalSourceRoots = additionalKotlinJavaSourceDirs.map { SourceRoot(it.fragmentName, it.path) },
-                    classpath = classpath,
+                    classpath = fragmentClasspath,
                     friendPaths = friendPaths,
                     refinesPaths = refinesPaths,
                     fragmentPlatforms = fragmentPlatforms,
+                    jdk = jdk,
                 )
             } else {
                 logger.debug("No sources were found for ${fragment.identificationPhrase()}, skipping compilation")

@@ -1,0 +1,7 @@
+product:
+  type: kmp/lib
+  platforms: [linuxX64, linuxArm64, mingwX64]
+
+dependencies:
+  - ../library
+  - org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0

@@ -13,6 +13,8 @@ import org.jetbrains.amper.cli.userReadableError
 import org.jetbrains.amper.core.AmperUserCacheRoot
 import org.jetbrains.amper.core.downloader.downloadAndExtractKotlinNative
 import org.jetbrains.amper.frontend.AmperModule
+import org.jetbrains.amper.frontend.dr.resolver.native.KonanDistribution
+import org.jetbrains.amper.frontend.dr.resolver.native.commonizedRoot
 import org.jetbrains.amper.jdk.provisioning.Jdk
 import org.jetbrains.amper.jdk.provisioning.JdkProvider
 import org.jetbrains.amper.jvm.getDefaultJdk
@@ -59,8 +61,7 @@ class KotlinNativeCompiler(
     }
 
     val commonizedPath by lazy {
-        val encodedVersion = URLEncoder.encode(kotlinVersion, Charsets.UTF_8.name())
-        konanDataDir / "klib" / "commonized" / encodedVersion
+        KonanDistribution(kotlinNativeHome).commonizedRoot(kotlinVersion)
     }
 
     val platformPath

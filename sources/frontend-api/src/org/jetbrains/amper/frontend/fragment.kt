@@ -175,7 +175,7 @@ val Fragment.refinedFragments: List<Fragment>
 //  modules that are downloaded from Maven, using their metadata artifacts).
 val Fragment.allSourceFragmentCompileDependencies: List<Fragment>
     get() {
-        val fragmentsFromThisModule = fragmentDependencies.map { it.target }
+        val fragmentsFromThisModule = allFragmentDependencies().toList()
         val fragmentsFromOtherModules = directModuleCompileDependencies.flatMap { module ->
             module.fragmentsTargeting(platforms, isTest = false)
         }
@@ -200,20 +200,21 @@ fun Fragment.singleSourceRoot(reason: String): Path =
 /**
  * Returns all fragments that this fragment depends on transitively, in DFS order.
  */
-fun Fragment.allFragmentDependencies(includeSelf: Boolean = false): Sequence<Fragment> = sequence {
-    if (includeSelf) {
-        yield(this@allFragmentDependencies)
-    }
-    val traversed = hashSetOf<FragmentLink>()
-    val stack = ArrayList(fragmentDependencies)
-    while (stack.isNotEmpty<FragmentLink>()) {
-        val link = stack.removeLast()
-        if (traversed.add(link)) {
-            yield(link.target)
-            stack.addAll(link.target.fragmentDependencies)
+fun Fragment.allFragmentDependencies(includeSelf: Boolean = false, dependencyType: FragmentDependencyType? = null): Sequence<Fragment> =
+    sequence {
+        if (includeSelf) {
+            yield(this@allFragmentDependencies)
+        }
+        val traversed = hashSetOf<FragmentLink>()
+        val stack = ArrayList(fragmentDependencies)
+        while (stack.isNotEmpty<FragmentLink>()) {
+            val link = stack.removeLast()
+            if ((dependencyType == null || dependencyType == link.type) && traversed.add(link)) {
+                yield(link.target)
+                stack.addAll(link.target.fragmentDependencies)
+            }
         }
     }
-}
 
 /**
  * Returns the path from this [Fragment] to its farthest ancestor (more general parents).

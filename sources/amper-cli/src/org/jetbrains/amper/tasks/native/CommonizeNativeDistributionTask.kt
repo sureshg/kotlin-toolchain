@@ -115,11 +115,11 @@ class CommonizeNativeDistributionTask(
     private fun Model.nativePlatformSetsToCommonizeByKotlinVersion(): Map<String, Set<List<Platform>>> {
         val sharedPlatformSetsByKotlinVersion = mutableMapOf<String, MutableSet<List<Platform>>>()
         for (module in modules) {
-            for (fragment in module.fragments) {
+            for (fragment in module.fragments.sortedBy { it.name }) {
                 val platforms = fragment.platforms.filter { it.isDescendantOf(Platform.NATIVE) }
                 if (platforms.size > 1) {
                     val kotlinVersion = fragment.settings.kotlin.version
-                    sharedPlatformSetsByKotlinVersion.getOrPut(kotlinVersion) { mutableSetOf() } += platforms.toList()
+                    sharedPlatformSetsByKotlinVersion.getOrPut(kotlinVersion) { mutableSetOf() } += platforms.toList().sorted()
                 }
             }
         }
