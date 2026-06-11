@@ -161,34 +161,6 @@ val Fragment.refinedFragments: List<Fragment>
     get() = fragmentDependencies.filter { it.type == FragmentDependencyType.REFINE }.map { it.target }
 
 /**
- * Source fragments (not Maven) that this fragment depends on with `compile` scope.
- *
- * This includes fragment dependencies from the same module, but also fragments from "external" source module
- * dependencies that support a superset of the platforms.
- *
- * For example, if the `nativeMain` fragment of Module A depends on Module B, [allSourceFragmentCompileDependencies]
- * contains the `commonMain` fragment of Module A, and the `nativeMain` and `commonMain` fragments of Module B.
- */
-// TODO this will eventually be more complicated: we need to support other dimensions than target platforms
-//  (some sort of attribute matching supporting variants and the likes).
-//  It is worth sharing the complete algorithm with dependency resolution (the same thing will be implemented for
-//  modules that are downloaded from Maven, using their metadata artifacts).
-val Fragment.allSourceFragmentCompileDependencies: List<Fragment>
-    get() {
-        val fragmentsFromThisModule = allFragmentDependencies().toList()
-        val fragmentsFromOtherModules = directModuleCompileDependencies.flatMap { module ->
-            module.fragmentsTargeting(platforms, isTest = false)
-        }
-
-        // FIXME include transitive exported module dependencies
-
-        return fragmentsFromThisModule + fragmentsFromOtherModules
-    }
-
-private val Fragment.directModuleCompileDependencies: List<AmperModule>
-    get() = externalDependencies.filterIsInstance<LocalModuleDependency>().filter { it.compile }.map { it.module }
-
-/**
  * Returns the path to the single source root directory of this [Fragment], or fails if there is more than one.
  *
  * The given [reason] should explain why it is expected for this fragment to have only one source root

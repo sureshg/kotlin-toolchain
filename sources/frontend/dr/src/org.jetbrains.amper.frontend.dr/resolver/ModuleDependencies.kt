@@ -42,9 +42,11 @@ import org.jetbrains.amper.frontend.Fragment
 import org.jetbrains.amper.frontend.Model
 import org.jetbrains.amper.frontend.Platform
 import org.jetbrains.amper.frontend.RepositoriesModulePart
+import org.jetbrains.amper.frontend.allFragmentDependencies
 import org.jetbrains.amper.frontend.dr.resolver.ModuleDependencies.Companion.resolveProjectDependencies
 import org.jetbrains.amper.frontend.dr.resolver.flow.Classpath
 import org.jetbrains.amper.frontend.dr.resolver.flow.toResolutionPlatform
+import org.jetbrains.amper.frontend.fragmentsTargeting
 import org.jetbrains.amper.frontend.isDescendantOf
 import org.jetbrains.amper.frontend.schema.Repository.Companion.SpecialMavenLocalUrl
 import org.jetbrains.amper.incrementalcache.IncrementalCache
@@ -160,6 +162,16 @@ class ModuleDependencies private constructor(
         val perPlatformDeps = if (isTest) testDepsPerLeafPlatform else mainDepsPerLeafPlatform
         return perPlatformDeps[platform]
             ?: error("Dependencies for $platform are not calculated")
+    }
+
+    /**
+     * @return unresolved compile/runtime module dependencies for the particular leaf module platform.
+     */
+    private fun forPlatforms(platforms: Set<Platform>, isTest: Boolean): PerFragmentDependencies {
+        // Test dependencies contain dependencies of both test and corresponding main fragments
+        val perPlatformDeps = if (isTest) testDepsPerPlatforms else mainDepsPerPlatforms
+        return perPlatformDeps[platforms]
+            ?: error("Dependencies for $platforms are not calculated")
     }
 
     /**
@@ -381,7 +393,7 @@ class ModuleDependencies private constructor(
             // Wrapping into per-project cache entry
             // Goal: if nothing has changed, check inputs once, instead of checking inputs for every module where
             //       one library from shared module is checked as an input as many times as many modules depend on it transitively
-            return with (resolutionRunSettings) {
+            return with(resolutionRunSettings) {
                 openTelemetry.spanBuilder("DR: Resolving project dependencies").use {
                     val moduleGraphs = buildProjectDependenciesGraph(moduleDependenciesList)
 
@@ -400,7 +412,7 @@ class ModuleDependencies private constructor(
                     ) {
                         resolveDependenciesBatch(moduleGraphs, filter)
                     } else {
-                        val graphEntryKeys = moduleGraphs.flatMap{ it.getDependenciesGraphInput() }
+                        val graphEntryKeys = moduleGraphs.flatMap { it.getDependenciesGraphInput() }
                         if (graphEntryKeys.contains(CacheEntryKey.NotCached)) {
                             resolveDependenciesBatch(moduleGraphs, filter)
                         } else {
@@ -621,7 +633,7 @@ class ModuleDependencies private constructor(
             }
         }
 
-        private inline fun <reified T: DependencyNode> List<DependencyNode>?.resolveCorrespondingSourceNode(
+        private inline fun <reified T : DependencyNode> List<DependencyNode>?.resolveCorrespondingSourceNode(
             node: SerializableDependencyNode,
             additionalMatch: T.() -> Boolean = { true }
         ): T {
@@ -684,12 +696,42 @@ class ModuleDependencies private constructor(
             userCacheRoot: AmperUserCacheRoot,
             incrementalCache: IncrementalCache,
             openTelemetry: OpenTelemetry?,
-        ) : Sequence<AmperModule> {
+        ): Sequence<AmperModule> {
             val resolutionSettings = AmperResolutionSettings(userCacheRoot, incrementalCache, openTelemetry)
             val moduleDependencies = moduleDependencies(resolutionSettings)
             return moduleDependencies
                 .forPlatform(platform = platform, isTest = isTest)
                 .forScope(scope = dependencyReason)
+                .getModuleDependencies()
+        }
+
+        /**
+         * Returns all fragments the given one depends on (including [Fragment] dependencies from other modules).
+         */
+        fun Fragment.getSymbolsVisibilityFragmentsDependencies(
+            moduleDependencies: ModuleDependencies,
+            isTest: Boolean,
+            platforms: Set<Platform>,
+        ): Sequence<Fragment> {
+            if (module != moduleDependencies.module)
+                error("Given fragment $name belongs to module ${module.userReadableName}, " +
+                        "but moduleDependencies for the module ${moduleDependencies.module.userReadableName} were passed")
+
+            val otherModules = moduleDependencies.getSymbolsVisibilityDependentAmperModules(isTest, platforms).toSet()
+            return allFragmentDependencies() +
+                    otherModules.flatMap { module -> module.fragmentsTargeting(platforms, isTest = isTest) }
+        }
+
+        /**
+         * Returns a dependencies sequence of the given module in the resolution scope
+         * of the given [platforms], [isTest] and [dependencyReason].
+         */
+        private fun ModuleDependencies.getSymbolsVisibilityDependentAmperModules(
+            isTest: Boolean,
+            platforms: Set<Platform>
+        ): Sequence<AmperModule> {
+            return forPlatforms(platforms = platforms, isTest = isTest)
+                .compileSymbolsVisibilityDeps
                 .getModuleDependencies()
         }
 
@@ -834,6 +876,33 @@ class PerFragmentDependencies(
                 resolutionSettings = resolutionSettings,
                 sharedResolutionCache = sharedResolutionCache,
             )
+        }
+    }
+
+    /**
+     * This node represents a graph that contains external COMPILE dependencies of the module for the particular platform.
+     * It contains direct external dependencies of this module as well as exported dependencies of dependent modules
+     * accessible from this module.
+     * It doesn't contain transitive external dependencies (no resolution happened actually).
+     *
+     * The graph could be used for getting compile dependencies which declaration are visible in this fragment.
+     * (non-exported transitive dependencies for native fragments are not included).
+     * It is used for metadata compilation.
+     */
+    internal val compileSymbolsVisibilityDeps: ModuleDependencyNodeWithModuleAndContext by lazy {
+        when {
+            fragment.platforms.singleOrNull()?.isDescendantOf(Platform.NATIVE) == true
+                    && resolutionSettings.includeNonExportedNative ->
+            // The native world doesn't distinguish compile/runtime classpath,
+            // but IDE and metadata-compilation operates with java-like compile classpath to restrict symbols visibility
+            fragment.module.buildDependenciesGraph(
+                isTest = fragment.isTest,
+                platforms = fragment.platforms,
+                dependencyReason = ResolutionScope.COMPILE,
+                resolutionSettings = resolutionSettings.copy(includeNonExportedNative = false),
+                sharedResolutionCache = sharedResolutionCache,
+            )
+            else -> compileDeps
         }
     }
 

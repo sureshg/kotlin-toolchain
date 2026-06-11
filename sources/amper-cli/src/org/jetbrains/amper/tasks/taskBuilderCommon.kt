@@ -12,7 +12,6 @@ import org.jetbrains.amper.frontend.ModuleTasksPart
 import org.jetbrains.amper.frontend.Platform
 import org.jetbrains.amper.frontend.RepositoriesModulePart
 import org.jetbrains.amper.frontend.TaskId
-import org.jetbrains.amper.frontend.allSourceFragmentCompileDependencies
 import org.jetbrains.amper.frontend.dr.resolver.AmperResolutionSettings
 import org.jetbrains.amper.frontend.dr.resolver.ModuleDependencies
 import org.jetbrains.amper.frontend.isPublishingEnabled
@@ -59,10 +58,8 @@ internal enum class CommonFragmentTaskType(
 
 fun ProjectTasksBuilder.setupCommonTasks() {
     val moduleDependenciesMap = with(ModuleDependencies) {
-        val resolutionSettings = AmperResolutionSettings(
-            context.userCacheRoot, context.incrementalCache, GlobalOpenTelemetry.get())
-        model.moduleDependencies(resolutionSettings)
-            .associateBy { it.module }
+        val resolutionSettings = AmperResolutionSettings(context.userCacheRoot, context.incrementalCache, GlobalOpenTelemetry.get())
+        model.moduleDependencies(resolutionSettings).associateBy { it.module }
     }
     allModules()
         .alsoPlatforms()
@@ -102,12 +99,20 @@ fun ProjectTasksBuilder.setupCommonTasks() {
                 )
             )
 
-            it.allSourceFragmentCompileDependencies.forEach { otherFragment ->
-                tasks.registerDependency(
-                    taskName = taskName,
-                    dependsOn = CommonFragmentTaskType.CompileMetadata.getTaskName(otherFragment)
-                )
+            val allFragmentDependencies = with(ModuleDependencies) {
+                // todo (AB) : [AMPER-721] Check that native-only and mixed metadata-compilation
+                //  works with this compile dependencies classpath. Perhaps, all true native compile dependencies
+                //  should be used instead (including all transitive dependencies).
+                it.getSymbolsVisibilityFragmentsDependencies(moduleDependenciesMap[it.module]!!,
+                    it.isTest, it.platforms)
             }
+           allFragmentDependencies
+                .forEach { otherFragment ->
+                    tasks.registerDependency(
+                        taskName = taskName,
+                        dependsOn = CommonFragmentTaskType.CompileMetadata.getTaskName(otherFragment)
+                    )
+                }
 
             tasks.registerDependency(
                 taskName = taskName,

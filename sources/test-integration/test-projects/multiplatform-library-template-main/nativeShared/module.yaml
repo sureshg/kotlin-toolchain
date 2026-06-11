@@ -5,7 +5,7 @@ product:
 dependencies:
   - org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0
   - org.kotlincrypto.random:crypto-rand:0.6.0
-  - ../library
+  - ../library: exported
 
 test-dependencies:
   - $kotlin.test
