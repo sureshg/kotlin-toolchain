@@ -13,6 +13,7 @@ import org.jetbrains.amper.jar.JarConfig
 import org.jetbrains.amper.jar.ZipInput
 import org.jetbrains.amper.jvm.findEffectiveJvmMainClass
 import org.jetbrains.amper.tasks.AbstractJarTask
+import org.jetbrains.amper.tasks.ClasspathProvider
 import org.jetbrains.amper.tasks.TaskOutputRoot
 import org.jetbrains.amper.tasks.TaskResult
 import org.jetbrains.amper.util.BuildType
@@ -76,8 +77,8 @@ class JvmClassesJarTask(
     class Result(
         jarPath: Path,
         val module: AmperModule,
-    ) : AbstractJarTask.Result(jarPath), RuntimeClasspathElementProvider {
-        override val paths: List<Path>
-            get() = listOf(jarPath)
+    ) : AbstractJarTask.Result(jarPath), ClasspathProvider {
+        override val runtimeClasspath: List<Path>
+            get() = [ jarPath ]
     }
 }

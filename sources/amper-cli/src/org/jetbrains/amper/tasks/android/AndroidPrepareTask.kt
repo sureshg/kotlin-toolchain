@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.tasks.android
@@ -12,7 +12,7 @@ import org.jetbrains.amper.frontend.AmperModule
 import org.jetbrains.amper.frontend.Fragment
 import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.jdk.provisioning.JdkProvider
-import org.jetbrains.amper.tasks.AdditionalClasspathProvider
+import org.jetbrains.amper.tasks.ClasspathProvider
 import org.jetbrains.amper.tasks.ResolveExternalDependenciesTask
 import org.jetbrains.amper.tasks.TaskOutputRoot
 import org.jetbrains.amper.tasks.TaskResult
@@ -52,5 +52,5 @@ class AndroidPrepareTask(
     override fun runtimeClasspath(dependenciesResult: List<TaskResult>): List<Path> =
         dependenciesResult.filterIsInstance<ResolveExternalDependenciesTask.Result>().flatMap { it.runtimeClasspath }
 
-    class Result(override val compileClasspath: List<Path>) : TaskResult, AdditionalClasspathProvider
+    class Result(override val compileClasspath: List<Path>) : TaskResult, ClasspathProvider
 }

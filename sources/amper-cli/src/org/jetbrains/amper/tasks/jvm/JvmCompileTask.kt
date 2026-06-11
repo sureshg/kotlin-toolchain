@@ -51,7 +51,7 @@ import org.jetbrains.amper.jdk.provisioning.JdkProvider
 import org.jetbrains.amper.jvm.getJdkOrUserError
 import org.jetbrains.amper.processes.LoggingProcessOutputListener
 import org.jetbrains.amper.processes.withJavaArgFile
-import org.jetbrains.amper.tasks.AdditionalClasspathProvider
+import org.jetbrains.amper.tasks.ClasspathProvider
 import org.jetbrains.amper.tasks.CommonTaskUtils.userReadableList
 import org.jetbrains.amper.tasks.ResolveExternalDependenciesTask
 import org.jetbrains.amper.tasks.SourceRoot
@@ -175,7 +175,7 @@ internal class JvmCompileTask(
 
         val userSettings = fragments.singleLeafFragment().serializableCompilationSettings()
 
-        val additionalClasspath = dependenciesResult.filterIsInstance<AdditionalClasspathProvider>().flatMap { it.compileClasspath }
+        val additionalClasspath = dependenciesResult.filterIsInstance<ClasspathProvider>().flatMap { it.compileClasspath }
         val classpath =
             compileModuleDependencies.flatMap { it.classesOutputRoots } + mavenDependencies.compileClasspath + additionalClasspath
 
@@ -624,8 +624,8 @@ internal class JvmCompileTask(
         val module: AmperModule,
         val isTest: Boolean,
         val changes: List<IncrementalCache.Change>,
-    ) : TaskResult, RuntimeClasspathElementProvider {
-        override val paths: List<Path>
+    ) : TaskResult, ClasspathProvider {
+        override val runtimeClasspath: List<Path>
             get() = classesOutputRoots
     }
 

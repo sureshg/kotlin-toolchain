@@ -40,7 +40,7 @@ import org.jetbrains.amper.ksp.KspNativeConfig
 import org.jetbrains.amper.ksp.KspOutputPaths
 import org.jetbrains.amper.ksp.WebBackend
 import org.jetbrains.amper.ksp.downloadKspJars
-import org.jetbrains.amper.tasks.AdditionalClasspathProvider
+import org.jetbrains.amper.tasks.ClasspathProvider
 import org.jetbrains.amper.tasks.ResolveExternalDependenciesTask
 import org.jetbrains.amper.tasks.TaskOutputRoot
 import org.jetbrains.amper.tasks.TaskResult
@@ -135,7 +135,7 @@ internal class KspTask(
             .flatMap { it.dependencyKlibs + listOfNotNull(it.compiledKlib) }
         val compileWebModuleDependencies = dependenciesResult.filterIsInstance<WebCompileKlibTask.Result>()
             .mapNotNull { it.compiledKlib }
-        val additionalClasspath = dependenciesResult.filterIsInstance<AdditionalClasspathProvider>()
+        val additionalClasspath = dependenciesResult.filterIsInstance<ClasspathProvider>()
             .flatMap { it.compileClasspath }
         val compileLibraries = externalDependencies + compileJvmModuleDependencies + compileNativeModuleDependencies +
                 compileWebModuleDependencies + additionalClasspath
@@ -255,7 +255,7 @@ internal class KspTask(
 
     class Result(
         override val compileClasspath: List<Path>,
-    ) : TaskResult, AdditionalClasspathProvider
+    ) : TaskResult, ClasspathProvider
 
     companion object {
         private val logger: Logger = LoggerFactory.getLogger(KspTask::class.java)

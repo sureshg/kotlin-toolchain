@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.tasks.android
@@ -12,10 +12,9 @@ import org.jetbrains.amper.engine.Task
 import org.jetbrains.amper.engine.TaskGraphExecutionContext
 import org.jetbrains.amper.engine.TaskName
 import org.jetbrains.amper.incrementalcache.IncrementalCache
-import org.jetbrains.amper.tasks.AdditionalClasspathProvider
+import org.jetbrains.amper.tasks.ClasspathProvider
 import org.jetbrains.amper.tasks.ResolveExternalDependenciesTask
 import org.jetbrains.amper.tasks.TaskResult
-import org.jetbrains.amper.tasks.jvm.RuntimeClasspathElementProvider
 import java.nio.file.Path
 import kotlin.io.path.div
 import kotlin.io.path.extension
@@ -47,8 +46,8 @@ class TransformAarExternalDependenciesTask(
 
     class Result(
         override val compileClasspath: List<Path>,
-        override val paths: List<Path>,
-    ) : TaskResult, AdditionalClasspathProvider, RuntimeClasspathElementProvider
+        override val runtimeClasspath: List<Path>,
+    ) : TaskResult, ClasspathProvider
 }
 
 private suspend fun List<Path>.extractAars(): List<Path> = coroutineScope {

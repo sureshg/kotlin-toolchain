@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.tasks.jvm
@@ -7,6 +7,7 @@ package org.jetbrains.amper.tasks.jvm
 import org.jetbrains.amper.engine.Task
 import org.jetbrains.amper.engine.TaskGraphExecutionContext
 import org.jetbrains.amper.engine.TaskName
+import org.jetbrains.amper.tasks.ClasspathProvider
 import org.jetbrains.amper.tasks.TaskResult
 import java.nio.file.Path
 
@@ -20,8 +21,8 @@ class JvmClassesTask(override val taskName: TaskName): Task {
             "Call classes task without any compilation dependency"
         }
         
-        return Result(compileTaskResults.flatMap { it.paths })
+        return Result(compileTaskResults.flatMap { it.runtimeClasspath })
     }
 
-    class Result(override val paths: List<Path>): TaskResult, RuntimeClasspathElementProvider
+    class Result(override val runtimeClasspath: List<Path>): TaskResult, ClasspathProvider
 }

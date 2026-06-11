@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.tasks.android
@@ -14,10 +14,10 @@ import org.jetbrains.amper.frontend.Platform
 import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.jar.ZipInput
 import org.jetbrains.amper.jar.writeZip
+import org.jetbrains.amper.tasks.ClasspathProvider
 import org.jetbrains.amper.tasks.TaskOutputRoot
 import org.jetbrains.amper.tasks.TaskResult
 import org.jetbrains.amper.tasks.jvm.JvmClassesJarTask
-import org.jetbrains.amper.tasks.jvm.RuntimeClasspathElementProvider
 import org.jetbrains.amper.util.BuildType
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -46,7 +46,7 @@ import kotlin.math.absoluteValue
  * - [JvmClassesJarTask.Result]
  * - [AdditionalAndroidAssetsProvider]*
  *
- * **Output**: [RuntimeClasspathElementProvider]
+ * **Output**: [ClasspathProvider]
  */
 class AndroidAarTask(
     override val taskName: TaskName,
@@ -130,9 +130,9 @@ class AndroidAarTask(
 
     class Result(
         val aarPath: Path,
-    ) : TaskResult, RuntimeClasspathElementProvider {
-        override val paths: List<Path>
-            get() = listOf(aarPath)
+    ) : TaskResult, ClasspathProvider {
+        override val runtimeClasspath: List<Path>
+            get() = [ aarPath ]
     }
 }
 
