@@ -150,7 +150,10 @@ internal class TerminalPrintingKotlinLogger(
     }
 
     override fun info(msg: String) {
-        print(style = terminal.theme.info, levelText = "INFO", message = msg)
+        // We don't print INFO logs to the console because there is too much noise here from several places:
+        //  - the incremental Kotlin compilation prints INFO logs when the classpath snapshot doesn't exist
+        //    (to say it's going to compile non-incrementally)
+        //  - the dataframe compiler plugin prints random schema data as INFO logs during compilation (AMPER-5414)
     }
 
     override fun warn(msg: String, throwable: Throwable?) {

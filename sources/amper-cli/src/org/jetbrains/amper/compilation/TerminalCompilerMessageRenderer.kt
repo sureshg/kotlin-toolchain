@@ -40,8 +40,13 @@ internal class TerminalCompilerMessageRenderer(
         val severityStyle = when (severity) {
             CompilerMessageRenderer.Severity.ERROR -> terminal.theme.danger
             CompilerMessageRenderer.Severity.WARNING -> terminal.theme.warning
-            CompilerMessageRenderer.Severity.INFO -> terminal.theme.info
-            // Do not render debug messages
+            // Do not render INFO and DEBUG messages.
+            //
+            // We don't print INFO logs to the console because there is too much noise here from several places:
+            //  - the incremental Kotlin compilation prints INFO logs when the classpath snapshot doesn't exist
+            //    (to say it's going to compile non-incrementally)
+            //  - the dataframe compiler plugin prints random schema data as INFO logs during compilation (AMPER-5414)
+            CompilerMessageRenderer.Severity.INFO,
             CompilerMessageRenderer.Severity.DEBUG -> return "$locationStr: $message"
         }
         val muted = terminal.theme.muted
