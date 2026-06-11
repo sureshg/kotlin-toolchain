@@ -2115,8 +2115,8 @@ class BuildGraphTest : BaseDRTest() {
 
         assertFiles(
             listOf(
+                "org.jetbrains.compose.ui_ui-uikit-cinterop-utils.klib",
                 "ui-uikit-uikitMain-1.6.10.klib",
-                "ui-uikit-uikitMain-cinterop-1.6.10.klib"
             ),
             root
         )
@@ -2214,12 +2214,12 @@ class BuildGraphTest : BaseDRTest() {
 
         downloadAndAssertFiles(
             listOf(
+                // There is no such thing as sources for cinterop sourceSet
+                "co.touchlab_sqliter-driver-cinterop-sqlite3.klib",
                 "kotlin-stdlib-commonMain-1.9.20-sources.jar",
                 "kotlin-stdlib-commonMain-1.9.20.klib",
                 "sqliter-driver-appleMain-1.3.1-sources.jar",
                 "sqliter-driver-appleMain-1.3.1.klib",
-                // There is no such thing as sources for cinterop sourceSet
-                "sqliter-driver-appleMain-cinterop-1.3.1.klib",
                 "sqliter-driver-nativeCommonMain-1.3.1-sources.jar",
                 "sqliter-driver-nativeCommonMain-1.3.1.klib"
             ),

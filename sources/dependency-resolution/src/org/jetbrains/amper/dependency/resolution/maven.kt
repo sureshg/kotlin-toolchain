@@ -157,7 +157,7 @@ internal class SerializableMavenDependencyNode internal constructor(
  * as long as their groups and modules match.
  * A version discrepancy might occur if a conflict resolution algorithm intervenes and is expected.
  *
- * The node doesn't do actual work but simply delegate to the [dependency] that can change over time.
+ * The node doesn't do actual work but simply delegates to the [dependency] that can change over time.
  * This allows reusing dependency resolution results but still holding information about the origin.
  *
  * It's the responsibility of the caller to set a parent for this node if none was provided via the constructor.
@@ -1559,6 +1559,7 @@ class MavenDependencyImpl internal constructor(
                 }
         }.awaitAll()
             .mapNotNull { it }
+            .flatten()
 
         if (transitive) {
             // Find source sets dependencies
@@ -1674,7 +1675,7 @@ class MavenDependencyImpl internal constructor(
         context: Context,
         level: ResolutionLevel,
         diagnosticsReporter: DiagnosticReporter,
-    ): DependencyFileImpl? {
+    ): List<DependencyFileImpl>? {
         val group = kmpMetadataFile.dependency.group
         val module = kmpMetadataFile.dependency.module
         val version = kmpMetadataFile.dependency.version
@@ -1722,15 +1723,74 @@ class MavenDependencyImpl internal constructor(
             } ?: return null
 
         val isSources = kmpMetadataFile.hasSourcesFilename()
-
-        val extension = if (isSources) "jar" else "klib"
         val sourcesSuffix = if (isSources) "-sources" else ""
 
-        // todo (AB) : Add test for downloading of KMP library sources of SNAPSHOT version
-        // todo (AB) : (before the change such sources were incorrectly represented with regular DependencyFile)
+        val targetDirectory = kmpMetadataFile.dependency.settings.fileCache.amperCache
+            .resolve("kotlin/kotlinTransformedMetadataLibraries/")
+            .resolve(group)
+            .resolve(module)
+            .resolve(version.orUnspecified())
+            .resolve(sha1)
+
+        val sourceSetFile = if (!sourceSetName.endsWith("-cinterop")) {
+            // todo (AB) : Add test for downloading of KMP library sources of SNAPSHOT version
+            // todo (AB) : (before the change such sources were incorrectly represented with regular DependencyFile)
+            // regular sourceSet
+            listOf(
+                repackageSourceSet(
+                    kmpMetadataFile,
+                    sourceSetName,
+                    kotlinProjectStructureMetadata,
+                    moduleMetadata,
+                    context,
+                    kmpLibraryWithSourceSet,
+                    targetDirectory,
+                    "$module-$sourceSetName-$version$sourcesSuffix",
+                    diagnosticsReporter
+                )
+            )
+        } else {
+            // todo (AB) : Check how it works with cinterop sources.
+            // cinterop sourceSet
+            val cinteropDirectoryName = "${kmpMetadataFile.dependency.module}-$sourceSetName$sourcesSuffix"
+            val topLevelDirectories = getNestedDirectories(kmpLibraryWithSourceSet, sourceSetName)
+
+            topLevelDirectories.map { cinteropName ->
+                repackageSourceSet(
+                    kmpMetadataFile,
+                    sourceSetName,
+                    kotlinProjectStructureMetadata,
+                    moduleMetadata,
+                    context,
+                    kmpLibraryWithSourceSet,
+                    targetDirectory.resolve(cinteropDirectoryName),
+                    "$cinteropName$sourcesSuffix",
+                    diagnosticsReporter,
+                    pathInKmpLibrary = "$sourceSetName/$cinteropName",
+                )
+            }
+        }
+        return sourceSetFile
+    }
+
+    private suspend fun repackageSourceSet(
+        kmpMetadataFile: DependencyFileImpl,
+        sourceSetName: String,
+        kotlinProjectStructureMetadata: KotlinProjectStructureMetadata?,
+        moduleMetadata: Module,
+        context: Context,
+        kmpLibraryWithSourceSet: Path,
+        targetDirectory: Path,
+        targetFileNameWithoutExtension: String,
+        diagnosticsReporter: DiagnosticReporter,
+        pathInKmpLibrary: String = sourceSetName,
+    ): DependencyFileImpl {
+        val isSources = kmpMetadataFile.hasSourcesFilename()
+        val extension = if (isSources) "jar" else "klib"
+
         val sourceSetFile = getDependencyFile(
             kmpMetadataFile.dependency,
-            "${kmpMetadataFile.dependency.module}-$sourceSetName$sourcesSuffix",
+            targetFileNameWithoutExtension,
             extension,
             isDocumentation = isSources
         )
@@ -1743,15 +1803,8 @@ class MavenDependencyImpl internal constructor(
             )
         }
 
-        val targetFileName = "$module-$sourceSetName-$version$sourcesSuffix.$extension"
-
-        val targetPath = kmpMetadataFile.dependency.settings.fileCache.amperCache
-            .resolve("kotlin/kotlinTransformedMetadataLibraries/")
-            .resolve(group)
-            .resolve(module)
-            .resolve(version.orUnspecified())
-            .resolve(sha1)
-            .resolve(targetFileName)
+        val targetFileName = "$targetFileNameWithoutExtension.$extension"
+        val targetPath = targetDirectory.resolve(targetFileName)
 
         context.debugSpanBuilder("produceFileWithDoubleLockAndHash").use {
             produceFileWithDoubleLockAndHash(
@@ -1759,7 +1812,7 @@ class MavenDependencyImpl internal constructor(
                 tempDir = { sourceSetFile.getTempDir() },
             ) { _, fileChannel ->
                 try {
-                    copyJarEntryDirToJar(fileChannel, sourceSetName, kmpLibraryWithSourceSet)
+                    copyJarEntryDirToJar(fileChannel, pathInKmpLibrary, kmpLibraryWithSourceSet)
                     true
                 } catch (e: CancellationException) {
                     throw e
@@ -1800,7 +1853,7 @@ class MavenDependencyImpl internal constructor(
     }
 
     /**
-     * This method returns kotlin metadata library that contains given sourceSet.
+     * This method returns kotlin metadata library that contains a given sourceSet.
      *
      * Usually, a kotlin metadata library contains both:
      * - sourceSets' descriptor: META-INF/kotlin-project-structure-metadata.json
@@ -1813,7 +1866,7 @@ class MavenDependencyImpl internal constructor(
      * in that case, sourceSets are stored in platform-specific kotlin metadata variants.
      * This method resolves such a platform-specific library and returns its path.
      *
-     *  For example, let's consider library
+     *  For example, let's consider a library
      *  org.jetbrains.compose.ui:ui-uikit:1.6.10
      *
      *  Its kotlin metadata variant defines sourceSet 'uikitMain', but it doesn't include sourceSet itself.
@@ -2153,6 +2206,7 @@ class MavenDependencyImpl internal constructor(
                             }
                     }.awaitAll()
                         .mapNotNull { it }
+                        .flatten()
                 }
             // replace all-in-one sources file with per-sourceSet files
             sourceSetsFiles = sourceSetsFiles - this + sourceSetsSources
@@ -2167,13 +2221,13 @@ class MavenDependencyImpl internal constructor(
             // a not-substituted packaging type might be a result of referencing property
             // declared in the not yes supported active Maven profiles
             packagingTypeFromPom.contains("$") -> "jar".also {
-                logger.warn("Packaging type of dependenency $this is not resolved: $packagingTypeFromPom, falls back to $it")
+                logger.warn("Packaging type of dependency $this is not resolved: $packagingTypeFromPom, falls back to $it")
                 pom.diagnosticsReporter.addMessage(
                     UnresolvedMavenDependencyPackagingType.asMessage(this, packagingTypeFromPom, it)
                 )
             }
 
-            // Dependency packaging type (and further extension) is resolved from the corresponging pom.xml
+            // Dependency packaging type (and further extension) is resolved from the corresponding pom.xml
             else -> packagingTypeFromPom // by default get packaging type from pom (Maven uses "jar" by default)
         }
         val extension = if (packagingType == "jar" || packagingType in packageTypeWithJavaExtension || packagingType.endsWith("-plugin"))
@@ -2195,7 +2249,7 @@ class MavenDependencyImpl internal constructor(
 
         /**
          * Suffix is added to the Gradle Metadata variant name.
-         * It is an implementtaion detail and is a subject to change,
+         * It is an implementation detail and is a subject to change,
          * see https://docs.google.com/document/d/18MsmrX2iYuoKS3HvY-_xnk_SMenLQzSPArj4yuy1Hfw/edit?tab=t.0
          */
         private const val PUBLISHED_SUFFIX = "-published"

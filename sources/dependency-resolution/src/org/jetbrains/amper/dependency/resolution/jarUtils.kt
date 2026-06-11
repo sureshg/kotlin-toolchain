@@ -124,3 +124,36 @@ private fun addDirectoryEntry(output: ZipOutputStream, relativePath: String) {
 }
 
 fun Path.toJarFile() = JarFile(toFile())
+
+suspend fun getNestedDirectories(srcJar: Path, directory: String? = null): Set<String> {
+    val rootDirectories = mutableSetOf<String>()
+    withContext(Dispatchers.IO) {
+        val srcJarFile = srcJar.toJarFile()
+        srcJarFile.use { jarFile ->
+            jarFile.entries().asSequence().forEach { entry ->
+                val name = entry.name
+                if (directory == null) {
+                    // collect root directories
+                    val nameWithoutTrailingSlash = name.removeSuffix("/")
+                    if (!nameWithoutTrailingSlash.contains("/") && entry.isDirectory) {
+                        rootDirectories.add(nameWithoutTrailingSlash)
+                    }
+                } else {
+                    // collect nested directories
+                    val directoryWithTrailingSlash = directory.ensureTrailingSlash()
+                    if (name.startsWith(directoryWithTrailingSlash)) {
+                        val relativeName = name.substring(directoryWithTrailingSlash.length).trimEnd('/')
+                        if (relativeName.isNotBlank() && !relativeName.contains('/') && entry.isDirectory) {
+                            rootDirectories.add(relativeName)
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return rootDirectories
+}
+
+private fun String.ensureTrailingSlash(): String {
+    return if (this.endsWith('/')) this else "$this/"
+}
