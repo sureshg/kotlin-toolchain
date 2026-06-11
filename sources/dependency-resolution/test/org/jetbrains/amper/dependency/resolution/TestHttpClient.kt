@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.dependency.resolution
@@ -20,6 +20,8 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 import javax.net.ssl.SSLContext
 import javax.net.ssl.SSLParameters
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 class TestHttpClient(
     val client: HttpClient,
@@ -57,6 +59,10 @@ class TestHttpClient(
         }
 
     private fun <T> withUrlsCheck(request: HttpRequest?, block: (HttpRequest?) -> T): T {
+        contract {
+            callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+            returnsResultOf(block)
+        }
         request?.let {
             if (errorProducingUrls.any { request.uri() == URI.create(it) }) {
                 val message = "Request to one of error-producing URLs: ${request.uri()}"

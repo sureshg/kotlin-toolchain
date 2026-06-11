@@ -16,6 +16,8 @@ import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import java.nio.file.StandardOpenOption
 import java.util.*
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.io.path.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.createParentDirectories
@@ -59,49 +61,55 @@ suspend fun produceFileWithDoubleLockAndHash(
         Path(System.getProperty("java.io.tmpdir")).resolve(".amper")
     },
     writeFileContent: suspend (Path, FileChannel) -> Boolean
-): Path? = produceResultWithDoubleLock(
-    tempDir(),
-    target.name,
-    getAlreadyProducedResult = {
-        // todo (AB) : replace with logic from ExecuteOnChange (hashes are too heavy)
-        if (!target.exists()) {
-            null
-        } else {
-            val hashFile = target.parent.resolve("${target.name}.sha1")
-            if (!hashFile.exists()) {
+): Path? {
+    contract {
+        callsInPlace(tempDir, InvocationKind.EXACTLY_ONCE)
+        callsInPlace(writeFileContent, InvocationKind.AT_MOST_ONCE)
+    }
+    return produceResultWithDoubleLock(
+        tempDir(),
+        target.name,
+        getAlreadyProducedResult = {
+            // todo (AB) : replace with logic from ExecuteOnChange (hashes are too heavy)
+            if (!target.exists()) {
                 null
             } else {
-                val expectedHash = hashFile.readText()
-                val actualHash = computeHash(target, getSha1Algorithm()).hash
-
-                if (expectedHash != actualHash) {
+                val hashFile = target.parent.resolve("${target.name}.sha1")
+                if (!hashFile.exists()) {
                     null
                 } else {
-                    target
+                    val expectedHash = hashFile.readText()
+                    val actualHash = computeHash(target, getSha1Algorithm()).hash
+
+                    if (expectedHash != actualHash) {
+                        null
+                    } else {
+                        target
+                    }
                 }
             }
         }
-    }
-) { tempFilePath, fileChannel ->
-    val isSuccessfullyWritten = writeFileContent(tempFilePath, fileChannel)
-        .also {
-            if (it) {
-                val hashFile = target.parent.resolve("${target.name}.sha1")
-                // Store sha1 of resulted sourceSet file
-                val hasher = Hasher(getSha1Algorithm())
-                fileChannel.position(0)
-                fileChannel.readTo(listOf(hasher.writer))
-                hashFile.parent.createDirectories()
-                hashFile.writeText(hasher.hash)
+    ) { tempFilePath, fileChannel ->
+        val isSuccessfullyWritten = writeFileContent(tempFilePath, fileChannel)
+            .also {
+                if (it) {
+                    val hashFile = target.parent.resolve("${target.name}.sha1")
+                    // Store sha1 of resulted sourceSet file
+                    val hasher = Hasher(getSha1Algorithm())
+                    fileChannel.position(0)
+                    fileChannel.readTo(listOf(hasher.writer))
+                    hashFile.parent.createDirectories()
+                    hashFile.writeText(hasher.hash)
+                }
             }
+
+        if (isSuccessfullyWritten) {
+            target.parent.createDirectories()
+            tempFilePath.moveTo(target, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
         }
 
-    if (isSuccessfullyWritten) {
-        target.parent.createDirectories()
-        tempFilePath.moveTo(target, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
+        target.takeIf { isSuccessfullyWritten }
     }
-
-    target.takeIf { isSuccessfullyWritten }
 }
 
 /**
@@ -137,6 +145,12 @@ internal suspend fun <T> produceResultWithDoubleLock(
     getAlreadyProducedResult: suspend () -> T?,
     block: suspend (Path, FileChannel) -> T,
 ): T {
+    contract {
+        callsInPlace(getAlreadyProducedResult, InvocationKind.AT_LEAST_ONCE)
+        callsInPlace(block, InvocationKind.AT_MOST_ONCE)
+//         returnsResultOf(getAlreadyProducedResult)
+//         returnsResultOf(block)
+    }
     // todo (AB) : Maybe store it in <storage.root>/lock and never remove? (in order to resolve deletion failures attempts)
     val lockFile = tempLockFile(tempDir, targetFileName).createParentDirectories()
     return (fileLockSource ?: FileMutexGroup.Default).getOrComputeWithDoubleLock(
@@ -166,6 +180,10 @@ internal suspend fun <T> produceResultWithTempFile(
     targetFileName: String,
     block: suspend (Path, FileChannel) -> T,
 ): T {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+//         returnsResultOf(block)
+    }
     val tempFileNameSuffix = UUID.randomUUID().toString().let { it.substring(0, min(8, it.length)) }
     val tempFile = tempDir.resolveNormalized(targetFileName, prefix = "~", suffix = tempFileNameSuffix)
 

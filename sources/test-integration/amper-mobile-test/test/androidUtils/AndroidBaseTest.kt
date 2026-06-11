@@ -14,6 +14,8 @@ import org.jetbrains.amper.test.processes.TestReporterProcessOutputListener
 import org.jetbrains.amper.test.processes.checkExitCodeIsZero
 import org.jetbrains.amper.test.runTestWithMdc
 import java.nio.file.Path
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.io.path.div
 import kotlin.io.path.name
 import kotlin.test.fail
@@ -109,6 +111,10 @@ open class AndroidBaseTest : TestBase() {
 }
 
 private suspend fun <T> AndroidTools.withEmulator(block: suspend Emulator.() -> T): T {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+        returnsResultOf(block)
+    }
     val testAvdName = "amper-test-avd"
     // If no emulator is currently running, a new one is started before executing the command.
     if (!listAvds().contains(testAvdName)) {

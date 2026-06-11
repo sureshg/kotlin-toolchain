@@ -2,6 +2,10 @@ product: jvm/lib
 
 description: Shared test infrastructure.
 
+apply:
+  - //sources/common.module-template.yaml
+  - //sources/can-have-pre-release-flags.module-template.yaml
+
 dependencies:
   - io.github.java-diff-utils:java-diff-utils:4.12: exported
   - $kotlin.serialization.json
@@ -30,9 +34,6 @@ dependencies:
   - //sources/libraries/stdlib-extended
   - //sources/libraries/system-info
   - //sources/libraries/telemetry
-
-apply:
-  - //sources/common.module-template.yaml
 
 test-dependencies:
   - //sources/amper-telemetry

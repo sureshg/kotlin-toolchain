@@ -135,6 +135,7 @@ internal suspend inline fun <T> Process.withGuaranteedTermination(
 ): T {
     contract {
         callsInPlace(cancellableBlock, kind = InvocationKind.EXACTLY_ONCE)
+//         returnsResultOf(cancellableBlock)
     }
     withDestructionHook(gracePeriod) {
         try {
@@ -181,6 +182,7 @@ internal inline fun <T> Process.withDestructionHook(
 ): T {
     contract {
         callsInPlace(block, kind = InvocationKind.EXACTLY_ONCE)
+//        returnsResultOf(block)
     }
     val command = try {
         info().commandLine().orElse("")
@@ -206,6 +208,7 @@ internal inline fun <T> withShutdownHook(
 ): T {
     contract {
         callsInPlace(block, kind = InvocationKind.EXACTLY_ONCE)
+//         returnsResultOf(block)
     }
     val hookThread = Thread(
         /* group = */ null,

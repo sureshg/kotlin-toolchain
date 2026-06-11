@@ -7,6 +7,8 @@ import org.eclipse.jgit.lib.Config
 import org.eclipse.jgit.storage.file.FileBasedConfig
 import org.eclipse.jgit.util.FS
 import org.eclipse.jgit.util.SystemReader
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 /**
  * Runs the provided [block] of code with an empty system and user git config.
@@ -14,6 +16,10 @@ import org.eclipse.jgit.util.SystemReader
  * Any git operation (most importantly [Git.open]) within the given block will disregard the global git config of the machine.
  */
 internal fun <T> runWithoutGlobalGitConfig(block: () -> T): T {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+        returnsResultOf(block)
+    }
     val oldSystemReader = SystemReader.getInstance()
     try {
         SystemReader.setInstance(EmptyConfigSystemReader(oldSystemReader))

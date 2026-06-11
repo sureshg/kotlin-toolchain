@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.core.downloader
@@ -11,6 +11,8 @@ import org.jetbrains.amper.telemetry.spanBuilder
 import org.jetbrains.amper.telemetry.use
 import java.util.*
 import java.util.concurrent.TimeUnit
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.math.min
 
 // initially from intellij:community/platform/build-scripts/downloader/src/retry.kt
@@ -22,6 +24,12 @@ suspend fun <T> suspendingRetryWithExponentialBackOff(
     onException: suspend (attempt: Int, e: Exception) -> Unit = { attempt, e -> defaultExceptionConsumer(attempt, e) },
     action: suspend (attempt: Int) -> T
 ): T {
+    contract {
+        callsInPlace(action, InvocationKind.AT_LEAST_ONCE)
+//         returnsResultOf(action)
+    }
+    require(attempts > 0) { "'attempts' must be > 0, got $attempts" }
+
     val random = Random()
     var effectiveDelay = initialDelayMs
     val exceptions = mutableListOf<Exception>()

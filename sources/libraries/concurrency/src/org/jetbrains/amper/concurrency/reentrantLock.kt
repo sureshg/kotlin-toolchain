@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.concurrency
@@ -25,6 +25,7 @@ import kotlin.coroutines.CoroutineContext
 suspend fun <T> Mutex.withReentrantLock(block: suspend () -> T): T {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+//         returnsResultOf(block)
     }
     val key = ReentrantMutexContextKey(this)
     // call block directly when this mutex is already locked in the context

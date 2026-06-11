@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.cli
@@ -16,6 +16,8 @@ import org.jetbrains.amper.tasks.AllRunSettings
 import org.jetbrains.amper.telemetry.spanBuilder
 import org.jetbrains.amper.telemetry.use
 import java.util.concurrent.atomic.AtomicReference
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 private val backendInitialized = AtomicReference<Throwable>(null)
 
@@ -26,6 +28,10 @@ internal suspend fun <T> withBackend(
     taskExecutionMode: TaskExecutor.Mode = TaskExecutor.Mode.FAIL_FAST,
     block: suspend (AmperBackend) -> T,
 ): T {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+        returnsResultOf(block)
+    }
     val initializedException = backendInitialized.getAndSet(Throwable())
     if (initializedException != null) {
         throw IllegalStateException("withBackend was already called, see nested exception", initializedException)

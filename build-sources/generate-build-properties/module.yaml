@@ -4,6 +4,7 @@ description: A plugin to generate an `AmperBuild` class with build information s
 
 apply:
   - //sources/common.module-template.yaml
+  - //sources/can-have-pre-release-flags.module-template.yaml
 
 dependencies:
   - $libs.kotlin.poet

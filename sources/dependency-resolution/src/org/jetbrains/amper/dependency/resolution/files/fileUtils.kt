@@ -16,6 +16,8 @@ import java.nio.channels.ReadableByteChannel
 import java.nio.file.NoSuchFileException
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.io.path.readText
 
 private val logger = LoggerFactory.getLogger("dr/fileUtils.kt")
@@ -24,8 +26,12 @@ internal fun interface Writer {
     fun write(data: ByteBuffer)
 }
 
-internal suspend fun computeHash(path: Path, hashersFn:() -> List<Hasher>): Collection<Hasher> =
-    fileChannelReadOperationWithRetry(
+internal suspend fun computeHash(path: Path, hashersFn:() -> List<Hasher>): Collection<Hasher> {
+    contract {
+        callsInPlace(hashersFn, InvocationKind.AT_LEAST_ONCE)
+//         returnsResultOf(hashersFn)
+    }
+    return fileChannelReadOperationWithRetry(
         path,
         { e -> retryFileOperationOnException(e, path) }
     ) { fileChannel ->
@@ -33,6 +39,7 @@ internal suspend fun computeHash(path: Path, hashersFn:() -> List<Hasher>): Coll
             fileChannel.readTo(hashers.map { it.writer })
         }
     }
+}
 
 suspend fun Path.readTextWithRetry(): String =
     fileOperationWithRetry(this) { it.readText() }
@@ -41,17 +48,27 @@ private suspend fun <T> fileChannelReadOperationWithRetry(
     path: Path,
     retryOnException: (e: Exception) -> Boolean = { e -> retryFileOperationOnException(e, path) },
     block:(FileChannel) -> T
-): T =
-    fileOperationWithRetry(path, retryOnException) { _ ->
+): T {
+    contract {
+        callsInPlace(block, InvocationKind.AT_LEAST_ONCE)
+//         returnsResultOf(block)
+    }
+    return fileOperationWithRetry(path, retryOnException) { _ ->
         FileChannel.open(path, StandardOpenOption.READ)
             .use { block(it) }
     }
+}
 
 internal suspend fun <T> fileOperationWithRetry(
     path: Path,
     retryOnException: (e: Exception) -> Boolean = { e -> retryFileOperationOnException(e, path) },
     block: suspend (Path) -> T
 ): T {
+    contract {
+        callsInPlace(retryOnException, InvocationKind.UNKNOWN)
+        callsInPlace(block, InvocationKind.AT_LEAST_ONCE)
+//         returnsResultOf(block)
+    }
     return withRetry(retryOnException = retryOnException) {
         withContext(Dispatchers.IO) {
             block(path)

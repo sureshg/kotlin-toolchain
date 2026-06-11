@@ -75,6 +75,8 @@ import org.jetbrains.amper.telemetry.use
 import org.slf4j.LoggerFactory
 import java.nio.file.Path
 import java.util.concurrent.CancellationException
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.io.path.Path
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.exists
@@ -1446,6 +1448,10 @@ class MavenDependencyImpl internal constructor(
         keyName: String,
         crossinline block: suspend () -> T?
     ): T? {
+        contract {
+            callsInPlace(block, InvocationKind.AT_MOST_ONCE)
+//             returnsResultOf(block)
+        }
         val keyScope = "$coordinates:$isBom"
         val scopedKey = "$keyScope:keyName=$keyName"
 

@@ -14,6 +14,8 @@ import javax.xml.stream.XMLInputFactory
 import javax.xml.stream.XMLStreamConstants.START_ELEMENT
 import javax.xml.stream.XMLStreamException
 import javax.xml.stream.XMLStreamReader
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.io.path.Path
 import kotlin.io.path.div
 import kotlin.io.path.exists
@@ -40,6 +42,10 @@ internal fun MavenProject.getEffectivePlugin(groupId: String, artifactId: String
 }
 
 internal fun <T> InputLocation.findElement(handler: (XMLStreamReader) -> T): T? {
+    contract {
+        callsInPlace(handler, InvocationKind.AT_MOST_ONCE)
+        returnsResultOf(handler)
+    }
     val sourcePath = source?.location ?: return null
     val path = Path(sourcePath)
     if (!path.exists()) return null

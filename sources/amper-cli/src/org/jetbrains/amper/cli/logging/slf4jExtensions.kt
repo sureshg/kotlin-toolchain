@@ -6,9 +6,16 @@ package org.jetbrains.amper.cli.logging
 
 import org.slf4j.Logger
 import org.slf4j.MDC
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
-internal inline fun <T> withMDCEntry(key: String, value: String, block: () -> T): T =
-    MDC.putCloseable(key, value).use { block() }
+internal inline fun <T> withMDCEntry(key: String, value: String, block: () -> T): T {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+        returnsResultOf(block)
+    }
+    return MDC.putCloseable(key, value).use { block() }
+}
 
 /**
  * Logs the given [message] at INFO level, but only to the logs file, not to the console.

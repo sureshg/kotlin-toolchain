@@ -25,6 +25,8 @@ import java.nio.file.Path
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.concurrent.thread
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.appendLines
 import kotlin.io.path.createDirectories
@@ -184,21 +186,27 @@ class AndroidTools(
      *
      * The emulator is guaranteed to be booted before [block] is executed, and to be killed after [block] completes.
      */
-    suspend fun <T> withEmulator(avdName: String, block: suspend Emulator.() -> T): T = coroutineScope {
-        val port = chooseFreeEmulatorPort()
-        val emulatorJob = launch {
-            runNewEmulator(avdName, port)
-            log("Emulator started")
+    suspend fun <T> withEmulator(avdName: String, block: suspend Emulator.() -> T): T {
+        contract {
+            callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+            returnsResultOf(block)
         }
-        val emulator = Emulator(serial = "emulator-$port", androidTools = this@AndroidTools)
-        emulator.awaitReady(emulatorJob)
+        return coroutineScope {
+            val port = chooseFreeEmulatorPort()
+            val emulatorJob = launch {
+                runNewEmulator(avdName, port)
+                log("Emulator started")
+            }
+            val emulator = Emulator(serial = "emulator-$port", androidTools = this@AndroidTools)
+            emulator.awaitReady(emulatorJob)
 
-        try {
-            block(emulator)
-        } finally {
-            emulatorJob.cancel()
-            emulator.kill()
-            log("Awaiting emulator termination for AVD $avdName...")
+            try {
+                block(emulator)
+            } finally {
+                emulatorJob.cancel()
+                emulator.kill()
+                log("Awaiting emulator termination for AVD $avdName...")
+            }
         }
     }
 

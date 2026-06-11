@@ -12,6 +12,8 @@ import org.tinylog.core.LogEntry
 import org.tinylog.core.LogEntryValue
 import org.tinylog.writers.AbstractFormatPatternWriter
 import kotlin.concurrent.Volatile
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 class DynamicLevelConsoleWriter(properties: Map<String, String>): AbstractFormatPatternWriter(properties) {
     @Volatile
@@ -70,5 +72,10 @@ class DynamicLevelConsoleWriter(properties: Map<String, String>): AbstractFormat
 /**
  * Under this block, all logging will go only to files, not to the user terminal
  */
-internal inline fun <T> withoutConsoleLogging(block: () -> T): T =
-    withMDCEntry(DynamicLevelConsoleWriter.DISABLED_MDC_KEY, "1") { block() }
+internal inline fun <T> withoutConsoleLogging(block: () -> T): T {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+        returnsResultOf(block)
+    }
+    return withMDCEntry(DynamicLevelConsoleWriter.DISABLED_MDC_KEY, "1") { block() }
+}

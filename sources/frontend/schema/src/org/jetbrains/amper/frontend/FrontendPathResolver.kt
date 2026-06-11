@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.frontend
@@ -45,6 +45,11 @@ class FrontendPathResolver(
         VirtualFileManager.getInstance().findFileByNioPath(path)
     }
 
-    private inline fun <T> runReadAction(crossinline action: () -> T): T =
-        ApplicationManager.getApplication().runReadAction(Computable { action() })
+    private inline fun <T> runReadAction(crossinline action: () -> T): T {
+//        contract {
+            // we don't have guarantees about calling 'action' in-place, so we can't add the callsInPlace contract here
+//             returnsResultOf(action)
+//        }
+        return ApplicationManager.getApplication().runReadAction(Computable { action() })
+    }
 }

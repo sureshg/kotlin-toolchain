@@ -38,6 +38,8 @@ import org.jetbrains.amper.test.runTestRespectingDelays
 import org.junit.jupiter.api.TestInfo
 import org.opentest4j.AssertionFailedError
 import java.nio.file.Path
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 import kotlin.io.path.createFile
 import kotlin.io.path.deleteIfExists
@@ -320,6 +322,10 @@ abstract class BaseModuleDrTest {
         }
 
         private inline fun <T> withActualDump(expectedResultPath: Path? = null, block: () -> T): T {
+            contract {
+                callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+                returnsResultOf(block)
+            }
             return try {
                 block()
             } catch (e: AssertionFailedError) {
@@ -488,6 +494,10 @@ abstract class BaseModuleDrTest {
 
     // todo (AB): [AMPER-4905] Remove on final cleanup
     protected suspend fun <T> timed(text: String, block: suspend () -> T): T {
+        contract {
+            callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+            returnsResultOf(block)
+        }
         val start = System.currentTimeMillis()
         return try {
             block()
@@ -500,6 +510,10 @@ abstract class BaseModuleDrTest {
 
     // todo (AB): [AMPER-4905] Remove on final cleanup
     protected fun <T> timedBlocking(text: String, block: () -> T): T {
+        contract {
+            callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+            returnsResultOf(block)
+        }
         val start = System.currentTimeMillis()
         return try {
             block()

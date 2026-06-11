@@ -69,6 +69,8 @@ import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 import java.util.*
 import javax.net.ssl.SSLContext
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.io.path.Path
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.createDirectories
@@ -1570,6 +1572,10 @@ private suspend fun InputStream.readTo(writers: Collection<Writer>): Long {
 }
 
 internal inline fun <T> resolveSafeOrNull(block: () -> T?): T? {
+    contract {
+        callsInPlace(block, InvocationKind.AT_MOST_ONCE) // we return null on failure (instead of failing)
+//         returnsResultOf(block)
+    }
     return try {
         block()
     } catch (e: CancellationException) {

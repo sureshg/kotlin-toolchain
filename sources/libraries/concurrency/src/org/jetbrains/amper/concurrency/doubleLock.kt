@@ -58,6 +58,7 @@ suspend fun <T> FileMutexGroup.withDoubleLock(
 ): T {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+//         returnsResultOf(block)
     }
     // The first lock locks the stuff inside one JVM process
     return withLock(lockFile, owner) {
@@ -108,7 +109,10 @@ suspend fun <T> FileMutexGroup.getOrComputeWithDoubleLock(
     computeUnderLock: suspend (lockFileChannel: FileChannel) -> T,
 ): T {
     contract {
+        callsInPlace(getCached, InvocationKind.AT_LEAST_ONCE)
         callsInPlace(computeUnderLock, InvocationKind.AT_MOST_ONCE)
+//         returnsResultOf(getCached)
+//         returnsResultOf(computeUnderLock)
     }
     getCached()?.let { return it }
 
@@ -155,6 +159,7 @@ suspend fun <T> FileMutexGroup.getOrComputeWithDoubleLock(
 private suspend inline fun <T> Path.withFileChannelLock(vararg options: OpenOption, block: (FileChannel) -> T): T {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+//         returnsResultOf(block)
     }
     while (true) {
         // Paths are sometimes still reserved for a short period after a file was deleted, which gives an
@@ -242,7 +247,9 @@ suspend fun <T> withRetry(
     block: suspend (attempt: Int) -> T,
 ): T {
     contract {
+        callsInPlace(retryOnException, InvocationKind.UNKNOWN)
         callsInPlace(block, InvocationKind.AT_LEAST_ONCE)
+//         returnsResultOf(block)
     }
     var attempt = 0
     var firstException: Exception? = null

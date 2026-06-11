@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.telemetry
@@ -11,6 +11,8 @@ import io.opentelemetry.extension.kotlin.asContextElement
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ThreadContextElement
 import kotlinx.coroutines.withContext
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.use
 
@@ -28,13 +30,18 @@ import kotlin.use
  * [operation] unless we manually transfer the context using [asContextElement].
  */
 // This is not 'inline' on purpose, to forbid the use of suspend functions inside (it would break OTel parent-child links)
-/* NOT inline */ fun <T> SpanBuilder.useWithoutCoroutines(operation: (Span) -> T): T =
-    startSpan().useWithoutScopeAndRecordCompletion { span ->
+/* NOT inline */ fun <T> SpanBuilder.useWithoutCoroutines(operation: (Span) -> T): T {
+    contract {
+        callsInPlace(operation, InvocationKind.EXACTLY_ONCE)
+//         returnsResultOf(operation)
+    }
+    return startSpan().useWithoutScopeAndRecordCompletion { span ->
         // makeCurrent() modifies a ThreadLocal, but not the current coroutine context
         span.makeCurrent().use {
             operation(span)
         }
     }
+}
 
 /**
  * Starts the span from this [SpanBuilder] and runs the given [operation] under this span, with OTel context
@@ -51,6 +58,10 @@ import kotlin.use
  * coroutines calls, unless coroutines won't be used at all inside [operation].
  */
 suspend inline fun <T> SpanBuilder.use(crossinline operation: suspend CoroutineScope.(Span) -> T): T {
+    contract {
+        callsInPlace(operation, InvocationKind.EXACTLY_ONCE)
+//         returnsResultOf(operation)
+    }
     val span = startSpan()
     return withContext(span.asContextElement()) {
         span.useWithoutScopeAndRecordCompletion {
@@ -66,6 +77,10 @@ suspend inline fun <T> SpanBuilder.use(crossinline operation: suspend CoroutineS
  */
 @PublishedApi // to be able to mark it at least 'internal' if not private, and use from a public function
 internal inline fun <T> Span.useWithoutScopeAndRecordCompletion(operation: (Span) -> T): T {
+    contract {
+        callsInPlace(operation, InvocationKind.EXACTLY_ONCE)
+//         returnsResultOf(operation)
+    }
     try {
         return operation(this)
     } catch (e: CancellationException) {

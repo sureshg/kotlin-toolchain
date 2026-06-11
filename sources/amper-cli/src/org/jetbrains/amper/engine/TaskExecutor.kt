@@ -61,7 +61,7 @@ class TaskExecutor(
                 try {
                     val results = ConcurrentHashMap<TaskId, Deferred<ExecutionResult>>()
                     context(listener, executionContext) {
-                        runTasks(tasksToRun, currentPath = emptyList(), results); Unit
+                        runTasks(tasksToRun, currentPath = emptyList(), results)
                     }
 
                     // this is just to unpack results (by that point, all tasks must have finished executing already)

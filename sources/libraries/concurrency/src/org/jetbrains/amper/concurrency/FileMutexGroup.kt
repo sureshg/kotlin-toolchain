@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.concurrency
@@ -74,6 +74,7 @@ private class StripedFileMutexGroup(stripeCount: Int) : FileMutexGroup {
 suspend inline fun <T> FileMutexGroup.withLock(path: Path, owner: Any? = null, block: () -> T): T {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+//         returnsResultOf(block)
     }
     return getMutex(path).withLock(owner, block)
 }

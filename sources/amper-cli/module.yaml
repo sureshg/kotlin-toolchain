@@ -4,6 +4,7 @@ description: The Amper command-line application.
 
 apply:
   - //sources/common.module-template.yaml
+  - //sources/can-have-pre-release-flags.module-template.yaml
 
 repositories:
   - id: gradle-libs

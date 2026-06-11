@@ -15,6 +15,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 /**
  * Displays the given [message] with an infinitely spinning spinner while the given [block] is running.
@@ -29,21 +31,27 @@ suspend fun <T> Terminal.withIndeterminateProgress(
     message: String,
     messageNonInteractive: String? = message,
     block: suspend CoroutineScope.() -> T,
-): T = coroutineScope {
-    if (terminalInfo.interactive) {
-        val animationJob = launchIndeterminateProgress(message)
-        try {
+): T {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+        returnsResultOf(block)
+    }
+    return coroutineScope {
+        if (terminalInfo.interactive) {
+            val animationJob = launchIndeterminateProgress(message)
+            try {
+                block()
+            } finally {
+                animationJob.cancel()
+            }
+        } else {
+            // TODO reconsider the need for this once we have structured output: this message is probably never noise when
+            //  the reader is a human, and tools should read structured output, not this.
+            if (messageNonInteractive != null) {
+                println(messageNonInteractive)
+            }
             block()
-        } finally {
-            animationJob.cancel()
         }
-    } else {
-        // TODO reconsider the need for this once we have structured output: this message is probably never noise when
-        //  the reader is a human, and tools should read structured output, not this.
-        if (messageNonInteractive != null) {
-            println(messageNonInteractive)
-        }
-        block()
     }
 }
 

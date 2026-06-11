@@ -4,6 +4,7 @@ description: A tool to convert Maven projects into Amper projects. The entrypoin
 
 apply:
   - //sources/common.module-template.yaml
+  - //sources/can-have-pre-release-flags.module-template.yaml
 
 dependencies:
   - //sources/amper-maven-plugin-download

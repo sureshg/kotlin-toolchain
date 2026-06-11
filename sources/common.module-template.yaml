@@ -65,3 +65,7 @@ settings:
     excludeDependencies:
       - com.intellij.platform:kotlinx-coroutines-core-jvm
 
+test-settings:
+  kotlin:
+    freeCompilerArgs:
+      - -Xallow-returns-result-of

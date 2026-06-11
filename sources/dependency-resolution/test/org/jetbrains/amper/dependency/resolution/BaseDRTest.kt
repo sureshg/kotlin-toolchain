@@ -22,6 +22,8 @@ import org.junit.jupiter.api.fail
 import org.opentest4j.AssertionFailedError
 import java.nio.file.Path
 import java.util.*
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.io.path.Path
@@ -161,6 +163,10 @@ abstract class BaseDRTest {
         testDataPath.goldenFileOsAware(goldenFileBaseName)
 
     private inline fun <T> withActualDump(expectedResultPath: Path? = null, block: () -> T): T {
+        contract {
+            callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+            returnsResultOf(block)
+        }
         return try {
             block()
         } catch (e: AssertionFailedError) {

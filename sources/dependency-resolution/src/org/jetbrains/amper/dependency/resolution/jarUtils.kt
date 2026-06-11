@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.dependency.resolution
@@ -19,7 +19,8 @@ import java.util.jar.JarFile
 import java.util.jar.JarInputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
-
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 internal suspend fun readJarEntry(jarPath: Path, entryPath: String) : String? =
     withJarEntry(jarPath, entryPath) { jarInputStream ->
@@ -36,8 +37,12 @@ internal suspend fun hasJarEntry(jarPath: Path, entryPath: String) : Boolean? =
  *
  * @return null if the entry is not found, and result of the given [block] otherwise
  */
-suspend fun <T> withJarEntry(jarPath: Path, entryPath: String, block: suspend (InputStream) -> T) : T? =
-    fileOperationWithRetry(jarPath) {
+suspend fun <T> withJarEntry(jarPath: Path, entryPath: String, block: suspend (InputStream) -> T) : T? {
+    contract {
+        callsInPlace(block, InvocationKind.UNKNOWN)
+//         returnsResultOf(block)
+    }
+    return fileOperationWithRetry(jarPath) {
         val jarFile = it.toJarFile()
         jarFile.use {
             val jarEntry: JarEntry = jarFile.getJarEntry(entryPath) ?: return@fileOperationWithRetry null
@@ -46,6 +51,7 @@ suspend fun <T> withJarEntry(jarPath: Path, entryPath: String, block: suspend (I
             }
         }
     }
+}
 
 /**
  * It takes a subfolder with the path <code>jarEntryDir<code> from given <code>srcJar<code>,

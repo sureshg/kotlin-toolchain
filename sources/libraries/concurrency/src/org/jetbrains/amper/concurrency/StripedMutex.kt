@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.concurrency
@@ -58,6 +58,7 @@ class StripedMutex(stripeCount: Int = 64) {
 suspend inline fun <T> StripedMutex.withLock(hash: Int, owner: Any? = null, action: () -> T): T {
     contract {
         callsInPlace(action, InvocationKind.EXACTLY_ONCE)
+//         returnsResultOf(action)
     }
     return getMutex(hash).withLock(owner, action)
 }

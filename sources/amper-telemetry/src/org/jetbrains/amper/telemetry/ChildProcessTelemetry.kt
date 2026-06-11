@@ -16,6 +16,8 @@ import org.jetbrains.amper.buildinfo.AmperBuild
 import org.slf4j.LoggerFactory
 import java.nio.file.Path
 import java.util.*
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.io.path.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.div
@@ -47,6 +49,10 @@ object ChildProcessTelemetry {
      * as the telemetry service name, and as a prefix of traces' filename.
      */
     suspend fun <T> withChildProcessTelemetrySpan(processName: String, block: suspend CoroutineScope.() -> T): T {
+        contract {
+            callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+//             returnsResultOf(block)
+        }
         val telemetryFolder = getTelemetryFolderFromEnvironmentVariable()
         val fileName = uniqueFileName(processName)
         val telemetryFile = telemetryFolder.createDirectories() / fileName
