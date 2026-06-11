@@ -14,6 +14,7 @@ import org.jetbrains.amper.cli.AmperBuildOutputRoot
 import org.jetbrains.amper.cli.AmperProjectRoot
 import org.jetbrains.amper.cli.AmperProjectTempRoot
 import org.jetbrains.amper.cli.logging.infoNoConsole
+import org.jetbrains.amper.cli.logging.withoutConsoleLogging
 import org.jetbrains.amper.cli.telemetry.setAmperModule
 import org.jetbrains.amper.cli.telemetry.setFragments
 import org.jetbrains.amper.cli.terminal.printCompilationSuccess
@@ -468,8 +469,11 @@ internal class JvmCompileTask(
     ): List<Path> {
         val [snapshottableClasspath, nonSnapshottable] = classpath.partition { it.isDirectory() || it.extension == "jar" }
         nonSnapshottable.forEach {
-            // We sometimes have .aar or .zip here. Maybe these are bugs that we should investigate
-            logger.warn("Unsupported extension .${it.extension} for classpath snapshotting, skipping entry $it")
+            // We sometimes have .aar or .zip here. These are most likely bugs that we should investigate, not the
+            // responsibility of the user, so there is no need for us to warn them, hence the file-only log.
+            withoutConsoleLogging {
+                logger.warn("Unsupported extension .${it.extension} for classpath snapshotting, skipping entry $it")
+            }
         }
         return context(incrementalCache) {
             snapshottableClasspath.mapConcurrently { entryPath ->
