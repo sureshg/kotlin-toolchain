@@ -356,6 +356,7 @@ internal class MetadataCompileTask(
             }
     }
 
+    // todo (AB) : [AMPER-721] Add commonized cinterop Klibs as an input of native metadata compilation.
     private suspend fun compileNativeMetadata(
         fragmentClasspath: List<Path>,
         refinesPaths: List<Path>,
