@@ -4,4 +4,4 @@
 
 package io.github.kotlin.fibonacci
 
-fun linuxBar() = bar()
+fun nestedBar() = bar()

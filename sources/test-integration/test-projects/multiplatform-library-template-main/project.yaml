@@ -1,6 +1,6 @@
 modules:
   - library
-  - linuxShared
+  - linuxWindowsShared
   - nativePlatform
   - nativeShared
 

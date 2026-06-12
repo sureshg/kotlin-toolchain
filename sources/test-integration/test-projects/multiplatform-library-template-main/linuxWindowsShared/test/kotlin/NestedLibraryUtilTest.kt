@@ -7,10 +7,10 @@ package io.github.kotlin.fibonacci
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class LinuxLibraryUtilTest {
+class NestedLibraryUtilTest {
 
     @Test
     fun `test linuxBar`() {
-        assertEquals(6, linuxBar())
+        assertEquals(6, nestedBar())
     }
 }

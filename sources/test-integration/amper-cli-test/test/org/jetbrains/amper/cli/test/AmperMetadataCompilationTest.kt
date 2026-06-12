@@ -103,15 +103,15 @@ class AmperMetadataCompilationTest : AmperCliTestBase() {
      * This test checks that metadata compilation of a multiplatform native-only module
      * depending on another exported module transitively is successful.
      *
-     * Test performs metadata compilation for the 'linux' fragment of module 'linuxShared'.
+     * Test performs metadata compilation for the 'linux' fragment of module 'linuxWindowsShared'.
      * That fragment uses symbols defined in the common fragment of 'library' module.
-     * Module 'linuxShared' depends on 'library' transitively via exported dependency declared in the module 'nativeShared'
+     * Module 'linuxWindowsShared' depends on 'library' transitively via exported dependency declared in the module 'nativeShared'
      */
     @Test
     fun `run metadata compilation of linux intermediate fragment depending on another exported local module`() = runSlowTest {
         val r = runCli(projectDir = testProject("multiplatform-library-template-main"),
             "task",
-            ":linuxShared:compileMetadataLinux",
+            ":linuxWindowsShared:compileMetadataLinux",
             assertEmptyStdErr = true)
     }
 }
