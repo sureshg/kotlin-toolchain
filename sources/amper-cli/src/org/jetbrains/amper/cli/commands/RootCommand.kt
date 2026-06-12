@@ -15,6 +15,7 @@ import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.defaultLazy
+import com.github.ajalt.clikt.parameters.options.eagerOption
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.versionOption
@@ -36,6 +37,7 @@ import org.jetbrains.amper.cli.profiling.Profiler
 import org.jetbrains.amper.cli.telemetry.TelemetryEnvironment
 import org.jetbrains.amper.cli.terminal.createMordantTerminal
 import org.jetbrains.amper.cli.unwrap
+import org.jetbrains.amper.cli.userReadableError
 import org.jetbrains.amper.cli.withShowCommandSuggestions
 import org.jetbrains.amper.core.AmperUserCacheRoot
 import org.jetbrains.amper.telemetry.spanBuilder
@@ -52,9 +54,13 @@ internal class RootCommand : SuspendingCliktCommand(name = "kotlin") {
     init {
         versionOption(
             version = AmperBuild.mavenVersion,
-            names = setOf("--version", "-v"),
+            names = ["--version", "-v"],
             message = { AmperVersion.banner },
         )
+        eagerOption("-repl", "-Xrepl", hidden = true) {
+            userReadableError("The -repl/-Xrepl option is not supported in the Kotlin Toolchain. " +
+                    "Use `kotlinc` directly if you need the REPL: `kotlinc -Xrepl`.")
+        }
         subcommands(
             BuildCommand(),
             CheckCommand(),
