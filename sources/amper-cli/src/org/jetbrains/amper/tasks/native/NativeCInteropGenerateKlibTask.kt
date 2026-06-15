@@ -14,6 +14,7 @@ import org.jetbrains.amper.compilation.serializableKotlinSettings
 import org.jetbrains.amper.core.AmperUserCacheRoot
 import org.jetbrains.amper.core.extract.cleanDirectory
 import org.jetbrains.amper.engine.BuildTask
+import org.jetbrains.amper.engine.GenerateKlibsForIdeTask
 import org.jetbrains.amper.engine.TaskGraphExecutionContext
 import org.jetbrains.amper.engine.TaskName
 import org.jetbrains.amper.frontend.AmperModule
@@ -21,6 +22,7 @@ import org.jetbrains.amper.frontend.Fragment
 import org.jetbrains.amper.frontend.Platform
 import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.jdk.provisioning.JdkProvider
+import org.jetbrains.amper.stdlib.io.path.cleanDirectoryExcept
 import org.jetbrains.amper.tasks.EmptyTaskResult
 import org.jetbrains.amper.tasks.TaskResult
 import org.jetbrains.amper.tasks.artifacts.ArtifactTaskBase
@@ -30,9 +32,7 @@ import org.jetbrains.amper.tasks.artifacts.Selectors
 import org.jetbrains.amper.tasks.artifacts.api.Quantifier
 import org.jetbrains.amper.util.BuildType
 import org.slf4j.LoggerFactory
-import kotlin.io.path.deleteIfExists
-import kotlin.io.path.deleteRecursively
-import kotlin.io.path.div
+import java.nio.file.Path
 import kotlin.io.path.isDirectory
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.nameWithoutExtension
@@ -48,7 +48,11 @@ internal class NativeCInteropGenerateKlibTask(
     override val taskName: TaskName,
     private val jdkProvider: JdkProvider,
     private val processRunner: ProcessRunner,
-) : ArtifactTaskBase(), BuildTask {
+) : ArtifactTaskBase(), BuildTask, GenerateKlibsForIdeTask {
+    init {
+        require(platform.isLeaf) { "Expected a leaf platform, got: $platform" }
+    }
+
     private val defFileArtifacts by Selectors.fromMatchingFragments(
         type = CinteropDefFileArtifact::class,
         module = module,
@@ -67,11 +71,20 @@ internal class NativeCInteropGenerateKlibTask(
         dependenciesResult: List<TaskResult>,
         executionContext: TaskGraphExecutionContext,
     ): TaskResult {
+        data class CinteropEntry(
+            val defFile: Path,
+            val associatedWith: Fragment,
+        )
+
         val inputDefFiles = buildList {
-            defFileArtifacts.forEach { add(it.path) }
+            defFileArtifacts.forEach {
+                add(CinteropEntry(it.path, it.fragment))
+            }
             for (fragment in fragments) {
                 val path = fragment.cinteropPath?.takeIf { it.isDirectory() } ?: continue
-                addAll(path.listDirectoryEntries("*.def"))
+                for (defFile in path.listDirectoryEntries("*.def")) {
+                    add(CinteropEntry(defFile, fragment))
+                }
             }
         }
 
@@ -85,7 +98,7 @@ internal class NativeCInteropGenerateKlibTask(
         val kotlinCompilerVersion = targetLeafFragment.serializableKotlinSettings().compilerVersion
 
         coroutineScope {
-            val relevantOutputs = inputDefFiles.map { defFile ->
+            val relevantOutputs = inputDefFiles.map { (defFile, associatedWith) ->
                 async {
                     incrementalCache.execute(
                         key = "${taskName.id.value}-${defFile.nameWithoutExtension}",
@@ -96,8 +109,11 @@ internal class NativeCInteropGenerateKlibTask(
                         inputFiles = listOf(defFile),
                     ) {
                         val cinteropName = defFile.nameWithoutExtension
-                        val outputKlib = outputKlibsDirectoryArtifact.path / "$cinteropName.klib"
-                        outputKlib.deleteIfExists()
+                        val outputKlib = outputKlibsDirectoryArtifact.getPathForKlib(
+                            name = cinteropName,
+                            defOriginFragment = associatedWith,
+                        )
+                        cleanDirectory(outputKlib.parent)
 
                         val nativeCompiler =
                             downloadNativeCompiler(kotlinCompilerVersion, userCacheRoot, jdkProvider)
@@ -119,9 +135,7 @@ internal class NativeCInteropGenerateKlibTask(
             }.awaitAll()
 
             // Clean any stale output Klibs
-            outputKlibsDirectoryArtifact.path.listDirectoryEntries()
-                .filterNot { it in relevantOutputs }
-                .forEach { it.deleteRecursively() }
+            cleanDirectoryExcept(outputKlibsDirectoryArtifact.path, relevantOutputs)
         }
 
         return EmptyTaskResult

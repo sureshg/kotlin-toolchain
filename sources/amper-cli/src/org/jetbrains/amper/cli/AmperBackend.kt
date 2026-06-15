@@ -9,11 +9,13 @@ import org.jetbrains.amper.buildinfo.AmperBuild
 import org.jetbrains.amper.cli.options.UserJvmArgsOption
 import org.jetbrains.amper.cli.widgets.TaskProgressRenderer
 import org.jetbrains.amper.engine.BuildTask
+import org.jetbrains.amper.engine.GenerateKlibsForIdeTask
 import org.jetbrains.amper.engine.MaybeBuildTypeAware
 import org.jetbrains.amper.engine.MaybePlatformAware
 import org.jetbrains.amper.engine.PackageTask
 import org.jetbrains.amper.engine.PublishTask
 import org.jetbrains.amper.engine.RunTask
+import org.jetbrains.amper.engine.Task
 import org.jetbrains.amper.engine.TaskExecutor
 import org.jetbrains.amper.engine.TaskExecutor.TaskExecutionFailed
 import org.jetbrains.amper.engine.TaskGraph
@@ -722,6 +724,19 @@ class AmperBackend(
         ).id
         // If this cast fails, it should be an internal error anyway, no need for special handling
         return runTask(taskId) as IosPreBuildTask.Result
+    }
+
+    /**
+     * @see org.jetbrains.amper.cli.commands.GenerateKlibsForIdeCommand
+     */
+    suspend fun generateKlibsForIde() {
+        val taskIds = taskGraph.tasks
+            .filterIsInstance<GenerateKlibsForIdeTask>()
+            .mapTo(mutableSetOf(), Task::id)
+        if (taskIds.isEmpty()) return // silently
+        runTasks(
+            taskIds
+        )
     }
 
     private fun resolveModule(moduleName: String) = modulesByName[moduleName] ?: userReadableError(

@@ -7,9 +7,11 @@ package org.jetbrains.amper.tasks.native
 import org.jetbrains.amper.compilation.KotlinCompilationType
 import org.jetbrains.amper.dependency.resolution.ResolutionScope
 import org.jetbrains.amper.frontend.AmperModule
+import org.jetbrains.amper.frontend.LeafFragment
 import org.jetbrains.amper.frontend.Platform
 import org.jetbrains.amper.frontend.fragmentsTargeting
 import org.jetbrains.amper.frontend.isDescendantOf
+import org.jetbrains.amper.tasks.CommonFragmentTaskType
 import org.jetbrains.amper.tasks.CommonTaskType
 import org.jetbrains.amper.tasks.ModuleTaskTypes
 import org.jetbrains.amper.tasks.ProjectTasksBuilder
@@ -49,6 +51,29 @@ fun ProjectTasksBuilder.setupNativeTasks() {
                 jdkProvider = context.jdkProvider,
                 processRunner = context.processRunner,
             )
+        )
+    }
+
+    allFragments().forEach { fragment ->
+        if (fragment.cinteropPath == null) {
+            return@forEach
+        }
+        if (fragment is LeafFragment) {
+            // No need to commonize anything for the leaf fragments
+            return@forEach
+        }
+        tasks.registerTask(
+            CommonizeCInteropKlibsTask(
+                buildOutputRoot = context.buildOutputRoot,
+                userCacheRoot = context.userCacheRoot,
+                jdkProvider = context.jdkProvider,
+                incrementalCache = context.incrementalCache,
+                processRunner = context.processRunner,
+                tempRoot = context.projectTempRoot,
+                fragment = fragment,
+                taskName = CommonFragmentTaskType.CommonizeCinterop.getTaskName(fragment),
+            ),
+            dependsOn = [CommonizeNativeDistributionTask.TASK_NAME],
         )
     }
 

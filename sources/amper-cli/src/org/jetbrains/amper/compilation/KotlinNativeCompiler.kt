@@ -53,12 +53,18 @@ class KotlinNativeCompiler(
         private val logger = LoggerFactory.getLogger(KotlinNativeCompiler::class.java)
     }
 
-    val commonizedPath by lazy {
+    private val konanDataDir by lazy {
         val explicitKonanDataDir = System.getenv(KONAN_DATA_DIR)
-        val konanDataDir = if (explicitKonanDataDir != null) Path(explicitKonanDataDir) else kotlinNativeHome
+        if (explicitKonanDataDir != null) Path(explicitKonanDataDir) else kotlinNativeHome
+    }
+
+    val commonizedPath by lazy {
         val encodedVersion = URLEncoder.encode(kotlinVersion, Charsets.UTF_8.name())
         konanDataDir / "klib" / "commonized" / encodedVersion
     }
+
+    val platformPath
+        get() = konanDataDir / "klib" / "platform"
 
     suspend fun compile(
         processRunner: ProcessRunner,

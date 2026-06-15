@@ -9,7 +9,6 @@ import kotlinx.serialization.json.Json
 import org.jetbrains.amper.ProcessRunner
 import org.jetbrains.amper.cli.AmperProjectTempRoot
 import org.jetbrains.amper.cli.logging.infoNoConsole
-import org.jetbrains.amper.cli.logging.withoutConsoleLogging
 import org.jetbrains.amper.cli.terminal.printCompilationSuccess
 import org.jetbrains.amper.compilation.KotlinArtifactsDownloader
 import org.jetbrains.amper.compilation.KotlinCompilationType
@@ -122,7 +121,7 @@ internal class NativeCompileKlibTask(
         logger.debug("native compile klib '${module.userReadableName}' -- ${fragments.joinToString(" ") { it.name }}")
 
         val libraryPaths = compiledModuleDependencies + externalDependencies +
-                cinteropKlibs.flatMap { it.allKlibs() }
+                cinteropKlibs.flatMap { it.allKlibs() }.map { it.path }
 
         val additionalSources = additionalKotlinJavaSourceDirs.map { artifact ->
             SourceRoot(

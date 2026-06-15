@@ -64,7 +64,7 @@ class CommonizeNativeDistributionTask(
 
     private suspend fun commonize(kotlinVersion: String, sharedPlatformSets: Set<List<Platform>>) {
         val sharedPlatforms = sharedPlatformSets.map { set ->
-            set.joinToString(prefix = "(", separator = ",", postfix = ")") { it.nameForCompiler }
+            set.formatCompilerPlatformSetId()
         }.toSet()
 
         // TODO Maybe this should be separated into something more than a suspend function.

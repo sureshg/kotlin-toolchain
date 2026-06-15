@@ -14,7 +14,6 @@ import com.github.ajalt.clikt.parameters.groups.OptionGroup
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.default
-import com.github.ajalt.clikt.parameters.options.deprecated
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.versionOption
@@ -45,7 +44,6 @@ import org.jetbrains.amper.util.DateTimeFormatForFilenames
 import org.jetbrains.amper.util.nowInDefaultTimezone
 import org.tinylog.Level
 import java.io.PrintStream
-import java.nio.file.Path
 import kotlin.io.path.Path
 
 internal class RootCommand : SuspendingCliktCommand(name = "kotlin") {
@@ -65,6 +63,7 @@ internal class RootCommand : SuspendingCliktCommand(name = "kotlin") {
             SuspendingCompletionCommand(
                 help = "Generate a tab-completion script for the Kotlin CLI for the given shell (bash, zsh, or fish)",
             ),
+            GenerateKlibsForIdeCommand(),
             InitCommand(),
             PackageCommand(),
             PublishCommand(),

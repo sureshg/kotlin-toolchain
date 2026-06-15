@@ -13,7 +13,10 @@ import org.jetbrains.amper.tasks.artifacts.api.Artifact
 import java.io.Serializable
 import java.nio.file.Path
 import kotlin.io.path.div
+import kotlin.io.path.isDirectory
 import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.name
+import kotlin.io.path.nameWithoutExtension
 
 /**
  * A base class for all artifact implementations.
@@ -102,8 +105,20 @@ open class CinteropDefFileArtifact(
 ) : FragmentScopedArtifact(buildOutputRoot, fragment)
 
 /**
+ * Commonized klib for cinterop.
+ */
+open class CinteropCommonizedKlibArtifact(
+    buildOutputRoot: AmperBuildOutputRoot,
+    fragment: Fragment,
+    override val conventionPath: Path? = null,
+) : FragmentScopedArtifact(buildOutputRoot, fragment)
+
+/**
  * A directory that contains compiled cinterop `.klib` files.
  * The directory may be empty.
+ *
+ * The file tree structure under [path] is implementation-defined and should not be relied upon externally;
+ * use [getPathForKlib] and [allKlibs] to interfaces with the underlying klib files.
  */
 open class CinteropKlibsArtifact(
     buildOutputRoot: AmperBuildOutputRoot,
@@ -115,5 +130,29 @@ open class CinteropKlibsArtifact(
         require(platform.isLeaf) { "Only leaf platforms are expected here, got $platform" }
     }
 
-    fun allKlibs() = path.listDirectoryEntries("*.klib")
+    data class Klib(
+        /** cinterop klib path */
+        val path: Path,
+        /** cinterop name */
+        val name: String,
+        /** A fragment name with which the original `*.def` file is associated. */
+        val defOriginFragmentName: String,
+    )
+
+    fun getPathForKlib(
+        name: String,
+        defOriginFragment: Fragment,
+    ) = path / defOriginFragment.name / "$name.klib"
+
+    fun allKlibs() = path.listDirectoryEntries().flatMap { path ->
+        val fragmentName = path.name
+        if (!path.isDirectory()) return@flatMap []
+        path.listDirectoryEntries("*.klib").map { klibPath ->
+            Klib(
+                path = klibPath,
+                name = klibPath.nameWithoutExtension,
+                defOriginFragmentName = fragmentName,
+            )
+        }
+    }
 }

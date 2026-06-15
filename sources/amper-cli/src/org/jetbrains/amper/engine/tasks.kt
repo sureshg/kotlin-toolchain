@@ -74,6 +74,16 @@ interface BuildTask : Task, MaybeBuildTypeAware, PlatformAware {
 }
 
 /**
+ * A task that generates a klib that is required for the IDE to analyze code correctly.
+ * Examples:
+ *  - `cinterop` commonization
+ *  - `cinterop` leaf klib
+ *
+ * @see org.jetbrains.amper.cli.AmperBackend.generateKlibsForIde
+ */
+interface GenerateKlibsForIdeTask : Task
+
+/**
  * Find a task dependency with a specified type.
  */
 inline fun <reified T : TaskResult> List<TaskResult>.requireSingleDependency() =

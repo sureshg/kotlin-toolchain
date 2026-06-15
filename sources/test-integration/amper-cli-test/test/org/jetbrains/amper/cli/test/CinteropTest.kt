@@ -8,7 +8,14 @@ import org.jetbrains.amper.cli.test.utils.assertStdoutContains
 import org.jetbrains.amper.cli.test.utils.runSlowTest
 import org.jetbrains.amper.test.LinuxOnly
 import org.jetbrains.amper.test.MacOnly
+import kotlin.io.path.deleteRecursively
+import kotlin.io.path.div
+import kotlin.io.path.isDirectory
+import kotlin.io.path.isRegularFile
+import kotlin.io.path.walk
 import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class CinteropTest : AmperCliTestBase() {
     @Test
@@ -27,6 +34,26 @@ class CinteropTest : AmperCliTestBase() {
             projectDir = testProject("cinterop/lib-and-app-curl"),
             "run", "--module=app-mac", "--platform=macosArm64",
         ).assertStdoutContains(EXAMPLE_COM_RESPONSE_TEXT)
+    }
+
+    @Test
+    @MacOnly
+    fun `commonize common cinterop for ios platforms`() = runSlowTest {
+        val result = runCli(
+            projectDir = testProject("cinterop/ios-cinterop"),
+            "generate-klibs-for-ide",
+        )
+
+        val commonized = result.buildDir / "cinterop/commonized"
+        val custom = commonized / "ios-cinterop/common/(ios_arm64, ios_simulator_arm64, ios_x64)/custom"
+        assertTrue(custom.isDirectory())
+        assertTrue(custom.resolve("default/manifest").isRegularFile())
+        assertTrue(custom.resolve("default/linkdata").isDirectory())
+
+        custom.deleteRecursively()
+
+        val otherFiles = commonized.walk().toList()
+        assertEquals([], otherFiles, "No other files expected")
     }
 
     @Test

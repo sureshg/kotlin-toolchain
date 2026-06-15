@@ -100,7 +100,7 @@ open class DefaultFragment(
     }
 
     override val cinteropPath: Path? by lazy {
-        if (isTest || platforms.none { it.isDescendantOf(Platform.NATIVE) }) {
+        if (isTest || !platforms.all { it.isDescendantOf(Platform.NATIVE) }) {
             return@lazy null
         }
         // Maven-like layout is not supported for modules with native targets anyway
