@@ -469,7 +469,6 @@ class AmperBackend(
         if (moduleRunTasks.isEmpty()) {
             when (val t = moduleToRun.type) {
                 ProductType.JS_APP -> errorNonRunnableModuleType(moduleToRun, "${AmperBuild.documentationUrl}/user-guide/product-types/js-app/#running-your-application")
-                ProductType.WASM_JS_APP,
                 ProductType.WASM_WASI_APP -> errorNonRunnableModuleType(moduleToRun, "${AmperBuild.documentationUrl}/user-guide/product-types/wasm-app/#running-your-application")
                 else if t.isLibrary() -> userReadableError(
                     "Module '${moduleToRun.userReadableName}' cannot be run with the 'run' command because it's a " +

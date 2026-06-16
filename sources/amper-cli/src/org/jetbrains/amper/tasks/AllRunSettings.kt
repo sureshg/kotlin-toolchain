@@ -129,6 +129,10 @@ sealed interface NativeDesktopRunSettings : NativeRunSettings, DesktopRunSetting
  */
 sealed interface NativeTestRunSettings : NativeRunSettings, TestRunSettings
 
+sealed interface WebRunSettings : RunSettings {
+    val port: Int?
+}
+
 /**
  * Settings that are passed from the command line to user-visible processes that Amper runs, such as tests or the
  * user's applications.
@@ -145,4 +149,10 @@ data class AllRunSettings(
     override val userJvmMainClass: String? = null,
     override val deviceId: String? = null,
     override val composeHotReloadMode: Boolean = false,
-) : JvmMainRunSettings, NativeDesktopRunSettings, MobileRunSettings, JvmTestRunSettings, NativeTestRunSettings
+    override val port: Int? = null,
+) : JvmMainRunSettings,
+    NativeDesktopRunSettings,
+    MobileRunSettings,
+    JvmTestRunSettings,
+    NativeTestRunSettings,
+    WebRunSettings
