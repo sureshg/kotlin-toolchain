@@ -3,9 +3,9 @@ product: jvm/lib
 description: Public API for extending Amper with custom plugins and tasks.
 
 apply:
-  - ../../common.module-template.yaml
-  - ../../detekt.module-template.yaml
-  - ../../dokka.module-template.yaml
+  - //sources/common.module-template.yaml
+  - //sources/detekt.module-template.yaml
+  - //sources/dokka.module-template.yaml
 
 plugins:
   binary-compatibility-validator:

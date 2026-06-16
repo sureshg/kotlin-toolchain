@@ -20,22 +20,22 @@ dependencies:
   - $kotlin.test.junit5
   - $libs.jna
   - $libs.jna.platform
-  - ../amper-build-info
-  - ../amper-jdk-provisioning
-  - ../amper-problem-reporting
-  - ../core
-  - ../dependency-resolution
-  - ../libraries/async-processes: exported # for ProcessResult in the API
-  - ../libraries/incremental-cache
-  - ../libraries/stdlib-extended
-  - ../libraries/system-info
-  - ../libraries/telemetry
+  - //sources/amper-build-info
+  - //sources/amper-jdk-provisioning
+  - //sources/amper-problem-reporting
+  - //sources/core
+  - //sources/dependency-resolution
+  - //sources/libraries/async-processes: exported # for ProcessResult in the API
+  - //sources/libraries/incremental-cache
+  - //sources/libraries/stdlib-extended
+  - //sources/libraries/system-info
+  - //sources/libraries/telemetry
 
 apply:
-  - ../common.module-template.yaml
+  - //sources/common.module-template.yaml
 
 test-dependencies:
-  - ../amper-telemetry
+  - //sources/amper-telemetry
 
 settings:
   kotlin:

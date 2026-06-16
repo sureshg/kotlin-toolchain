@@ -71,12 +71,12 @@ modules:
   - sources/test-integration/amper-wrapper-test
 
 plugins:
-  - ./build-sources/amper-distribution
-  - ./build-sources/amper-schema-generator
-  - ./build-sources/binary-compatibility-validator
-  - ./build-sources/detekt
-  - ./build-sources/dokka
-  - ./build-sources/generate-build-properties
-  - ./build-sources/generate-template-resources
-  - ./build-sources/project-commands
-  - ./build-sources/protobuf
+  - //build-sources/amper-distribution
+  - //build-sources/amper-schema-generator
+  - //build-sources/binary-compatibility-validator
+  - //build-sources/detekt
+  - //build-sources/dokka
+  - //build-sources/generate-build-properties
+  - //build-sources/generate-template-resources
+  - //build-sources/project-commands
+  - //build-sources/protobuf

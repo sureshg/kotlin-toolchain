@@ -3,16 +3,16 @@ product: jvm/lib
 description: A gradle plugin to handle Android builds that are delegated from Amper.
 
 apply:
-  - ../../common.module-template.yaml
-  - ../../used-in-gradle.module-template.yaml
+  - //sources/common.module-template.yaml
+  - //sources/used-in-gradle.module-template.yaml
 
 dependencies:
-  - ../amper-android-gradle-api
-  - ../amper-android-sdk-detector
-  - ../../frontend-api
-  - ../../frontend/schema
-  - ../../libraries/stdlib-extended
-  - ../../libraries/maven-central-configuration
+  - //sources/android-integration/amper-android-gradle-api
+  - //sources/android-integration/amper-android-sdk-detector
+  - //sources/frontend-api
+  - //sources/frontend/schema
+  - //sources/libraries/stdlib-extended
+  - //sources/libraries/maven-central-configuration
   - $libs.android.gradle.plugin
   - $libs.google.services.gradle.plugin: runtime-only
   - $libs.gradle.api: compile-only

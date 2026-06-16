@@ -3,12 +3,12 @@ product: jvm/lib
 description: Model to communicate between Amper and the Java incremental compilation process.
 
 apply:
-  - ../../common.module-template.yaml
-  - ../../used-in-jic.module-template.yaml
+  - //sources/common.module-template.yaml
+  - //sources/used-in-jic.module-template.yaml
 
 dependencies:
   - $kotlin.serialization.core
-  - ../../libraries/serialization-extended
+  - //sources/libraries/serialization-extended
 
 settings:
   kotlin:

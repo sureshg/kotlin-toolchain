@@ -3,10 +3,10 @@ product: jvm/lib
 description: Additional serializers for kotlinx.serialization.
 
 apply:
-  - ../../common.module-template.yaml
-  - ../../used-in-gradle.module-template.yaml
-  - ../../used-in-idea.module-template.yaml
-  - ../../used-in-jic.module-template.yaml
+  - //sources/common.module-template.yaml
+  - //sources/used-in-gradle.module-template.yaml
+  - //sources/used-in-idea.module-template.yaml
+  - //sources/used-in-jic.module-template.yaml
 
 settings:
   kotlin:

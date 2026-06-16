@@ -3,9 +3,9 @@ product: jvm/lib
 description: Parser utilities for Maven plugin XML descriptors.
 
 apply:
-  - ../../common.module-template.yaml
-  - ../../used-in-gradle.module-template.yaml
-  - ../../used-in-idea.module-template.yaml
+  - //sources/common.module-template.yaml
+  - //sources/used-in-gradle.module-template.yaml
+  - //sources/used-in-idea.module-template.yaml
 
 dependencies:
   - $libs.xmlutil.serialization

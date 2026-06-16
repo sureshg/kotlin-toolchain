@@ -3,14 +3,14 @@ product: jvm/lib
 description: Tests that verify the Amper bootstrap mechanism in the Amper wrapper scripts.
 
 apply:
-  - ../../common.module-template.yaml
+  - //sources/common.module-template.yaml
 
 test-dependencies:
-  - ../../amper-jdk-provisioning
-  - ../../amper-wrapper
-  - ../../core
-  - ../../libraries/system-info
-  - ../../test-base
+  - //sources/amper-jdk-provisioning
+  - //sources/amper-wrapper
+  - //sources/core
+  - //sources/libraries/system-info
+  - //sources/test-base
 
 tasks:
   testJvm:

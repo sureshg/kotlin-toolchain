@@ -3,13 +3,13 @@ product: jvm/lib
 description: Problem reporting abstractions and utilities.
 
 apply:
-  - ../common.module-template.yaml
-  - ../used-in-gradle.module-template.yaml
-  - ../used-in-idea.module-template.yaml
+  - //sources/common.module-template.yaml
+  - //sources/used-in-gradle.module-template.yaml
+  - //sources/used-in-idea.module-template.yaml
 
 dependencies:
   - $libs.jetbrains.annotations # Needed to have @Nls applicable to type
-  - ../libraries/stdlib-extended
+  - //sources/libraries/stdlib-extended
 
 settings:
   jvm:

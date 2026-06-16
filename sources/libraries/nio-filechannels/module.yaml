@@ -3,10 +3,10 @@ product: jvm/lib
 description: Kotlin extensions for Java's `FileChannel`.
 
 apply:
-  - ../../common.module-template.yaml
-  - ../../used-in-gradle.module-template.yaml
-  - ../../used-in-idea.module-template.yaml
-  - ../../used-in-kotlin-notebook.module-template.yaml
+  - //sources/common.module-template.yaml
+  - //sources/used-in-gradle.module-template.yaml
+  - //sources/used-in-idea.module-template.yaml
+  - //sources/used-in-kotlin-notebook.module-template.yaml
 
 settings:
   jvm:

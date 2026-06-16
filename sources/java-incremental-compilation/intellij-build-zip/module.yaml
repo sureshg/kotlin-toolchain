@@ -6,8 +6,8 @@ description: |
   This module is required by the Java incremental compiler but not published as a library yet.
 
 apply:
-  - ../../common.module-template.yaml
-  - ../../used-in-jic.module-template.yaml
+  - //sources/common.module-template.yaml
+  - //sources/used-in-jic.module-template.yaml
 
 dependencies:
   - io.netty:netty-buffer:4.2.10.Final

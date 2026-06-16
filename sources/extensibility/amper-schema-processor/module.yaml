@@ -3,19 +3,19 @@ product: jvm/lib
 description: An executable processor that generates plugin descriptors from plugin sources.
 
 apply:
-  - ../../common.module-template.yaml
-  - ../uses-aa.module-template.yaml
+  - //sources/common.module-template.yaml
+  - //sources/extensibility/uses-aa.module-template.yaml
 
 settings:
   kotlin:
     serialization: json
 
 dependencies:
-  - ../../amper-telemetry
-  - ../amper-schema-processing
+  - //sources/amper-telemetry
+  - //sources/extensibility/amper-schema-processing
   - $libs.kotlin.analysis.api.standalone.for.ide
 
 test-dependencies:
-  - ../../test-base
-  - ../amper-extensibility-api
-  - ../amper-extensibility-sdk-stub: runtime-only
+  - //sources/test-base
+  - //sources/extensibility/amper-extensibility-api
+  - //sources/extensibility/amper-extensibility-sdk-stub: runtime-only

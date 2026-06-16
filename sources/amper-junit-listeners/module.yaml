@@ -3,8 +3,8 @@ product: jvm/lib
 description: JUnit listeners used by Amper test execution.
 
 apply:
-  - ../common.module-template.yaml
-  - ../used-in-user-tests.module-template.yaml
+  - //sources/common.module-template.yaml
+  - //sources/used-in-user-tests.module-template.yaml
 
 dependencies:
   - $libs.junit5.platform.engine: compile-only

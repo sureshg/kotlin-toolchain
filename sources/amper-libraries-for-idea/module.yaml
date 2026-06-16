@@ -4,24 +4,24 @@ product: jvm/lib
 description: Umbrella module to simplify distribution and update of Amper libraries used in the IntelliJ plugin.
 
 apply:
-  - ../used-in-idea.module-template.yaml
+  - //sources/used-in-idea.module-template.yaml
 
 dependencies:
-  - ../amper-build-info: exported
-  - ../amper-jdk-provisioning: exported
-  - ../amper-maven-plugin-download: exported
-  - ../amper-maven-plugins-compatibility: exported
-  - ../amper-problem-reporting: exported
-  - ../amper-project-templates: exported
-  - ../amper-telemetry: exported
-  - ../core-intellij: exported
-  - ../core: exported
-  - ../dependency-resolution: exported
-  - ../extensibility/amper-schema-processing: exported
-  - ../frontend-api: exported
-  - ../frontend/dr: exported
-  - ../frontend/schema: exported
-  - ../libraries/maven-central-configuration: exported
-  - ../libraries/maven-plugin-xml-parser: exported
-  - ../libraries/system-info: exported
-  - ../libraries/telemetry: exported
+  - //sources/amper-build-info: exported
+  - //sources/amper-jdk-provisioning: exported
+  - //sources/amper-maven-plugin-download: exported
+  - //sources/amper-maven-plugins-compatibility: exported
+  - //sources/amper-problem-reporting: exported
+  - //sources/amper-project-templates: exported
+  - //sources/amper-telemetry: exported
+  - //sources/core-intellij: exported
+  - //sources/core: exported
+  - //sources/dependency-resolution: exported
+  - //sources/extensibility/amper-schema-processing: exported
+  - //sources/frontend-api: exported
+  - //sources/frontend/dr: exported
+  - //sources/frontend/schema: exported
+  - //sources/libraries/maven-central-configuration: exported
+  - //sources/libraries/maven-plugin-xml-parser: exported
+  - //sources/libraries/system-info: exported
+  - //sources/libraries/telemetry: exported

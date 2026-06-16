@@ -1,7 +1,7 @@
 product: jvm/lib
 
 apply:
-  - ../../common.module-template.yaml
+  - //sources/common.module-template.yaml
 
 dependencies:
   - $libs.ktor.client.core

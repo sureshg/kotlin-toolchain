@@ -1,5 +1,5 @@
 apply:
-  - ./common.module-template.yaml
+  - //sources/common.module-template.yaml
 
 settings:
   jvm:

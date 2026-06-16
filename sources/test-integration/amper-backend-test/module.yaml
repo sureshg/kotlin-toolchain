@@ -3,21 +3,21 @@ product: jvm/lib
 description: Integration test utilities for the Amper backend.
 
 dependencies:
-  - ../../amper-cli
-  - ../../core
-  - ../../core-intellij
-  - ../../frontend-api
-  - ../../frontend/schema
+  - //sources/amper-cli
+  - //sources/core
+  - //sources/core-intellij
+  - //sources/frontend-api
+  - //sources/frontend/schema
 
 test-dependencies:
-  - ../../amper-telemetry
-  - ../../libraries/telemetry
-  - ../../test-base
+  - //sources/amper-telemetry
+  - //sources/libraries/telemetry
+  - //sources/test-base
   - $libs.gradle.toolingApi: compile-only
   - $libs.android.tools.ddmlib: compile-only
 
 apply:
-  - ../../common.module-template.yaml
+  - //sources/common.module-template.yaml
 
 tasks:
   testJvm:

@@ -3,7 +3,7 @@ product: jvm/lib
 description: Compose Hot Reload recompiler integration used by the Amper CLI.
 
 apply:
-  - ../common.module-template.yaml
+  - //sources/common.module-template.yaml
 
 settings:
   kotlin:
@@ -12,8 +12,8 @@ settings:
     enabled: true
 
 dependencies:
-  - ../libraries/async-processes
-  - ../libraries/system-info
+  - //sources/libraries/async-processes
+  - //sources/libraries/system-info
   - $libs.compose.hot.reload.devtools.api
   - $libs.kotlinx.coroutines.core
   - $libs.ktor.client

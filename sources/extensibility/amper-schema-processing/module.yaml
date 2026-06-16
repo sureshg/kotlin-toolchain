@@ -3,17 +3,17 @@ product: jvm/lib
 description: Utilities to extract the plugins' schemas from their Kotlin code.
 
 apply:
-  - ../../common.module-template.yaml
-  - ../../used-in-idea.module-template.yaml
-  - ../uses-aa.module-template.yaml
+  - //sources/common.module-template.yaml
+  - //sources/used-in-idea.module-template.yaml
+  - //sources/extensibility/uses-aa.module-template.yaml
 
 settings:
   kotlin:
     serialization: json
 
 dependencies:
-  - ../amper-extensibility-schema-model: exported
-  - ../../libraries/stdlib-extended
+  - //sources/extensibility/amper-extensibility-schema-model: exported
+  - //sources/libraries/stdlib-extended
 
   - $libs.kotlin.analysis.api.for.ide: exported
   - $libs.kotlin.compiler: exported
@@ -26,8 +26,8 @@ dependencies:
   - com.github.ben-manes.caffeine:caffeine:2.9.3: runtime-only  # required for AA but is missing in deps somehow.
 
 test-dependencies:
-  - ../amper-schema-processor
-  - ../amper-extensibility-api
-  - ../amper-extensibility-sdk-stub: runtime-only
-  - ../../test-base
+  - //sources/extensibility/amper-schema-processor
+  - //sources/extensibility/amper-extensibility-api
+  - //sources/extensibility/amper-extensibility-sdk-stub: runtime-only
+  - //sources/test-base
   - $libs.kotlin.poet

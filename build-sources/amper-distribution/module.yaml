@@ -11,16 +11,16 @@ description: |
   It uploads the archive to our Maven repository or to the local repository (depending on the task that we call).
 
 apply:
-  - ../../sources/common.module-template.yaml
+  - //sources/common.module-template.yaml
 
 pluginInfo:
   settingsClass: DistributionSettings
 
 dependencies:
-  - ../../sources/amper-build-info
-  - ../../sources/amper-maven-publish
-  - ../../sources/amper-wrapper
-  - ../../sources/libraries/stdlib-extended
+  - //sources/amper-build-info
+  - //sources/amper-maven-publish
+  - //sources/amper-wrapper
+  - //sources/libraries/stdlib-extended
   - $libs.ktor.client
   - $libs.ktor.client.cio
   - $libs.apacheCommons.compress

@@ -1,19 +1,19 @@
 product: jvm/lib
 
 apply:
-  - ../common.module-template.yaml
-  - ../used-in-gradle.module-template.yaml
-  - ../used-in-idea.module-template.yaml
+  - //sources/common.module-template.yaml
+  - //sources/used-in-gradle.module-template.yaml
+  - //sources/used-in-idea.module-template.yaml
 
 dependencies:
-  - ../amper-build-info
-  - ../amper-telemetry
-  - ../libraries/concurrency
-  - ../libraries/nio-filechannels
-  - ../libraries/stdlib-extended
-  - ../libraries/system-info
-  - ../libraries/telemetry
-  - ../libraries/maven-central-configuration
+  - //sources/amper-build-info
+  - //sources/amper-telemetry
+  - //sources/libraries/concurrency
+  - //sources/libraries/nio-filechannels
+  - //sources/libraries/stdlib-extended
+  - //sources/libraries/system-info
+  - //sources/libraries/telemetry
+  - //sources/libraries/maven-central-configuration
   - $libs.kotlinx.coroutines.core
   - $libs.apacheCommons.compress
   - $libs.slf4j.api

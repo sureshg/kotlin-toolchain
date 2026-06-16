@@ -8,7 +8,7 @@ description: |
   plugin sources.
 
 apply:
-  - ../../common.module-template.yaml
+  - //sources/common.module-template.yaml
 
 dependencies:
   - org.ow2.asm:asm:9.7.1

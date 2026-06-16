@@ -13,7 +13,7 @@ description: |
   No dependencies on any amper modules should be here.
 
 apply:
-  - ../../common.module-template.yaml
+  - //sources/common.module-template.yaml
 
 dependencies:
   # WARNING: No dependencies on amper-specific modules are permitted here!

@@ -3,15 +3,15 @@ product: jvm/lib
 description: Java incremental compilation implementation, mostly copy-pasted from IntelliJ sources.
 
 apply:
-  - ../../common.module-template.yaml
-  - ../../used-in-jic.module-template.yaml
+  - //sources/common.module-template.yaml
+  - //sources/used-in-jic.module-template.yaml
 
 repositories:
   - id: ijSnapshots
     url: https://www.jetbrains.com/intellij-repository/snapshots
 
 dependencies:
-  - ../intellij-build-zip
+  - //sources/java-incremental-compilation/intellij-build-zip
 
   - $libs.kotlinx.coroutines.core
   - $libs.opentelemetry.api

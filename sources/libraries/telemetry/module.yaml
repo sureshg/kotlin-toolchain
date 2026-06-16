@@ -3,11 +3,11 @@ product: jvm/lib
 description: Kotlin extensions and coroutines integration for OpenTelemetry.
 
 apply:
-  - ../../common.module-template.yaml
-  - ../../used-in-gradle.module-template.yaml
-  - ../../used-in-idea.module-template.yaml
-  - ../../used-in-jic.module-template.yaml
-  - ../../used-in-kotlin-notebook.module-template.yaml
+  - //sources/common.module-template.yaml
+  - //sources/used-in-gradle.module-template.yaml
+  - //sources/used-in-idea.module-template.yaml
+  - //sources/used-in-jic.module-template.yaml
+  - //sources/used-in-kotlin-notebook.module-template.yaml
 
 dependencies:
   - $libs.kotlinx.coroutines.core: exported # for CoroutineScope in the API

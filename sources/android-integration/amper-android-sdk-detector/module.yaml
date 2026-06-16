@@ -3,13 +3,13 @@ product: jvm/lib
 description: Android SDK discovery utilities.
 
 apply:
-  - ../../common.module-template.yaml
-  - ../../used-in-gradle.module-template.yaml
-  - ../../used-in-idea.module-template.yaml
+  - //sources/common.module-template.yaml
+  - //sources/used-in-gradle.module-template.yaml
+  - //sources/used-in-idea.module-template.yaml
 
 dependencies:
-  - ../../core
-  - ../../libraries/system-info
+  - //sources/core
+  - //sources/libraries/system-info
 
 settings:
   jvm:

@@ -3,12 +3,12 @@ product: jvm/lib
 description: PSI support for TOML files, copied from IntelliJ.
 
 apply:
-  - ../../../common.module-template.yaml
-  - ../../../used-in-gradle.module-template.yaml
-  - ../../../used-in-idea.module-template.yaml
+  - //sources/common.module-template.yaml
+  - //sources/used-in-gradle.module-template.yaml
+  - //sources/used-in-idea.module-template.yaml
 
 dependencies:
-  - ../parserutil-stub
+  - //sources/frontend/plain/parserutil-stub
 
 settings:
   jvm:

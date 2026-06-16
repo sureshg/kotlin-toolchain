@@ -3,41 +3,41 @@ product: jvm/app
 description: The Amper command-line application.
 
 apply:
-  - ../common.module-template.yaml
+  - //sources/common.module-template.yaml
 
 repositories:
   - id: gradle-libs
     url: https://repo.gradle.org/gradle/libs-releases
 
 dependencies:
-  - ../amper-build-info
-  - ../amper-crypto
-  - ../amper-jdk-provisioning
-  - ../amper-maven-converter
-  - ../amper-maven-publish
-  - ../amper-project-templates
-  - ../amper-telemetry
-  - ../amper-wrapper
-  - ../core
-  - ../core-intellij
-  - ../frontend-api
-  - ../frontend/schema
-  - ../frontend/dr
-  - ../amper-compose-hot-reload-recompiler-extension
-  - ../libraries/async-processes
-  - ../libraries/compose-resources
-  - ../libraries/concurrency
-  - ../libraries/incremental-cache
-  - ../libraries/maven-central-configuration
-  - ../libraries/serialization-extended
-  - ../libraries/stdlib-extended
-  - ../libraries/system-info
-  - ../libraries/telemetry
-  - ../libraries/xcode-model-ext
-  - ../android-integration/amper-android-runner
-  - ../android-integration/amper-android-sdk-detector
-  - ../java-incremental-compilation/amper-jic-api
-  - ../amper-maven-plugins-compatibility
+  - //sources/amper-build-info
+  - //sources/amper-crypto
+  - //sources/amper-jdk-provisioning
+  - //sources/amper-maven-converter
+  - //sources/amper-maven-publish
+  - //sources/amper-project-templates
+  - //sources/amper-telemetry
+  - //sources/amper-wrapper
+  - //sources/core
+  - //sources/core-intellij
+  - //sources/frontend-api
+  - //sources/frontend/schema
+  - //sources/frontend/dr
+  - //sources/amper-compose-hot-reload-recompiler-extension
+  - //sources/libraries/async-processes
+  - //sources/libraries/compose-resources
+  - //sources/libraries/concurrency
+  - //sources/libraries/incremental-cache
+  - //sources/libraries/maven-central-configuration
+  - //sources/libraries/serialization-extended
+  - //sources/libraries/stdlib-extended
+  - //sources/libraries/system-info
+  - //sources/libraries/telemetry
+  - //sources/libraries/xcode-model-ext
+  - //sources/android-integration/amper-android-runner
+  - //sources/android-integration/amper-android-sdk-detector
+  - //sources/java-incremental-compilation/amper-jic-api
+  - //sources/amper-maven-plugins-compatibility
   - $libs.bouncycastle.bcprov # for keystore generation
   - $libs.bouncycastle.bcpkix # for keystore generation
   - $libs.intellij.amper.xcodemodel
@@ -86,27 +86,27 @@ dependencies:
   - $libs.maven.plugin.annotations
   - $libs.maven.site.plugin
   - com.google.code.findbugs:jsr305:3.0.2
-  - ../libraries/maven-central-portal-publisher-client
+  - //sources/libraries/maven-central-portal-publisher-client
 
 test-dependencies:
-  - ../test-base
+  - //sources/test-base
 
 plugins:
   amper-distribution:
     enabled: true
     extraClasspaths:
-      "plugins-processor": [ ../extensibility/amper-schema-processor ]
-      "recompiler-extension": [ ../amper-compose-hot-reload-recompiler-extension ]
-      "amper-jic-runner": [ ../java-incremental-compilation/amper-jic-runner ]
+      "plugins-processor": [ //sources/extensibility/amper-schema-processor ]
+      "recompiler-extension": [ //sources/amper-compose-hot-reload-recompiler-extension ]
+      "amper-jic-runner": [ //sources/java-incremental-compilation/amper-jic-runner ]
       "kotlin-build-tools-compat": [ $libs.kotlin.buildToolsCompat ]
     extraFilteredClasspaths:
       "extensibility-api":
         classpath:
-          - ../extensibility/amper-extensibility-api
-          - ../extensibility/amper-extensibility-sdk-stub
+          - //sources/extensibility/amper-extensibility-api
+          - //sources/extensibility/amper-extensibility-sdk-stub
         includeIfFileNameContains: [ amper-extensibility ]
     embedClasspathAsResources:
-      classpath: [ ../amper-junit-listeners ]
+      classpath: [ //sources/amper-junit-listeners ]
       resourceDirName: "junit-listeners"
 
 settings:

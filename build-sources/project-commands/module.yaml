@@ -7,13 +7,13 @@ description: |
   register those commands. It's a bit strange, but we don't have real project-level plugins or commands support yet.
 
 apply:
-  - ../../sources/common.module-template.yaml
+  - //sources/common.module-template.yaml
 
 pluginInfo:
   settingsClass: ProjectCommandsSettings
 
 dependencies:
-  - ../../sources/libraries/async-processes
+  - //sources/libraries/async-processes
   - $libs.kotlinx.coroutines.core
 
 plugins:

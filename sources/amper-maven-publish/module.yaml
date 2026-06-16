@@ -3,13 +3,13 @@ product: jvm/lib
 description: Maven publication support for Amper projects.
 
 apply:
-  - ../common.module-template.yaml
+  - //sources/common.module-template.yaml
 
 dependencies:
-  - ../dependency-resolution: exported
-  - ../frontend-api: exported
-  - ../frontend/dr
-  - ../libraries/maven-central-configuration
+  - //sources/dependency-resolution: exported
+  - //sources/frontend-api: exported
+  - //sources/frontend/dr
+  - //sources/libraries/maven-central-configuration
   - $libs.maven.core: exported
   - $libs.maven.resolver.connectorBasic: runtime-only
   - $libs.maven.resolver.transportHttp: runtime-only

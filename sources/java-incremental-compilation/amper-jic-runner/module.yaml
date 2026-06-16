@@ -6,18 +6,18 @@ description: |
   It runs the compilation in-process, so it's expected to be run as a separate process itself (using a JDK as runtime).
 
 apply:
-  - ../../common.module-template.yaml
-  - ../../used-in-jic.module-template.yaml
+  - //sources/common.module-template.yaml
+  - //sources/used-in-jic.module-template.yaml
 
 repositories:
   - id: ijSnapshots
     url: https://www.jetbrains.com/intellij-repository/snapshots
 
 dependencies:
-  - ../../amper-build-info
-  - ../../amper-telemetry
-  - ../amper-jic-api
-  - ../jvm-inc-builder
+  - //sources/amper-build-info
+  - //sources/amper-telemetry
+  - //sources/java-incremental-compilation/amper-jic-api
+  - //sources/java-incremental-compilation/jvm-inc-builder
 
   - $libs.kotlinx.coroutines.core
   - $libs.slf4j.api

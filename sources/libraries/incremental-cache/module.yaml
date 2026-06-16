@@ -3,14 +3,14 @@ product: jvm/lib
 description: Incremental cache abstractions and utilities.
 
 apply:
-  - ../../common.module-template.yaml
-  - ../../used-in-idea.module-template.yaml
-  - ../../used-in-kotlin-notebook.module-template.yaml
+  - //sources/common.module-template.yaml
+  - //sources/used-in-idea.module-template.yaml
+  - //sources/used-in-kotlin-notebook.module-template.yaml
 
 dependencies:
-  - ../concurrency
-  - ../nio-filechannels
-  - ../telemetry: exported # OpenTelemetry is in the API
+  - //sources/libraries/concurrency
+  - //sources/libraries/nio-filechannels
+  - //sources/libraries/telemetry: exported # OpenTelemetry is in the API
   - $libs.kotlinx.coroutines.core
   - $libs.slf4j.api
 

@@ -3,23 +3,23 @@ product: jvm/lib
 description: Amper-aware dependency resolution library, based on the Amper-agnostic resolver.
 
 apply:
-  - ../../common.module-template.yaml
-  - ../../used-in-idea.module-template.yaml
+  - //sources/common.module-template.yaml
+  - //sources/used-in-idea.module-template.yaml
 
 test-dependencies:
-  - ../../test-base
+  - //sources/test-base
   - org.reflections:reflections:0.10.2
   - $kotlin.reflect
-  - ../../amper-build-info
+  - //sources/amper-build-info
 
 dependencies:
-  - ../schema
-  - ../../amper-telemetry
-  - ../../core
-  - ../../dependency-resolution: exported
-  - ../../libraries/telemetry
-  - ../../libraries/incremental-cache
-  - ../../libraries/maven-central-configuration
+  - //sources/frontend/schema
+  - //sources/amper-telemetry
+  - //sources/core
+  - //sources/dependency-resolution: exported
+  - //sources/libraries/telemetry
+  - //sources/libraries/incremental-cache
+  - //sources/libraries/maven-central-configuration
   - $libs.slf4j.api
   - $libs.intellij.platform.util
 

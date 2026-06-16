@@ -3,15 +3,15 @@ product: jvm/lib
 description: Downloads and loads metadata of Maven plugins.
 
 apply:
-  - ../common.module-template.yaml
-  - ../used-in-idea.module-template.yaml
+  - //sources/common.module-template.yaml
+  - //sources/used-in-idea.module-template.yaml
 
 dependencies:
-  - ../dependency-resolution
-  - ../frontend/schema
-  - ../frontend/dr
-  - ../amper-build-info
-  - ../amper-maven-plugin-download
-  - ../libraries/maven-plugin-xml-parser: exported
+  - //sources/dependency-resolution
+  - //sources/frontend/schema
+  - //sources/frontend/dr
+  - //sources/amper-build-info
+  - //sources/amper-maven-plugin-download
+  - //sources/libraries/maven-plugin-xml-parser: exported
   - $libs.xmlutil.serialization
   - $libs.slf4j.api

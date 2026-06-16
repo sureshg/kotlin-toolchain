@@ -3,13 +3,13 @@ product: jvm/lib
 description: Data model to represent dynamic schemas brought by user-defined plugins.
 
 apply:
-  - ../../common.module-template.yaml
-  - ../../used-in-gradle.module-template.yaml
-  - ../../used-in-idea.module-template.yaml
+  - //sources/common.module-template.yaml
+  - //sources/used-in-gradle.module-template.yaml
+  - //sources/used-in-idea.module-template.yaml
 
 dependencies:
-  - ../../libraries/serialization-extended
-  - ../../amper-problem-reporting: exported
+  - //sources/libraries/serialization-extended
+  - //sources/amper-problem-reporting: exported
 
 settings:
   kotlin:

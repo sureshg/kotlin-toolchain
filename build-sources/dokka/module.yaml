@@ -9,7 +9,7 @@ description: |
   the [official docs](https://kotlinlang.org/docs/dokka-cli.html#json-configuration).
 
 apply:
-  - ../../sources/common.module-template.yaml
+  - //sources/common.module-template.yaml
 
 pluginInfo:
   settingsClass: org.jetbrains.amper.plugins.dokka.DokkaSettings

@@ -8,24 +8,24 @@ product: jvm/lib
 description: Dependency resolution engine for Maven dependencies with Kotlin Multiplatform support.
 
 apply:
-  - ../common.module-template.yaml
-  - ../used-in-idea.module-template.yaml
-  - ../used-in-kotlin-notebook.module-template.yaml
+  - //sources/common.module-template.yaml
+  - //sources/used-in-idea.module-template.yaml
+  - //sources/used-in-kotlin-notebook.module-template.yaml
 
 dependencies:
-  - ../libraries/concurrency
-  - ../libraries/nio-filechannels
-  - ../libraries/maven-central-configuration
-  - ../libraries/system-info
-  - ../libraries/telemetry: exported
-  - ../libraries/incremental-cache: exported
+  - //sources/libraries/concurrency
+  - //sources/libraries/nio-filechannels
+  - //sources/libraries/maven-central-configuration
+  - //sources/libraries/system-info
+  - //sources/libraries/telemetry: exported
+  - //sources/libraries/incremental-cache: exported
   - $libs.xmlutil.serialization
   - $libs.maven.artifact
   - $libs.kotlinx.coroutines.core
   - $libs.slf4j.api
 
 test-dependencies:
-  - ../test-base
+  - //sources/test-base
   - $libs.opentelemetry.sdkTesting
   - $libs.system.stubs.jupiter
 

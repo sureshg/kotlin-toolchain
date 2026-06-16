@@ -3,20 +3,20 @@ product: jvm/lib
 description: A tool to convert Maven projects into Amper projects. The entrypoint is the `MavenProjectConvertor` class.
 
 apply:
-  - ../common.module-template.yaml
+  - //sources/common.module-template.yaml
 
 dependencies:
-  - ../amper-maven-plugin-download
-  - ../amper-telemetry
-  - ../core
-  - ../dependency-resolution
-  - ../frontend-api
-  - ../frontend/dr
-  - ../frontend/schema
-  - ../libraries/incremental-cache
-  - ../libraries/maven-central-configuration
-  - ../libraries/maven-plugin-xml-parser
-  - ../libraries/stdlib-extended
+  - //sources/amper-maven-plugin-download
+  - //sources/amper-telemetry
+  - //sources/core
+  - //sources/dependency-resolution
+  - //sources/frontend-api
+  - //sources/frontend/dr
+  - //sources/frontend/schema
+  - //sources/libraries/incremental-cache
+  - //sources/libraries/maven-central-configuration
+  - //sources/libraries/maven-plugin-xml-parser
+  - //sources/libraries/stdlib-extended
   - $libs.maven.compat: runtime-only
   - $libs.maven.core
   - $libs.slf4j.api

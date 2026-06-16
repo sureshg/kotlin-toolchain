@@ -3,9 +3,9 @@ product: jvm/lib
 description: Amper model parser – the real Amper frontend. It contains implementations of the frontend-api.
 
 apply:
-  - ../../common.module-template.yaml
-  - ../../used-in-gradle.module-template.yaml
-  - ../../used-in-idea.module-template.yaml
+  - //sources/common.module-template.yaml
+  - //sources/used-in-gradle.module-template.yaml
+  - //sources/used-in-idea.module-template.yaml
 
 settings:
   kotlin:
@@ -21,22 +21,22 @@ plugins:
   amper-schema-generator: enabled
 
 dependencies:
-  - ../../amper-build-info
-  - ../../amper-problem-reporting: exported
-  - ../../amper-telemetry
-  - ../../android-integration/amper-android-sdk-detector
-  - ../../frontend-api: exported
-  - ../../extensibility/amper-extensibility-schema-model: exported
-  - ../../core
-  - ../../frontend/plain/toml-psi
-  - ../../frontend/plain/yaml-psi
-  - ../../frontend/plain/amper-psi
-  - ../../libraries/maven-central-configuration
-  - ../../libraries/maven-plugin-xml-parser: exported
-  - ../../libraries/stdlib-extended
-  - ../../libraries/system-info
-  - ../../libraries/telemetry
-  - ../../core-intellij
+  - //sources/amper-build-info
+  - //sources/amper-problem-reporting: exported
+  - //sources/amper-telemetry
+  - //sources/android-integration/amper-android-sdk-detector
+  - //sources/frontend-api: exported
+  - //sources/extensibility/amper-extensibility-schema-model: exported
+  - //sources/core
+  - //sources/frontend/plain/toml-psi
+  - //sources/frontend/plain/yaml-psi
+  - //sources/frontend/plain/amper-psi
+  - //sources/libraries/maven-central-configuration
+  - //sources/libraries/maven-plugin-xml-parser: exported
+  - //sources/libraries/stdlib-extended
+  - //sources/libraries/system-info
+  - //sources/libraries/telemetry
+  - //sources/core-intellij
   - $libs.maven.artifact
   - $libs.intellij.platform.core: exported # because we expose Project in public API
   - $libs.intellij.platform.coreImpl
@@ -45,5 +45,5 @@ dependencies:
   - $libs.xmlutil.serialization
 
 test-dependencies:
-  - ../../test-base
+  - //sources/test-base
   - $libs.junit.jupiter.params

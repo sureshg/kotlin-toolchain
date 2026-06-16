@@ -3,11 +3,11 @@ product: jvm/lib
 description: Amper CLI tests in mobile scenarios.
 
 test-dependencies:
-  - ../../test-base
+  - //sources/test-base
   - $libs.kotlinx.coroutines.test
 
 apply:
-  - ../../common.module-template.yaml
+  - //sources/common.module-template.yaml
 
 tasks:
   testJvm:

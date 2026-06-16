@@ -1,7 +1,7 @@
 product: jvm/app
 
 apply:
-  - ../../sources/common.module-template.yaml
+  - //sources/common.module-template.yaml
 
 plugins:
   protobuf:

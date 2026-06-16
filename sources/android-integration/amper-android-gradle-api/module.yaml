@@ -3,12 +3,12 @@ product: jvm/lib
 description: Data model for communication between Amper and delegated Android Gradle builds.
 
 apply:
-  - ../../common.module-template.yaml
-  - ../../used-in-gradle.module-template.yaml
+  - //sources/common.module-template.yaml
+  - //sources/used-in-gradle.module-template.yaml
 
 dependencies:
-  - ../../frontend-api
-  - ../../libraries/serialization-extended
+  - //sources/frontend-api
+  - //sources/libraries/serialization-extended
 
 settings:
   kotlin:

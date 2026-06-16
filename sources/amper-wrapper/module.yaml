@@ -3,9 +3,9 @@ product: jvm/lib
 description: Amper wrapper scripts generator.
 
 apply:
-  - ../common.module-template.yaml
+  - //sources/common.module-template.yaml
 
 dependencies:
-  - ../libraries/system-info
-  - ../libraries/stdlib-extended
+  - //sources/libraries/system-info
+  - //sources/libraries/stdlib-extended
   - $libs.slf4j.api

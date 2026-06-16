@@ -5,10 +5,10 @@ description: |
   This can be used by the CLI and IDE to list the available templates.
 
 apply:
-  - ../../sources/common.module-template.yaml
+  - //sources/common.module-template.yaml
 
 dependencies:
-  - ../../sources/amper-project-templates/amper-project-template-resources
+  - //sources/amper-project-templates/amper-project-template-resources
 
 settings:
   kotlin:
