@@ -13,7 +13,7 @@ Dependencies are declared in the `dependencies` list of the `module.yaml` file:
 
 ```yaml
 dependencies:
-  - ./my-other-module #(1)!
+  - //my-other-module #(1)!
   - org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1 #(2)!
   - $libs.apache.commons.lang3 #(3)!
   - $kotlin.reflect #(4)!
@@ -27,8 +27,8 @@ dependencies:
 
 ### Module dependencies
 
-To depend on another module of your project, use the path to that module, relative to the current module's root
-directory. The path must start either with `./` or `../`.
+To depend on another module of your project, use the [path](basics.md#path-notation) to that module.
+Such a path usually starts with `//` and is relative to the project root directory (where `project.yaml` is located).
 
 For example, here the `app` module declares a dependency on the `nested-lib` and `ui/utils` modules:
 
@@ -38,8 +38,8 @@ For example, here the `app` module declares a dependency on the `nested-lib` and
 product: jvm/app
 
 dependencies:
-- ./nested-lib
-- ../ui/utils
+- //app/nested-lib
+- //ui/utils
 ```
 
 ```yaml title="project.yaml"
@@ -72,6 +72,16 @@ root/
 
     Dependencies between modules are only allowed within the project scope.
     That is, they must be listed in the `project.yaml` file and cannot be outside the project root directory.
+
+??? info "Using relative paths for dependencies (not recommended)"
+    If there is a need to use a relative path to depend on a module,
+    explicit path notation is required, i.e., the path has to start with the dot (`.`).
+    For example: `./my-nested-module` instead of `my-nested-module`.
+    The latter would be recognized as an external dependency.
+    Sibling or parent paths, e.g., `../my-sibling-module` are also supported.
+
+    However it's preferrable to always use `//` paths for module dependencies.
+    _Using relative paths there may be deprecated and removed in the future._
 
 ### External Maven dependencies
 
@@ -117,7 +127,7 @@ By default, the scope is `all`. You can restrict a dependency's scope as follows
     ```yaml
     dependencies:
       - io.ktor:ktor-client-core:2.2.0: compile-only  
-      - ../ui/utils: runtime-only
+      - //ui/utils: runtime-only
     ```
 
 === "Long form"
@@ -126,7 +136,7 @@ By default, the scope is `all`. You can restrict a dependency's scope as follows
     dependencies:
       - io.ktor:ktor-client-core:2.2.0:
           scope: compile-only 
-      - ../ui/utils:
+      - //ui/utils:
           scope: runtime-only 
     ```
 
@@ -154,10 +164,10 @@ dependencies:
 
 ```yaml title="app/module.yaml"
 dependencies:
-  - ../lib #(1)! 
+  - //lib #(1)! 
 ```
 
-1. The `../lib` dependency is added to the compilation and runtime of the `app` module (scope `all` by default). It
+1. The `//lib` dependency is added to the compilation and runtime of the `app` module (scope `all` by default). It
    brings the transitive dependency on `ktor-client-core` at runtime, but doesn't expose it at compile time.
 </div>
 
@@ -169,7 +179,7 @@ To make a dependency accessible to all dependent modules during their compilatio
     ```yaml
     dependencies:
       - io.ktor:ktor-client-core:2.2.0: exported
-      - ../ui/utils: exported
+      - //ui/utils: exported
     ```
 
 === "Long form"
@@ -178,7 +188,7 @@ To make a dependency accessible to all dependent modules during their compilatio
     dependencies:
       - io.ktor:ktor-client-core:2.2.0:
           exported: true 
-      - ../ui/utils:
+      - //ui/utils:
           exported: true 
     ```
 

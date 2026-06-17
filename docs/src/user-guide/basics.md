@@ -72,21 +72,21 @@ If there are multiple modules, the `project.yaml` file specifies the list of mod
 <div class="annotate">
 ```yaml title="project.yaml"
 modules:
-  - ./app
-  - ./libs/lib1 #(1)!
-  - ./libs/lib2
+  - app
+  - libs/lib1 #(1)!
+  - libs/lib2
 ```
 
 ```yaml title="app/module.yaml"
 product: jvm/app
 
 dependencies:
-  - ./libs/lib1
-  - ./libs/lib2
+  - //libs/lib1
+  - //libs/lib2
 ```
 </div>
 
-1.   It is also possible to use globs to list multiple modules at once (e.g., `./libs/*`), although we encourage 
+1.   It is also possible to use globs to list multiple modules at once (e.g., `libs/*`), although we encourage 
      listing them explicitly. See details in the [project file reference](../reference/project.md#modules).
 
 </div>
@@ -112,7 +112,7 @@ See the [Module layout](#module-layout) section for more details about what goes
 
     ```yaml title="project.yaml"
     modules:  # The root module is included implicitly
-      - ./lib
+      - lib
     ```
 
 ## Module layout
@@ -281,3 +281,19 @@ Check out the [Reference](../reference/module.md#settings-and-test-settings) pag
 
 See the [Multiplatform modules](multiplatform.md) section for more details about how multiple settings sections 
 interact in multiplatform modules.
+
+### Path notation
+
+To refer to a file or directory in the project, use `//`-prefixed paths, for example `//libs/utils` or `//LICENSE.txt`.
+In this notation paths are resolved from the project root directory,
+where the `project.yaml` (or the single `module.yaml`) is located. 
+
+This works for module dependencies, module templates, and in other places, where a `path` value is expected, and it is the
+preferred way of working with paths.
+
+Simple relative paths are also supported, for example `./foo.txt`, `resources/picture.jpg` or `../bar.bin`.
+Such paths are resolved against **the directory containing the `.yaml` file where the path is specified**.
+
+!!! note "Tip: Prefer `//` over `../`"
+    It's recommended to use `//` path notation over relative `../` paths in most cases.
+    This way moving the `yaml` file will not affect the paths within. 

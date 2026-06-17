@@ -97,7 +97,7 @@ To use Kotlin code from Swift, one must import the `KotlinModules` framework.
 This framework is built from:
 
 1. the code inside the `ios/app` module itself
-2. the modules that `ios/app` module depends on (e.g. `- ../shared`)
+2. the modules that `ios/app` module depends on (e.g. `- //shared`)
 3. all the external dependencies, transitively
 
 !!! note

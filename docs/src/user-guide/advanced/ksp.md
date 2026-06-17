@@ -113,7 +113,7 @@ module:
 product: jvm/lib
 
 dependencies:
-  - ../my-processor-annotations
+  - //my-processor-annotations
   - com.google.devtools.ksp:symbol-processing-api:2.0.21-1.0.25: compile-only
 ```
 
@@ -123,13 +123,13 @@ The consumer module adds a regular dependency on the annotations module, and a r
 product: jvm/app
 
 dependencies:
-  - ../my-processor-annotations # to be able to annotate the consumer code
+  - //my-processor-annotations # to be able to annotate the consumer code
 
 settings:
   kotlin:
     ksp:
       processors:
-        - ../my-processor # path to the module implementing the KSP processor
+        - //my-processor # path to the module implementing the KSP processor
 ```
 
 For more information about how to write your own processor, check out

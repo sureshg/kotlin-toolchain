@@ -52,7 +52,7 @@ for details.
 
 ### Dependencies
 
-- **Reactor module dependencies** are converted to relative path dependencies (e.g., `- ../my-lib`)
+- **Reactor module dependencies** are converted to module dependencies (using the `//` notation, e.g., `- //my-lib`)
 - **External dependencies** keep their Maven coordinates (`group:artifact:version`)
 - **Parent POM BOMs** are automatically imported as `bom:` dependencies (including their transitive parents in order
   from the most root to the most nested)

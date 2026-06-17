@@ -90,7 +90,7 @@ Install the [Kotlin Toolchain plugin](https://plugins.jetbrains.com/plugin/31850
         product: ios/app
 
         dependencies:
-          - ../shared
+          - //shared
 
         settings:
           compose: enabled
@@ -102,7 +102,7 @@ Install the [Kotlin Toolchain plugin](https://plugins.jetbrains.com/plugin/31850
         product: android/app
 
         dependencies:
-          - ../shared
+          - //shared
 
         settings:
           compose: enabled
@@ -114,7 +114,7 @@ Install the [Kotlin Toolchain plugin](https://plugins.jetbrains.com/plugin/31850
         product: jvm/app
 
         dependencies:
-          - ../shared
+          - //shared
 
         settings:
           compose: enabled

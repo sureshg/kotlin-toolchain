@@ -31,7 +31,7 @@ dependencies@jvmAndAndroid:
 The `apply` section lists the templates applied to the module.
 Read more in the [Module templates](../user-guide/templates.md) section.
 
-Use `- ./<relative path>` or `- ../<relative path>` notation, where the `<relative path>` points at a template file.
+Use `- //<path>` to point at a template file. More on [`//`-notation](../user-guide/basics.md#path-notation).
 
 Example:
 
@@ -40,7 +40,7 @@ Example:
 product: jvm/app
 
 apply:
-  - ../common.module-template.yaml
+  - //common.module-template.yaml
 ```
 
 ## `dependencies` and `test-dependencies`
@@ -54,9 +54,9 @@ Read more in the [Testing](../user-guide/testing.md) section.
 
 Supported dependency types:
 
-| Notation                                         | Description                                                                                                                |
-|--------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------|
-| `- ./<relative path>`<br/>`- ../<relative path>` | Dependency on [another module](../user-guide/dependencies.md#module-dependencies) in the codebase.                         |
+| Notation                                                 | Description                                                                                                                |
+|----------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------|
+| `- //<project path>`                             | Dependency on [another module](../user-guide/dependencies.md#module-dependencies) in the codebase.                         |
 | `- <group ID>:<artifact ID>:<version>`           | Dependency on [a Kotlin or Java library](../user-guide/dependencies.md#external-maven-dependencies) in a Maven repository. |
 | `- $<catalog.key>`                               | Dependency from [a dependency catalog](../user-guide/dependencies.md#library-catalogs).                                    |
 | `- bom: <group ID>:<artifact ID>:<version>`      | Dependency on [a BOM](../user-guide/dependencies.md#using-a-maven-bom).                                                    |
@@ -84,7 +84,7 @@ Examples:
 dependencies:
   - io.ktor:ktor-client-core:2.2.0                   # Kotlin or Java dependency 
   - org.postgresql:postgresql:42.3.3: runtime-only
-  - ../common-types: exported                        # Dependency on another module in the codebase 
+  - //common-types: exported                         # Dependency on another module in the codebase 
   - $compose.foundation                              # Dependency from the 'compose' catalog
   - bom: io.ktor:ktor-bom:2.2.0                      # Importing BOM 
   - io.ktor:ktor-serialization-kotlinx-json          # Kotlin or Java dependency with a version resolved from BOM
@@ -94,7 +94,7 @@ dependencies:
 # Full form for the dependency attributes
 dependencies:
   - io.ktor:ktor-client-core:2.2.0
-  - ../common-types:
+  - //common-types:
       exported: true
       scope: all
   - org.postgresql:postgresql:42.3.3:

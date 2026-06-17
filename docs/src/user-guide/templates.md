@@ -9,16 +9,17 @@ Typical examples could be a testing framework used in all modules or a Kotlin la
 The Kotlin Toolchain offers a way to extract whole sections or their parts into reusable template files. 
 These files are named `<name>.module-template.yaml` and have the same structure as `module.yaml` files.
 
-A templates is applied to a `module.yaml` file by it to the `apply:` section:
+A template is applied to a `module.yaml` file by listing it in the `apply:` section.
+The [path](basics.md#path-notation) to a template usually starts with `//` and is relative to the project root directory (where `project.yaml` is located).
 
 ```yaml title="module.yaml"
 product: jvm/app
 
 apply: 
-  - ../common.module-template.yaml
+  - //common.module-template.yaml
 ```
 
-```yaml title="../common.module-template.yaml"
+```yaml title="//common.module-template.yaml"
 test-dependencies:
   - org.jetbrains.kotlin:kotlin-test:1.8.10
 
@@ -43,7 +44,7 @@ Settings and dependencies from the `module.yaml` file are applied last. The posi
 
 ```yaml title="common.module-template.yaml"
 dependencies:
-  - ../shared
+  - //shared
 
 settings:
   kotlin:
@@ -55,10 +56,10 @@ settings:
 product: jvm/app
 
 apply:
-  - ./common.module-template.yaml
+  - //common.module-template.yaml
 
 dependencies:
-  - ../jvm-util
+  - //jvm-util
 
 settings:
   kotlin:
@@ -73,8 +74,8 @@ After applying the template the resulting effective module is:
 product: jvm/app
 
 dependencies:  # lists appended
-  - ../shared
-  - ../jvm-util
+  - //shared
+  - //jvm-util
 
 settings:  # objects merged
   kotlin:

@@ -18,8 +18,8 @@ Example:
 ```yaml
 # include the `app` and `lib1` modules explicitly:
 modules:
-  - ./app
-  - ./libs/lib1
+  - app
+  - libs/lib1
 ```
 
 You can also use [glob patterns](https://en.wikipedia.org/wiki/Glob_(programming)) to include multiple module
@@ -28,7 +28,7 @@ directories at once. Only directories that contain a `module.yaml` file are take
 ```yaml
 # include all direct subfolders in the `plugins` dir that contain `module.yaml` files:
 modules:
-  - ./plugins/*
+  - plugins/*
 ```
 
 Globs may contain the following special characters:
@@ -39,6 +39,10 @@ Globs may contain the following special characters:
 
 !!! failure "Using `**` to recursively match directories at multiple depth levels is not supported."
 
+!!! info "No `//` in `modules:`"
+    Values in the `modules` list are path globs relative to the project root.
+    Prefixing them with `//` is neither supported nor necessary.
+
 ## `plugins`
 
 The `plugins` section lists plugin dependencies that should be made available to project modules.
@@ -48,8 +52,8 @@ the plugin).
 Example:
 ```yaml
 plugins:
-  - ./my-plugin
-  - ./plugins/my-another-plugin
+  - //my-plugin
+  - //plugins/my-another-plugin
 ```
 
 !!! info

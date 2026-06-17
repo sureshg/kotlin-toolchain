@@ -209,29 +209,29 @@ product:
   platforms: [android, iosArm64, iosSimulatorArm64]
   
 dependencies:
-  - ../foo
+  - //foo
 dependencies@ios:
-  - ../bar
+  - //bar
 dependencies@iosArm64:
-  - ../baz
+  - //baz
 ```
 
 The effective dependency lists are:
 
 ```yaml
 dependencies@android:
-  ../foo
+  - //foo
 ```
 ```yaml
 dependencies@iosSimulatorArm64:
-  ../foo
-  ../bar
+  - //foo
+  - //bar
 ```
 ```yaml
 dependencies@iosArm64:
-  ../foo
-  ../bar
-  ../baz
+  - //foo
+  - //bar
+  - //baz
 ```
 
 ## Multiplatform settings

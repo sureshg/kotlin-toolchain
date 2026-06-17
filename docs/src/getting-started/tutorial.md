@@ -315,14 +315,14 @@ We can now change our `jvm-app/module.yaml` to depend on the `shared` module:
 product: jvm/app
 
 dependencies:
-  - ../shared #(1)!
+  - //shared #(1)!
 
 settings:
   compose:
     enabled: true
 ```
 
-1. The dependency on the `shared` module is declared using a relative path. Read more about module dependencies in the 
+1. The dependency on the `shared` module is declared using a project-root-relative (`//`) path. Read more about module dependencies in the 
    [Module dependencies](../user-guide/dependencies.md#module-dependencies) section.
 
 Let's extract the common code into a new `shared/src/hello.kt` file:
@@ -404,7 +404,7 @@ The new module files will look like this:
 product: android/app
 
 dependencies:
-  - ../shared
+  - //shared
 
 settings:
   compose:
@@ -415,7 +415,7 @@ settings:
 product: ios/app
 
 dependencies:
-  - ../shared
+  - //shared
 
 settings:
   compose:
@@ -559,7 +559,7 @@ settings:
 
 ```yaml title="app.module-template.yaml"
 dependencies:
-  - ./shared
+  - //shared
 ```
 </div>
 </div>
@@ -572,7 +572,7 @@ product:
   platforms: [ jvm, android, iosArm64, iosSimulatorArm64, iosX64 ]
 
 apply:
-  - ../compose.module-template.yaml
+  - //compose.module-template.yaml
 
 dependencies:
   - $compose.foundation: exported
@@ -591,24 +591,24 @@ dependencies@android:
 product: jvm/app
 
 apply:
-  - ../compose.module-template.yaml
-  - ../app.module-template.yaml
+  - //compose.module-template.yaml
+  - //app.module-template.yaml
 ```
 
 ```yaml title="android-app/module.yaml"
 product: android/app
 
 apply:
-  - ../compose.module-template.yaml
-  - ../app.module-template.yaml
+  - //compose.module-template.yaml
+  - //app.module-template.yaml
 ```
 
 ```yaml title="ios-app/module.yaml"
 product: ios/app
 
 apply:
-  - ../compose.module-template.yaml
-  - ../app.module-template.yaml
+  - //compose.module-template.yaml
+  - //app.module-template.yaml
 ```
 
 You can put all common dependencies and settings into the template. It's also possible to have multiple templates 
