@@ -8,7 +8,6 @@ import io.ktor.server.engine.*
 import io.ktor.server.http.content.*
 import io.ktor.server.netty.*
 import io.ktor.server.routing.*
-import org.jetbrains.amper.cli.userReadableError
 import org.jetbrains.amper.engine.RunTask
 import org.jetbrains.amper.engine.TaskGraphExecutionContext
 import org.jetbrains.amper.engine.TaskName
@@ -18,7 +17,6 @@ import org.jetbrains.amper.frontend.Platform
 import org.jetbrains.amper.tasks.EmptyTaskResult
 import org.jetbrains.amper.tasks.TaskResult
 import org.jetbrains.amper.tasks.WebRunSettings
-import org.jetbrains.amper.tasks.web.WebLinkTask
 import org.jetbrains.amper.util.BuildType
 
 private const val defaultWebBrowserRunPort = 8080
@@ -35,8 +33,8 @@ class BrowserRunTask(
         executionContext: TaskGraphExecutionContext,
     ): TaskResult {
         val port = runSettings.port ?: defaultWebBrowserRunPort
-        val builtApp = dependenciesResult.requireSingleDependency<WebLinkTask.Result>().linkedBinary
-            ?: userReadableError("Running an application without sources is not possible.")
+        val builtApp = dependenciesResult.requireSingleDependency<WasmJsBuildTask.Result>().appPath
+
         embeddedServer(Netty, port = port) {
             routing {
                 staticFiles("/", builtApp.toFile())
