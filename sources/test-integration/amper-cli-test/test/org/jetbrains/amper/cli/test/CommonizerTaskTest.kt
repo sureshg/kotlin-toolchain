@@ -5,11 +5,13 @@
 package org.jetbrains.amper.cli.test
 
 import org.jetbrains.amper.cli.test.utils.runSlowTest
+import org.jetbrains.amper.core.AmperUserCacheRoot
+import org.jetbrains.amper.core.downloader.downloadAndExtractKotlinNative
 import org.jetbrains.amper.frontend.schema.DefaultVersions
 import org.jetbrains.amper.test.MacOnly
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertNotNull
 import java.nio.file.Path
-import java.util.*
 import kotlin.io.path.createDirectories
 import kotlin.io.path.div
 import kotlin.io.path.exists
@@ -66,16 +68,19 @@ class CommonizerTaskTest: AmperCliTestBase() {
     }
 
     private suspend fun runCommonizerTask(projectName: String): Path {
-        val konanDataDir = tempRoot / UUID.randomUUID().toString()
-        konanDataDir.createDirectories()
+        val userCacheDir = tempRoot / "user-cache"
+        userCacheDir.createDirectories()
+
+        val konanDataDir = downloadAndExtractKotlinNative(DefaultVersions.kotlin, AmperUserCacheRoot(userCacheDir))
+        assertNotNull(konanDataDir, "Konan compiler was not downloaded")
 
         val runResult = runCli(
             projectDir = testProject("commonizer/$projectName"),
+            "--shared-cache-dir=$userCacheDir",
             "task", "commonizeNativeDistribution",
-            environment = mapOf("KONAN_DATA_DIR" to konanDataDir.toString())
         )
 
-        assertEquals(runResult.exitCode, 0, "The commonizer task failed with exit code ${runResult.exitCode}")
+        assertEquals(0, runResult.exitCode, "The commonizer task failed with exit code ${runResult.exitCode}")
         val commonizedRootDir = konanDataDir / "klib" / "commonized" / DefaultVersions.kotlin
         assertTrue(commonizedRootDir.exists(), "$commonizedRootDir directory does not exist")
         return commonizedRootDir
