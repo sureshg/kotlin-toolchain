@@ -4,4 +4,4 @@ product:
   platforms: [ mingwX64 ]
 
 dependencies:
-  - ../shared
+  - //shared
