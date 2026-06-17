@@ -3,10 +3,15 @@
  */
 package org.jetbrains.amper.android.gradle
 
-import com.android.build.gradle.AppExtension
+import com.android.build.api.component.analytics.AnalyticsEnabledComponent
+import com.android.build.api.dsl.ApplicationExtension
+import com.android.build.api.variant.ApplicationAndroidComponentsExtension
+import com.android.build.api.variant.Component
+import com.android.build.gradle.internal.component.ComponentCreationConfig
 import kotlinx.serialization.json.Json
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.file.FileCollection
 import org.gradle.api.initialization.Settings
 import org.gradle.api.invocation.Gradle
 import org.gradle.api.plugins.BasePluginExtension
@@ -16,6 +21,7 @@ import org.gradle.api.problems.Severity
 import org.gradle.api.provider.Property
 import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
 import org.jetbrains.amper.android.AndroidBuildRequest
+import org.jetbrains.amper.android.SYNTHETIC_ROOT_ANDROID_PROJECT_PATH
 import org.jetbrains.amper.android.gradle.tooling.MockableJarModelBuilder
 import org.jetbrains.amper.android.gradle.tooling.ProcessResourcesProviderTaskNameToolingModelBuilder
 import org.jetbrains.amper.frontend.AmperModule
@@ -56,6 +62,7 @@ private const val PROJECT_TO_MODULE_EXT = "org.jetbrains.amper.gradle.android.ex
 private const val MODULE_TO_PROJECT_EXT = "org.jetbrains.amper.gradle.android.ext.moduleToProject"
 private const val ANDROID_REQUEST = "org.jetbrains.amper.gradle.android.ext.androidRequest"
 private const val KNOWN_MODEL_EXT = "org.jetbrains.amper.gradle.android.ext.model"
+private const val MOCKABLE_JAR_ARTIFACTS_EXT = "org.jetbrains.amper.gradle.android.ext.mockableJarArtifacts"
 
 private fun <K, V> ExtraPropertiesExtension.getBindingMap(name: String): MutableMap<K, V> = try {
     @Suppress("UNCHECKED_CAST") // it's ok because we always read and write the map from the same typed place below
@@ -84,12 +91,28 @@ var Gradle.knownModel: Model?
         extensions.extraProperties[KNOWN_MODEL_EXT] = value
     }
 
+/**
+ * The mockable `android.jar` artifact captured per Gradle project path (see the project plugin's `onVariants`
+ * handler). It is resolved lazily by [org.jetbrains.amper.android.gradle.tooling.MockableJarModelBuilder] during the
+ * Test-phase model query, where the `androidApis` configuration that normally exposes it doesn't exist yet.
+ */
+val Gradle.mockableJarArtifacts: MutableMap<String, FileCollection>
+    get() = extensions.extraProperties.getBindingMap(MOCKABLE_JAR_ARTIFACTS_EXT)
+
 
 val AmperModule.buildFile get() = source.buildFile
 
 val AmperModule.buildDir: Path get() = buildFile.parent
 
 private const val SIGNING_CONFIG_NAME = "sign"
+
+/**
+ * AGP's `onVariants` callback delivers either the real variant (which implements [ComponentCreationConfig]) or, when
+ * Gradle build profiling is enabled, an [AnalyticsEnabledComponent] wrapper around it. Unwrap to reach AGP's internal
+ * creation config, from which the global mockable `android.jar` artifact is available.
+ */
+private val Component.creationConfig: ComponentCreationConfig?
+    get() = ((this as? AnalyticsEnabledComponent)?.delegate ?: this) as? ComponentCreationConfig
 
 @Suppress("UnstableApiUsage")
 class AmperAndroidIntegrationProjectPlugin @Inject constructor(private val problems: Problems) : Plugin<Project> {
@@ -116,7 +139,7 @@ class AmperAndroidIntegrationProjectPlugin @Inject constructor(private val probl
             project.plugins.apply("com.google.gms.google-services")
         }
 
-        val androidExtension = project.extensions.findByType(AppExtension::class.java) ?: return
+        val androidExtension = project.extensions.findByType(ApplicationExtension::class.java) ?: return
         project.setArtifactBaseName()
 
         val androidFragment = module
@@ -125,7 +148,7 @@ class AmperAndroidIntegrationProjectPlugin @Inject constructor(private val probl
             .firstOrNull { it.platforms.contains(Platform.ANDROID) } ?: return
 
         val androidSettings = androidFragment.settings.android
-        androidExtension.compileSdkVersion(androidSettings.compileSdk.versionNumber)
+        androidExtension.compileSdk = androidSettings.compileSdk.versionNumber
 
         val signing = androidSettings.signing
 
@@ -133,21 +156,18 @@ class AmperAndroidIntegrationProjectPlugin @Inject constructor(private val probl
             val path = (module.buildDir / signing.propertiesFile.pathString).normalize().absolute()
             if (path.exists()) {
                 val keystoreProperties = path.readProperties()
-                androidExtension.signingConfigs { configs ->
-                    configs.create(SIGNING_CONFIG_NAME) { config ->
-                        keystoreProperties.storeFile?.let { storeFile ->
-                            config.storeFile = (module.buildDir / Path(storeFile)).toFile()
-                        }
-                        keystoreProperties.storePassword?.let { storePassword ->
-                            config.storePassword = storePassword
-                        }
-                        keystoreProperties.keyAlias?.let { keyAlias ->
-                            config.keyAlias = keyAlias
-                        }
-                        keystoreProperties.keyPassword?.let { keyPassword ->
-                            config.keyPassword = keyPassword
-                        }
-                    }
+                val signingConfig = androidExtension.signingConfigs.create(SIGNING_CONFIG_NAME)
+                keystoreProperties.storeFile?.let { storeFile ->
+                    signingConfig.storeFile = (module.buildDir / Path(storeFile)).toFile()
+                }
+                keystoreProperties.storePassword?.let { storePassword ->
+                    signingConfig.storePassword = storePassword
+                }
+                keystoreProperties.keyAlias?.let { keyAlias ->
+                    signingConfig.keyAlias = keyAlias
+                }
+                keystoreProperties.keyPassword?.let { keyPassword ->
+                    signingConfig.keyPassword = keyPassword
                 }
             } else {
                 problems.reporter.reporting { problem ->
@@ -163,37 +183,38 @@ class AmperAndroidIntegrationProjectPlugin @Inject constructor(private val probl
         }
 
         androidExtension.defaultConfig {
-            it.maxSdk = androidSettings.maxSdk?.versionNumber
-            it.targetSdk = androidSettings.targetSdk.versionNumber
-            it.minSdk = androidSettings.minSdk.versionNumber
-            it.versionCode = androidSettings.versionCode
-            it.versionName = androidSettings.versionName
+            maxSdk = androidSettings.maxSdk?.versionNumber
+            targetSdk = androidSettings.targetSdk.versionNumber
+            minSdk = androidSettings.minSdk.versionNumber
+            versionCode = androidSettings.versionCode
+            versionName = androidSettings.versionName
             if (module.type == ProductType.ANDROID_APP) {
-                it.applicationId = androidSettings.applicationId
+                applicationId = androidSettings.applicationId
             }
         }
         androidExtension.namespace = androidSettings.namespace
 
-        androidExtension.packagingOptions.resources {
+        androidExtension.packaging.resources {
             val resourcePackaging = androidSettings.resourcePackaging
             excludes.addAll(resourcePackaging.excludes.map { it.value })
             merges.addAll(resourcePackaging.merges.map { it.value })
             pickFirsts.addAll(resourcePackaging.pickFirsts.map { it.value })
         }
 
-        androidExtension.buildTypes { types ->
-            types.getByName("release") { release ->
-                release.proguardFiles(
-                    androidExtension.getDefaultProguardFile("proguard-android-optimize.txt"),
-                    (module.buildDir / "proguard-rules.pro").toFile()
-                )
-                release.isDebuggable = false
-                release.isMinifyEnabled = true
-                release.isShrinkResources = true
-                androidExtension.signingConfigs.findByName(SIGNING_CONFIG_NAME)?.let { signing ->
-                    release.signingConfig = signing
-                }
-            }
+        val release = androidExtension.buildTypes.getByName("release")
+        val proguardRulesFile = (module.buildDir / "proguard-rules.pro").toFile()
+        // AGP 9's R8 fails if a supplied proguard configuration file doesn't exist (AGP 8 silently ignored it),
+        // so we only pass the module's proguard-rules.pro when it's actually present.
+        val proguardFiles = buildList<Any> {
+            add(androidExtension.getDefaultProguardFile("proguard-android-optimize.txt"))
+            if (proguardRulesFile.exists()) add(proguardRulesFile)
+        }
+        release.proguardFiles(*proguardFiles.toTypedArray())
+        release.isDebuggable = false
+        release.isMinifyEnabled = true
+        release.isShrinkResources = true
+        androidExtension.signingConfigs.findByName(SIGNING_CONFIG_NAME)?.let { signingConfig ->
+            release.signingConfig = signingConfig
         }
 
         val requestedModules = project
@@ -211,58 +232,69 @@ class AmperAndroidIntegrationProjectPlugin @Inject constructor(private val probl
             it.jniLibs.setSrcDirs(setOf(module.buildDir.resolve("jniLibs")))
         }
 
-        project.afterEvaluate {
+        val androidComponents =
+            project.extensions.findByType(ApplicationAndroidComponentsExtension::class.java) ?: return
+        val buildTypes = (project.gradle.request?.buildTypes ?: emptySet()).map { it.value }.toSet()
 
-            // get variants
-            val variants = androidExtension.applicationVariants
-            // choose variant
-            val buildTypes = (project.gradle.request?.buildTypes ?: emptySet()).map { it.value }.toSet()
-            val chosenVariants = variants.filter { it.name in buildTypes }
-
-            for (variant in chosenVariants) {
-                val requestedModule = requestedModules[project.path] ?: return@afterEvaluate
-
-                // set dependencies
-                for (dependency in requestedModule.resolvedAndroidRuntimeDependencies) {
-                    variant.runtimeConfiguration.dependencies.add(
-                        ResolvedAmperDependency(
-                            project,
-                            dependency
-                        )
-                    )
-                }
-
-                // set inter-module dependencies between android modules
-                val androidDependencyPaths = if (project.gradle.knownModel != null) {
-                    androidFragment
-                        .externalDependencies
-                        .asSequence()
-                        .filterIsInstance<LocalModuleDependency>()
-                        .map { it.module }
-                        .filter { it.artifacts.any { artifact -> Platform.ANDROID in artifact.platforms } }
-                        .mapNotNull { project.gradle.moduleFilePathToProject[it.buildDir] }
-                        .filter { it in requestedModules }
-                        .toList()
-                } else {
-                    emptyList()
-                }
-
-                for (path in androidDependencyPaths) {
-                    variant.runtimeConfiguration.dependencies.add(project.dependencies.project(mapOf("path" to path)))
-                }
-
-                // set classes
-                requestedModule.moduleClasses.forEach {
-                    variant.registerPostJavacGeneratedBytecode(project.files(it))
-                }
+        androidComponents.onVariants(androidComponents.selector().all()) { variant ->
+            // Capture AGP's own mockable android.jar so the Test-phase MockableJarModel query can resolve it.
+            // Under AGP 9 the `androidApis` configuration that exposes the mockable jar isn't created during a plain
+            // tooling-model query (it's created later, during task-graph configuration). Accessing AGP's
+            // GlobalTaskCreationConfig.mockableJarArtifact here creates and wires that configuration during the
+            // configuration phase, so MockableJarModelBuilder can resolve it. This is the same artifact AGP's own
+            // v2 model builder returns via VariantModel.mockableJarArtifact.
+            variant.creationConfig?.let { creationConfig ->
+                project.gradle.mockableJarArtifacts[project.path] = creationConfig.global.mockableJarArtifact
             }
+
+            if (variant.buildType !in buildTypes) return@onVariants
+            val requestedModule = requestedModules[project.path] ?: return@onVariants
+
+            // AGP 9 added built-in Kotlin support, which contributes its own kotlin-stdlib (a Maven coordinate) to
+            // the runtime classpath. The Kotlin Toolchain injects the full resolved runtime classpath (including its
+            // own kotlin-stdlib) as file dependencies below, which Gradle can't version-reconcile against a
+            // coordinate, so AGP's copy would collide with it (checkDuplicateClasses fails). Drop AGP's coordinate stdlib.
+            variant.runtimeConfiguration.exclude(mapOf("group" to "org.jetbrains.kotlin", "module" to "kotlin-stdlib"))
+
+            // set dependencies
+            for (dependency in requestedModule.resolvedAndroidRuntimeDependencies) {
+                variant.runtimeConfiguration.dependencies.add(
+                    ResolvedAmperDependency(
+                        project,
+                        dependency
+                    )
+                )
+            }
+
+            // set inter-module dependencies between android modules
+            val androidDependencyPaths = if (project.gradle.knownModel != null) {
+                androidFragment
+                    .externalDependencies
+                    .asSequence()
+                    .filterIsInstance<LocalModuleDependency>()
+                    .map { it.module }
+                    .filter { it.artifacts.any { artifact -> Platform.ANDROID in artifact.platforms } }
+                    .mapNotNull { project.gradle.moduleFilePathToProject[it.buildDir] }
+                    .filter { it in requestedModules }
+                    .toList()
+            } else {
+                emptyList()
+            }
+
+            for (path in androidDependencyPaths) {
+                variant.runtimeConfiguration.dependencies.add(project.dependencies.project(mapOf("path" to path)))
+            }
+
+            // NOTE: AndroidModuleData.moduleClasses is always empty in the delegated build (the Kotlin Toolchain CLI
+            // passes emptyList()), so the legacy registerPostJavacGeneratedBytecode() call was already a no-op. AGP 9's
+            // new variant API has no direct equivalent; if prebuilt classes ever need to be injected again, use
+            // variant.artifacts.forScope(ScopedArtifacts.Scope.PROJECT).use(task).toAppend(ScopedArtifact.CLASSES, ...).
         }
     }
 
     private fun Project.setArtifactBaseName() {
         val baseExtension = extensions.findByType(BasePluginExtension::class.java) ?: return
-        @Suppress("DEPRECATION") // The AGP still uses that
-        baseExtension.archivesBaseName = "gradle-project" // The IDE now relies on this name
+        baseExtension.archivesName.set("gradle-project") // The IDE now relies on this name
     }
 }
 
@@ -324,24 +356,39 @@ class AmperAndroidIntegrationSettingsPlugin @Inject constructor(private val tool
 
         androidModules.forEach {
             val currentPath = it.buildDir.normalize().toAbsolutePath()
+            // A module at the project root can't be delegated to the root Gradle project: AGP 9+ refuses to be
+            // applied to the root build file. We delegate it to a synthetic subproject instead (whose projectDir
+            // still points to the Kotlin Toolchain project root). All other modules keep their natural Gradle path.
             val projectPath = if (currentPath.isSameFileAs(rootPath)) {
-                ":"
+                SYNTHETIC_ROOT_ANDROID_PROJECT_PATH
             } else {
                 currentPath.toGradlePath()
             }
-            if (projectPath != ":") {
-                settings.include(projectPath)
-                val project = settings.project(projectPath)
-                project.projectDir = it.buildDir.toFile()
 
-                /*
-                * AndroidLint in AGP 8.6.X+ now checks if build files exist. For each Amper submodule needed to build
-                * an app, we explicitly set the build file (using an internal API) in a synthetic Gradle project within
-                * the build folder.
-                */
-                project.buildFileName = currentPath
-                    .relativize(settings.rootDir.toPath() / "build.gradle.kts")
-                    .toString()
+            settings.include(projectPath)
+            val project = settings.project(projectPath)
+            project.projectDir = it.buildDir.toFile()
+
+            /*
+            * AndroidLint in AGP 8.6.X+ now checks if build files exist. For each Amper submodule needed to build
+            * an app, we explicitly set the build file (using an internal API) in a synthetic Gradle project within
+            * the build folder.
+            */
+            project.buildFileName = currentPath
+                .relativize(settings.rootDir.toPath() / "build.gradle.kts")
+                .toString()
+
+            // Kotlin Toolchain only includes leaf modules, but a nested module path (e.g. ":app:androidApp") makes Gradle
+            // implicitly create container projects for the intermediate path segments (":app"). Those containers
+            // inherit a default projectDir under the synthetic Gradle root that doesn't exist on disk, and Gradle 9
+            // fails the build for any project whose directory is missing. Point each container at its real source
+            // directory (an ancestor of the module dir, which always exists).
+            var containerProject = project.parent
+            var containerDir = it.buildDir.parent
+            while (containerProject != null && containerProject != settings.rootProject) {
+                containerProject.projectDir = containerDir.toFile()
+                containerProject = containerProject.parent
+                containerDir = containerDir.parent
             }
 
             settings.gradle.projectPathToModule[projectPath] = it

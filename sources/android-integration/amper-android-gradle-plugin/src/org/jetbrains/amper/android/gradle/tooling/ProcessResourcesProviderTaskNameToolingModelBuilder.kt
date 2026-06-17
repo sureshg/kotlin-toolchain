@@ -4,8 +4,6 @@
 
 package org.jetbrains.amper.android.gradle.tooling
 
-import com.android.build.gradle.AppExtension
-import com.android.build.gradle.BaseExtension
 import org.gradle.api.Project
 import org.gradle.tooling.provider.model.ToolingModelBuilder
 import org.jetbrains.amper.android.ProcessResourcesProviderData
@@ -25,6 +23,8 @@ class ProcessResourcesProviderTaskNameToolingModelBuilder : ToolingModelBuilder 
     override fun buildAll(modelName: String, project: Project): ProcessResourcesProviderData {
         val projectPathToModule = project.gradle.projectPathToModule
         val request = project.gradle.request
+        val requestedModulePaths = request?.modules?.map { it.modulePath }?.toSet() ?: emptySet()
+        val buildTypesChosen = request?.buildTypes?.map { it.value } ?: emptyList()
         val stack = ArrayDeque<Project>()
         stack.add(project)
         val alreadyTraversed = mutableSetOf<Project>()
@@ -39,31 +39,27 @@ class ProcessResourcesProviderTaskNameToolingModelBuilder : ToolingModelBuilder 
                             alreadyTraversed.add(subproject)
                         }
                     }
-                    if (p.path !in (request?.modules?.map { it.modulePath }?.toSet() ?: setOf())) {
+                    if (p.path !in requestedModulePaths) {
                         continue
                     }
                     if (!projectPathToModule.containsKey(p.path)) {
                         continue
                     }
 
-                    val androidExtension = p
-                        .extensions
-                        .findByType(BaseExtension::class.java)
-                        ?: error("Android extension not found in project $project")
-
-                    val variants = when (androidExtension) {
-                        is AppExtension -> androidExtension.applicationVariants
-                        else -> error("Unsupported Android extension type")
-                    }
-
-                    val buildTypesChosen = request?.buildTypes?.map { it.value }?.toSet() ?: emptySet()
-                    val chosenVariants =
-                        variants.filter { variant -> buildTypesChosen.any { variant.name.startsWith(it) } }
-
+                    // AGP's legacy variant API (AppExtension.applicationVariants) is no longer usable in AGP 9+,
+                    // so we rely on AGP's deterministic task naming instead. The Prepare phase needs the compile-time
+                    // R class jar (reported in the model under .../generate<Variant>RFile/R.jar), produced by the
+                    // "generate<Variant>RFile" task, which transitively runs "process<Variant>Resources". The
+                    // delegated build has no product flavors, so the variant name equals the build type (matching
+                    // how the runner filters variants by build type).
                     put(p.path, buildMap {
-                        chosenVariants.forEach {
-                            val output = it.outputs.first()
-                            put(it.name, output.processResourcesProvider.name)
+                        for (buildType in buildTypesChosen) {
+                            val capitalized = buildType.replaceFirstChar { it.uppercaseChar() }
+                            val taskName = listOf("generate${capitalized}RFile", "process${capitalized}Resources")
+                                .firstOrNull { it in p.tasks.names }
+                            if (taskName != null) {
+                                put(buildType, taskName)
+                            }
                         }
                     })
                 }

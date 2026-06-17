@@ -8,6 +8,17 @@ import kotlinx.serialization.Serializable
 import org.jetbrains.amper.serialization.paths.SerializablePath
 import java.io.File
 
+/**
+ * The Gradle path used to represent an Android module that is located at the Kotlin Toolchain project root.
+ *
+ * AGP 9+ refuses to be applied to the root Gradle project (it throws an error
+ * "Android Gradle Plugin has been applied at the root build file"). To work around this, a root
+ * Android module is delegated to a synthetic Gradle subproject under this path, whose `projectDir`
+ * still points to the Kotlin Toolchain project root directory. Both the Kotlin Toolchain CLI (when computing
+ * build targets) and the delegated Gradle plugin (when creating projects) must agree on this path.
+ */
+const val SYNTHETIC_ROOT_ANDROID_PROJECT_PATH: String = ":kotlin-toolchain-android-root-app"
+
 @Serializable
 data class ResolvedDependency(
     val group: String,

@@ -11,6 +11,7 @@ import org.jetbrains.amper.cli.test.utils.runSlowTest
 import org.jetbrains.amper.cli.test.utils.withTelemetrySpans
 import org.jetbrains.amper.system.info.OsFamily
 import org.jetbrains.amper.test.Dirs
+import org.jetbrains.amper.test.LocalAmperPublication
 import org.jetbrains.amper.test.MacOnly
 import org.jetbrains.amper.test.assertEqualsWithDiff
 import org.jetbrains.amper.test.spans.assertJavaCompilationSpan
@@ -33,7 +34,9 @@ import kotlin.test.assertTrue
 
 class ExampleProjectsTest: AmperCliTestBase() {
 
-    private fun exampleProject(name: String): Path = Dirs.examplesRoot.resolve(name)
+    private fun exampleProject(name: String): Path = copyProjectToTempDir(Dirs.examplesRoot.resolve(name)).also {
+        LocalAmperPublication.setupWrappersIn(it)
+    }
 
     companion object {
 

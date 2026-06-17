@@ -203,6 +203,7 @@ class AndroidRunTask(
                         ),
                         /* userSettings = */ mutableMapOf(),
                         /* bootProps = */ mutableMapOf(),
+                        /* environment = */ mutableMapOf(),
                         /* deviceHasPlayStore = */ true,
                         /* removePrevious = */ true,
                         /* editExisting = */ true,

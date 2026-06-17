@@ -32,6 +32,18 @@ private const val DEBUG_JVM_AGENT = "-agentlib:jdwp=transport=dt_socket,server=y
 private fun <T : ConfigurableLauncher<T>> T.addDebugJvmArgumentsIf(debug: Boolean): T =
     if (debug) addJvmArguments(DEBUG_JVM_AGENT) else this
 
+/**
+ * Forwards the current process environment to the delegated Gradle build (adding `ANDROID_HOME` when the SDK
+ * directory is known). Without this, the Gradle daemon doesn't inherit variables such as
+ * `KOTLIN_DEFAULT_MAVEN_CENTRAL_URL`, so dependency resolution falls back to the public Maven Central / Gradle
+ * Plugin Portal instead of the JetBrains cache-redirector, which rate-limits (HTTP 429) on CI agents.
+ */
+private fun <T : ConfigurableLauncher<T>> T.forwardEnvironment(buildRequest: AndroidBuildRequest): T {
+    val androidHome = buildRequest.sdkDir?.let { mapOf("ANDROID_HOME" to it.toAbsolutePath().toString()) } ?: emptyMap()
+    setEnvironmentVariables(System.getenv() + androidHome)
+    return this
+}
+
 fun runAndroidBuild(
     buildRequest: AndroidBuildRequest,
     buildPath: Path,
@@ -57,7 +69,7 @@ fun runAndroidBuild(
         .forProjectDirectory(settingsGradlePath.parent.toFile())
         .connect()
         .use { connection ->
-            val androidProjects = connection.extractAndroidProjectModelsFromBuild(jdkDir, debug)
+            val androidProjects = connection.extractAndroidProjectModelsFromBuild(buildRequest, jdkDir, debug)
             val lazyArtifacts = buildList {
                 for (target in buildRequest.targets) {
                     val androidProject = androidProjects[target] ?: continue
@@ -133,12 +145,12 @@ buildscript {
     
     repositories {
         ${if (fromSources) "mavenLocal()" else ""}
-        $mavenCentralRepo
-        google()
-        gradlePluginPortal()
         maven("https://cache-redirector.jetbrains.com/www.jetbrains.com/intellij-repository/releases")
         maven("https://cache-redirector.jetbrains.com/packages.jetbrains.team/maven/p/ij/intellij-dependencies")
         ${if (fromSources) "" else "maven(\"https://packages.jetbrains.team/maven/p/amper/amper\")"}
+        $mavenCentralRepo
+        google()
+        gradlePluginPortal()
     }
     
     dependencies {
@@ -178,7 +190,7 @@ private fun AndroidProject.lazyArtifacts(
 
                 AndroidBuildRequest.Phase.Test -> {
                     val actionLauncher = connection.action { it.findModel(MockableJarModel::class.java).file }
-                    actionLauncher.run(jdkDir, debug)?.toPath()?.let {
+                    actionLauncher.run(buildRequest, jdkDir, debug)?.toPath()?.let {
                         add(DirectLazyArtifact(it))
                     }
                 }
@@ -236,22 +248,16 @@ private fun ProjectConnection.runBuild(
         .withArguments("--stacktrace")
         .addJvmArguments("-Xmx4G", "-XX:MaxMetaspaceSize=1G")
         .addDebugJvmArgumentsIf(debug)
+        .forwardEnvironment(buildRequest)
         .addProgressListener(ProgressListener { eventHandler(it) })
         .setStandardOutput(stdoutStream)
         .setStandardError(stderrStream)
-
-    buildRequest.sdkDir?.let {
-        buildLauncher.setEnvironmentVariables(
-            System.getenv() + mapOf(
-                "ANDROID_HOME" to it.toAbsolutePath().toString()
-            )
-        )
-    }
 
     buildLauncher.run()
 }
 
 private fun ProjectConnection.extractAndroidProjectModelsFromBuild(
+    buildRequest: AndroidBuildRequest,
     jdkDir: Path,
     debug: Boolean,
 ): Map<String, AndroidProject> {
@@ -271,10 +277,11 @@ private fun ProjectConnection.extractAndroidProjectModelsFromBuild(
         }
     }
 
-    return actionLauncher.run(jdkDir, debug)
+    return actionLauncher.run(buildRequest, jdkDir, debug)
 }
 
-private fun <T> BuildActionExecuter<T>.run(jdkDir: Path, debug: Boolean): T =
+private fun <T> BuildActionExecuter<T>.run(buildRequest: AndroidBuildRequest, jdkDir: Path, debug: Boolean): T =
     setJavaHome(jdkDir.toFile())
+        .forwardEnvironment(buildRequest)
         .addDebugJvmArgumentsIf(debug)
         .run()

@@ -76,7 +76,7 @@ abstract class AmperCliTestBase : AmperCliWithWrapperTestBase() {
         }
     }
 
-    private fun copyProjectToTempDir(projectRoot: Path): Path {
+    protected fun copyProjectToTempDir(projectRoot: Path): Path {
         val tempProjectDir = tempRoot / UUID.randomUUID().toString() / projectRoot.fileName
         tempProjectDir.createDirectories()
         projectRoot.copyToRecursively(target = tempProjectDir, overwrite = false, followLinks = true)

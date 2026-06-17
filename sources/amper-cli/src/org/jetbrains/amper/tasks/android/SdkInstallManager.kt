@@ -169,10 +169,10 @@ class SdkInstallManager(private val userCacheRoot: AmperUserCacheRoot, private v
     private inline fun <reified T> InputStream.unmarshal(): T = SchemaModuleUtil.unmarshal(
         this,
         listOf(
-            AndroidSdkHandler.getRepositoryModule(),
-            AndroidSdkHandler.getAddonModule(),
-            AndroidSdkHandler.getSysImgModule(),
-            AndroidSdkHandler.getCommonModule(),
+            AndroidSdkHandler.repositoryModule,
+            AndroidSdkHandler.addonModule,
+            AndroidSdkHandler.sysImgModule,
+            AndroidSdkHandler.commonModule,
             RepoManager.genericModule,
             RepoManager.commonModule,
         ),
@@ -183,10 +183,10 @@ class SdkInstallManager(private val userCacheRoot: AmperUserCacheRoot, private v
 
     private fun <T> OutputStream.marshal(obj: T) {
         val allModules = setOf(
-            AndroidSdkHandler.getRepositoryModule(),
-            AndroidSdkHandler.getAddonModule(),
-            AndroidSdkHandler.getSysImgModule(),
-            AndroidSdkHandler.getCommonModule(),
+            AndroidSdkHandler.repositoryModule,
+            AndroidSdkHandler.addonModule,
+            AndroidSdkHandler.sysImgModule,
+            AndroidSdkHandler.commonModule,
             RepoManager.genericModule,
             RepoManager.commonModule,
         )
