@@ -15,6 +15,7 @@ dependencies:
   - //sources/libraries/stdlib-extended
   - $libs.intellij.platform.core
   - $libs.intellij.platform.util
+  - $libs.maven.artifact
 
 test-dependencies:
   - //sources/core-intellij

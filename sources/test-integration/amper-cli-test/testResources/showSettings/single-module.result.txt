@@ -38,7 +38,7 @@ settings@jvm:
       presets: null  # default
     allWarningsAsErrors: false  # default
     apiVersion: null  # default, from ${languageVersion}
-    compileIncrementally: true  # default
+    compileIncrementally: false  # default, based on ${version}: enabled for Kotlin compiler >= 2.4.0
     compilerPlugins: []  # default
     freeCompilerArgs: null  # default
     ksp:

@@ -4,12 +4,12 @@
 
 package org.jetbrains.amper.frontend.schema
 
+import org.apache.maven.artifact.versioning.ComparableVersion
 import org.jetbrains.amper.frontend.EnumMap
 import org.jetbrains.amper.frontend.Platform
 import org.jetbrains.amper.frontend.SchemaEnum
 import org.jetbrains.amper.frontend.api.CanBeReferenced
 import org.jetbrains.amper.frontend.api.DefaultTrace
-import org.jetbrains.amper.frontend.api.DeprecatedSchema
 import org.jetbrains.amper.frontend.api.EnumOrderSensitive
 import org.jetbrains.amper.frontend.api.EnumValueFilter
 import org.jetbrains.amper.frontend.api.Misnomers
@@ -19,6 +19,9 @@ import org.jetbrains.amper.frontend.api.SchemaDoc
 import org.jetbrains.amper.frontend.api.SchemaNode
 import org.jetbrains.amper.frontend.api.Shorthand
 import org.jetbrains.amper.frontend.api.TraceableString
+import org.jetbrains.amper.frontend.tree.ReferenceNode
+import org.jetbrains.amper.frontend.tree.RefinedTreeNode
+import org.jetbrains.amper.frontend.tree.StringNode
 
 /**
  * The expected pattern for the Kotlin compiler version setting.
@@ -162,10 +165,22 @@ class KotlinSettings : SchemaNode() {
     @SchemaDoc("Allow using declarations only from the specified version of Kotlin bundled libraries")
     val apiVersion by referenceValue(::languageVersion)
 
+    class DefaultIncrementalCompilationTransform : ReferenceNode.TransformFunction<Boolean> {
+        override fun transform(node: RefinedTreeNode): Boolean {
+            // We don't need to handle when node is not a StringNode, because such invalid nodes are handled by the
+            // frontend parsing logic already. We just return any value for this case here (we might not even be called).
+            return node is StringNode && ComparableVersion(node.value) >= ComparableVersion("2.4.0")
+        }
+    }
+
     @PlatformAgnostic
-    @Misnomers("avoidance")
+    @Misnomers("avoidance", "compilation")
     @SchemaDoc("Whether Kotlin code should be compiled incrementally (only recompile what's necessary depending on the changes)")
-    val compileIncrementally by value(true)
+    val compileIncrementally by referenceValue(
+        property = ::version,
+        description = "enabled for Kotlin compiler >= 2.4.0",
+        transformValue = DefaultIncrementalCompilationTransform(),
+    )
 
     @Misnomers("Werror")
     @SchemaDoc("Turn any warnings into a compilation error")

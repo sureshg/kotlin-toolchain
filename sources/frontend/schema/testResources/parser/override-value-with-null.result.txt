@@ -11,6 +11,7 @@ Fragments:
       }
       kotlin: {
         apiVersion: <default> 2.3
+        compileIncrementally: <default> false
         languageVersion: 2.3
       }
     }
@@ -29,6 +30,7 @@ Fragments:
       }
       kotlin: {
         apiVersion: <default> 2.3
+        compileIncrementally: <default> false
         languageVersion: 2.3
       }
     }

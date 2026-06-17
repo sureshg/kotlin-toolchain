@@ -17,6 +17,7 @@ Fragments:
       }
       kotlin: {
         apiVersion: <default> null
+        compileIncrementally: <default> false
         ksp: {
           processorOptions: {
             "room.schemaLocation": ./generated-db-schema
@@ -54,6 +55,7 @@ Fragments:
       }
       kotlin: {
         apiVersion: <default> null
+        compileIncrementally: <default> false
         ksp: {
           processorOptions: {
             "room.schemaLocation": ./generated-db-schema

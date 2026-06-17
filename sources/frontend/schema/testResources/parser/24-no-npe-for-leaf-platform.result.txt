@@ -30,6 +30,7 @@ Fragments:
       kotlin: {
         allWarningsAsErrors: false
         apiVersion: 2.2
+        compileIncrementally: <default> false
         debug: false
         freeCompilerArgs: [
           - -Xinline-classes
@@ -77,6 +78,7 @@ Fragments:
       kotlin: {
         allWarningsAsErrors: false
         apiVersion: 2.2
+        compileIncrementally: <default> false
         debug: false
         freeCompilerArgs: [
           - -Xinline-classes
@@ -119,6 +121,7 @@ Fragments:
       kotlin: {
         allWarningsAsErrors: false
         apiVersion: 2.2
+        compileIncrementally: <default> false
         debug: false
         freeCompilerArgs: [
           - -Xinline-classes
@@ -164,6 +167,7 @@ Fragments:
       kotlin: {
         allWarningsAsErrors: false
         apiVersion: 2.2
+        compileIncrementally: <default> false
         debug: false
         freeCompilerArgs: [
           - -Xinline-classes
@@ -205,6 +209,7 @@ Fragments:
       kotlin: {
         allWarningsAsErrors: false
         apiVersion: 2.2
+        compileIncrementally: <default> false
         debug: false
         freeCompilerArgs: [
           - -Xinline-classes
@@ -249,6 +254,7 @@ Fragments:
       kotlin: {
         allWarningsAsErrors: false
         apiVersion: 2.2
+        compileIncrementally: <default> false
         debug: false
         freeCompilerArgs: [
           - -Xinline-classes
@@ -291,6 +297,7 @@ Fragments:
       kotlin: {
         allWarningsAsErrors: false
         apiVersion: 2.2
+        compileIncrementally: <default> false
         debug: false
         freeCompilerArgs: [
           - -Xinline-classes
@@ -333,6 +340,7 @@ Fragments:
       kotlin: {
         allWarningsAsErrors: false
         apiVersion: 2.2
+        compileIncrementally: <default> false
         debug: false
         freeCompilerArgs: [
           - -Xinline-classes
@@ -378,6 +386,7 @@ Fragments:
       kotlin: {
         allWarningsAsErrors: false
         apiVersion: 2.2
+        compileIncrementally: <default> false
         debug: false
         freeCompilerArgs: [
           - -Xinline-classes
@@ -423,6 +432,7 @@ Fragments:
       kotlin: {
         allWarningsAsErrors: false
         apiVersion: 2.2
+        compileIncrementally: <default> false
         debug: false
         freeCompilerArgs: [
           - -Xinline-classes
@@ -467,6 +477,7 @@ Fragments:
       kotlin: {
         allWarningsAsErrors: false
         apiVersion: 2.2
+        compileIncrementally: <default> false
         debug: false
         freeCompilerArgs: [
           - -Xinline-classes
@@ -509,6 +520,7 @@ Fragments:
       kotlin: {
         allWarningsAsErrors: false
         apiVersion: 2.2
+        compileIncrementally: <default> false
         debug: false
         freeCompilerArgs: [
           - -Xinline-classes
@@ -554,6 +566,7 @@ Fragments:
       kotlin: {
         allWarningsAsErrors: false
         apiVersion: 2.2
+        compileIncrementally: <default> false
         debug: false
         freeCompilerArgs: [
           - -Xinline-classes
@@ -600,6 +613,7 @@ Fragments:
       kotlin: {
         allWarningsAsErrors: false
         apiVersion: 2.2
+        compileIncrementally: <default> false
         debug: false
         freeCompilerArgs: [
           - -Xinline-classes
@@ -642,6 +656,7 @@ Fragments:
       kotlin: {
         allWarningsAsErrors: false
         apiVersion: 2.2
+        compileIncrementally: <default> false
         debug: false
         freeCompilerArgs: [
           - -Xinline-classes
@@ -687,6 +702,7 @@ Fragments:
       kotlin: {
         allWarningsAsErrors: false
         apiVersion: 2.2
+        compileIncrementally: <default> false
         debug: false
         freeCompilerArgs: [
           - -Xinline-classes

@@ -16,6 +16,7 @@ val AomSingleModuleDiagnosticFactories: List<AomSingleModuleDiagnosticFactory> =
     JavaIncrementalCompilationRequiresJava16Factory,
     JdkDistributionRequiresLicenseFactory,
     JUnitRequiresHigherJdkVersionFactory,
+    KotlinIncrementalCompilationMayBehaveIncorrectlyFactory,
     SerializationVersionWithDisabledSerialization,
     SigningEnabledWithoutPropertiesFileFactory,
     KeystorePropertiesDoesNotContainKeyFactory,

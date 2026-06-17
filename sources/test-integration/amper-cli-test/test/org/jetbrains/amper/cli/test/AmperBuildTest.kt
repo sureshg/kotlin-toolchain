@@ -25,13 +25,16 @@ import kotlin.io.path.Path
 import kotlin.io.path.div
 import kotlin.io.path.exists
 import kotlin.io.path.getLastModifiedTime
+import kotlin.io.path.inputStream
 import kotlin.io.path.isRegularFile
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.name
 import kotlin.io.path.pathString
+import kotlin.io.path.readBytes
 import kotlin.io.path.readText
 import kotlin.io.path.walk
 import kotlin.io.path.writeText
+import kotlin.ranges.rangeTo
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -69,7 +72,7 @@ class AmperBuildTest : AmperCliTestBase() {
 
     @Test
     fun `incremental jvm build`() = runSlowTest {
-        val projectDir = testProject("multi-module")
+        val projectDir = testProject("incremental-compilation")
         val result1 = runCli(projectDir = projectDir, "build")
         result1.withTelemetrySpans {
             kotlinJvmCompilationSpans.withAmperModule("shared").assertTimes(2) // main & test
@@ -88,6 +91,7 @@ class AmperBuildTest : AmperCliTestBase() {
         val appClassesState = computeFileStates(appClasses)
 
         projectDir.resolve("shared/src/World.kt").replaceInText("\"World\"", "\"New World\"")
+
         val resultModifiedRun = runCli(projectDir = projectDir, "run")
         resultModifiedRun.withTelemetrySpans {
             kotlinJvmCompilationSpans.withAmperModule("shared").assertSingle() // tests don't need recompilation
@@ -96,6 +100,25 @@ class AmperBuildTest : AmperCliTestBase() {
         }
         resultModifiedRun.assertStdoutContains("Hello, New World!")
         assertEquals(appClassesState, computeFileStates(appClasses), "Classes in 'app' module shouldn't have changed thanks to incremental compilation")
+
+        val worldClass = resultModifiedRun.buildDir / "artifacts/CompiledJvmArtifact/sharedjvm/kotlin-output/World.class"
+        assertEquals(65 /* for Java 21 */, majorClassVersion(worldClass), "Classes should initially target bytecode 21 (major version 65)")
+
+        projectDir.resolve("common.module-template.yaml").replaceInText("release: 21", "release: 17")
+        runCli(projectDir = projectDir, "build")
+        assertEquals(61 /* for Java 17 */, majorClassVersion(worldClass), "Classes should be recompiled to bytecode 17 (major version 61)")
+    }
+
+    private fun majorClassVersion(classFile: Path): Int {
+        val classBytes = classFile.readBytes() // it's small enough to be OK
+        // sanity check that we're reading a class file
+        check(0xCA.toByte() == classBytes[0])
+        check(0xFE.toByte() == classBytes[1])
+        check(0xBA.toByte() == classBytes[2])
+        check(0xBE.toByte() == classBytes[3])
+
+        return ((classBytes[6].toInt() and 0xFF) shl 8) or
+                (classBytes[7].toInt() and 0xFF)
     }
 
     private fun computeFileStates(dir: Path): List<String> = dir.listDirectoryEntries()

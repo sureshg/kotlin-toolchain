@@ -10,6 +10,7 @@ Fragments:
     Settings: {
       kotlin: {
         apiVersion: <default> 1.9
+        compileIncrementally: <default> false
         languageVersion: 1.9
         serialization: {
           enabled: <default> true
@@ -32,6 +33,7 @@ Fragments:
     Settings: {
       kotlin: {
         apiVersion: <default> 1.9
+        compileIncrementally: <default> false
         languageVersion: 1.9
         serialization: {
           enabled: <default> true
@@ -53,6 +55,7 @@ Fragments:
     Settings: {
       kotlin: {
         apiVersion: <default> 1.9
+        compileIncrementally: <default> false
         languageVersion: 1.9
         serialization: {
           enabled: <default> true
@@ -76,6 +79,7 @@ Fragments:
     Settings: {
       kotlin: {
         apiVersion: <default> 1.9
+        compileIncrementally: <default> false
         languageVersion: 1.9
         serialization: {
           enabled: <default> true

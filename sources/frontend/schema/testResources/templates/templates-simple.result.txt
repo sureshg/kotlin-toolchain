@@ -11,6 +11,7 @@ Fragments:
     Settings: {
       kotlin: {
         apiVersion: 2.0
+        compileIncrementally: <default> false
         languageFeatures: [
           - dataObjects
           - contextReceivers
@@ -34,6 +35,7 @@ Fragments:
     Settings: {
       kotlin: {
         apiVersion: 2.0
+        compileIncrementally: <default> false
         languageFeatures: [
           - dataObjects
           - contextReceivers
@@ -53,6 +55,7 @@ Fragments:
     Settings: {
       kotlin: {
         apiVersion: 2.0
+        compileIncrementally: <default> false
         languageFeatures: [
           - dataObjects
           - contextReceivers
@@ -75,6 +78,7 @@ Fragments:
     Settings: {
       kotlin: {
         apiVersion: 2.0
+        compileIncrementally: <default> false
         languageFeatures: [
           - dataObjects
           - contextReceivers
@@ -95,6 +99,7 @@ Fragments:
     Settings: {
       kotlin: {
         apiVersion: 2.0
+        compileIncrementally: <default> false
         languageFeatures: [
           - dataObjects
           - contextReceivers
@@ -115,6 +120,7 @@ Fragments:
     Settings: {
       kotlin: {
         apiVersion: 2.0
+        compileIncrementally: <default> false
         languageFeatures: [
           - dataObjects
           - contextReceivers
@@ -138,6 +144,7 @@ Fragments:
     Settings: {
       kotlin: {
         apiVersion: 2.0
+        compileIncrementally: <default> false
         languageFeatures: [
           - dataObjects
           - contextReceivers
@@ -161,6 +168,7 @@ Fragments:
     Settings: {
       kotlin: {
         apiVersion: 2.0
+        compileIncrementally: <default> false
         languageFeatures: [
           - dataObjects
           - contextReceivers
@@ -181,6 +189,7 @@ Fragments:
     Settings: {
       kotlin: {
         apiVersion: 2.0
+        compileIncrementally: <default> false
         languageFeatures: [
           - dataObjects
           - contextReceivers
@@ -204,6 +213,7 @@ Fragments:
     Settings: {
       kotlin: {
         apiVersion: 2.0
+        compileIncrementally: <default> false
         languageFeatures: [
           - dataObjects
           - contextReceivers

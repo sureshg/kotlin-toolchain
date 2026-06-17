@@ -70,6 +70,7 @@ import org.jetbrains.amper.telemetry.spanBuilder
 import org.jetbrains.amper.telemetry.use
 import org.jetbrains.amper.util.BuildType
 import org.jetbrains.kotlin.buildtools.api.BaseCompilationOperation.Companion.COMPILER_MESSAGE_RENDERER
+import org.jetbrains.kotlin.buildtools.api.BaseIncrementalCompilationConfiguration.Companion.TRACK_CONFIGURATION_INPUTS
 import org.jetbrains.kotlin.buildtools.api.CompilationResult
 import org.jetbrains.kotlin.buildtools.api.ExperimentalBuildToolsApi
 import org.jetbrains.kotlin.buildtools.api.KotlinLogger
@@ -438,7 +439,12 @@ internal class JvmCompileTask(
                                 workingDirectory = compiledJvmArtifact.kotlinIcDataDir.createDirectories(),
                                 sourcesChanges = SourcesChanges.ToBeCalculated,
                                 dependenciesSnapshotFiles = classpathSnapshots,
-                            )
+                            ) {
+                                // Necessary to avoid a cache hit when important compiler args change (e.g. JVM target).
+                                // Surprisingly, this is not the default!
+                                // Note: has no effect in Kotlin >= 2.4.0, but we warn users about it in the frontend
+                                this[TRACK_CONFIGURATION_INPUTS] = true
+                            }
                         }
                     }
                     session.executeOperation(

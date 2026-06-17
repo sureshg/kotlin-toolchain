@@ -13,6 +13,7 @@ Fragments:
       }
       kotlin: {
         apiVersion: <default> 1.9
+        compileIncrementally: <default> false
         languageFeatures: [
           - contextReceivers
         ]
@@ -45,6 +46,7 @@ Fragments:
       }
       kotlin: {
         apiVersion: <default> 1.9
+        compileIncrementally: <default> false
         languageFeatures: [
           - contextReceivers
         ]
@@ -72,6 +74,7 @@ Fragments:
       }
       kotlin: {
         apiVersion: <default> 1.9
+        compileIncrementally: <default> false
         languageFeatures: [
           - contextReceivers
         ]
@@ -105,6 +108,7 @@ Fragments:
       }
       kotlin: {
         apiVersion: <default> 1.9
+        compileIncrementally: <default> false
         languageFeatures: [
           - contextReceivers
         ]

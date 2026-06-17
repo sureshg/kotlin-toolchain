@@ -1,0 +1,18 @@
+/*
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+package org.jetbrains.amper.frontend.schema.diagnostics
+
+import org.jetbrains.amper.frontend.helpers.FrontendTestCaseBase
+import org.jetbrains.amper.frontend.helpers.diagnosticsTest
+import kotlin.io.path.Path
+import kotlin.test.Test
+
+class KotlinIncrementalCompilationMayBehaveIncorrectlyTest : FrontendTestCaseBase(Path("testResources/diagnostics")) {
+
+    @Test
+    fun `Kotlin IC requires Kotlin 2_4_0+`() {
+        diagnosticsTest("kotlin-ic-requires-2.4.0")
+    }
+}

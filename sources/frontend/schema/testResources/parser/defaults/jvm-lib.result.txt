@@ -89,7 +89,7 @@ Fragments:
         }
         allWarningsAsErrors: <default> false
         apiVersion: <default> null
-        compileIncrementally: <default> true
+        compileIncrementally: <default> false
         compilerPlugins: <default> [
         ]
         debug: <default> null
@@ -273,7 +273,7 @@ Fragments:
         }
         allWarningsAsErrors: <default> false
         apiVersion: <default> null
-        compileIncrementally: <default> true
+        compileIncrementally: <default> false
         compilerPlugins: <default> [
         ]
         debug: <default> null
