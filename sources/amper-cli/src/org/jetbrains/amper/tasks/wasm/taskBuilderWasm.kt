@@ -23,6 +23,7 @@ import org.jetbrains.amper.tasks.TaskOutputRoot
 import org.jetbrains.amper.tasks.getTaskName
 import org.jetbrains.amper.tasks.web.WebCompileKlibTask
 import org.jetbrains.amper.tasks.web.WebLinkTask
+import org.jetbrains.amper.util.BuildType
 
 internal fun ProjectTasksBuilder.setupWasmTasks(
     platform: Platform,
@@ -51,9 +52,9 @@ internal fun ProjectTasksBuilder.setupWasmTasks(
         isTest: Boolean,
         compileKLibTaskId: TaskId,
         processRunner: ProcessRunner,
+        buildType: BuildType,
     ) -> WebLinkTask,
 ) {
-
     allModules()
         .alsoPlatforms(platform)
         .alsoTests()
@@ -81,9 +82,17 @@ internal fun ProjectTasksBuilder.setupWasmTasks(
                     }
                 },
             )
+        }
 
+    allModules()
+        .alsoPlatforms(platform)
+        .alsoTests()
+        .alsoBuildTypes()
+        .withEach {
             if (needsLinkedExecutable(module, isTest)) {
-                val linkAppTaskName = LinkTaskType.getTaskName(module, platform, isTest)
+                val compileKLibTaskName = CommonTaskType.Compile.getTaskName(module, platform, isTest)
+
+                val linkAppTaskName = LinkTaskType.getTaskName(module, platform, isTest, buildType)
                 tasks.registerTask(
                     task = createLinkTask(
                         module,
@@ -97,6 +106,7 @@ internal fun ProjectTasksBuilder.setupWasmTasks(
                         isTest,
                         compileKLibTaskName.id,
                         context.processRunner,
+                        buildType,
                     ),
                     dependsOn = buildList {
                         add(compileKLibTaskName)
@@ -112,6 +122,7 @@ internal fun ProjectTasksBuilder.setupWasmTasks(
     allModules()
         .alsoPlatforms(platform)
         .alsoTests()
+        .alsoBuildTypes()
         .selectModuleDependencies(ResolutionScope.RUNTIME).withEach {
             tasks.registerDependency(
                 CommonTaskType.Compile.getTaskName(module, platform, isTest),
@@ -120,7 +131,7 @@ internal fun ProjectTasksBuilder.setupWasmTasks(
 
             if (needsLinkedExecutable(module, isTest)) {
                 tasks.registerDependency(
-                    LinkTaskType.getTaskName(module, platform, isTest),
+                    LinkTaskType.getTaskName(module, platform, isTest, buildType),
                     CommonTaskType.Compile.getTaskName(dependsOn, platform, false)
                 )
             }

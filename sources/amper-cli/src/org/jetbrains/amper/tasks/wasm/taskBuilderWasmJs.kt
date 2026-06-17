@@ -24,7 +24,7 @@ fun ProjectTasksBuilder.setupWasmJsTasks() {
         }
         .filter { needsLinkedExecutable(it.module, isTest = false) }
         .withEach {
-            val linkAppTaskName = LinkTaskType.getTaskName(module, platform, isTest)
+            val linkAppTaskName = LinkTaskType.getTaskName(module, platform, isTest, buildType)
 
             val runTaskName = WasmJsTaskType.RunWasmJsApp.getTaskName(module, platform, isTest = false, buildType)
             tasks.registerTask(

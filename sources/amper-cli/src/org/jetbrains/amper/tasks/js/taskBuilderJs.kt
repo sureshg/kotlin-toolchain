@@ -12,6 +12,7 @@ import org.jetbrains.amper.tasks.ProjectTasksBuilder
 import org.jetbrains.amper.tasks.ProjectTasksBuilder.Companion.getTaskOutputPath
 import org.jetbrains.amper.tasks.getTaskName
 import org.jetbrains.amper.tasks.native.NativeTaskType
+import org.jetbrains.amper.util.BuildType
 
 fun ProjectTasksBuilder.setupJsTasks() {
 
@@ -58,6 +59,7 @@ fun ProjectTasksBuilder.setupJsTasks() {
                         jdkProvider = context.jdkProvider,
                         compileKLibTaskId = compileKLibTaskName.id,
                         processRunner = context.processRunner,
+                        buildType = BuildType.Release,
                     ),
                     dependsOn = buildList {
                         add(compileKLibTaskName)

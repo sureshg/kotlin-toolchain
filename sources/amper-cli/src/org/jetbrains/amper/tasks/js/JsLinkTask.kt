@@ -36,7 +36,7 @@ internal class JsLinkTask(
     isTest: Boolean,
     jdkProvider: JdkProvider,
     processRunner: ProcessRunner,
-    buildType: BuildType? = null,
+    buildType: BuildType,
     compileKLibTaskId: TaskId,
     kotlinArtifactsDownloader: KotlinArtifactsDownloader =
         KotlinArtifactsDownloader(userCacheRoot, incrementalCache),
@@ -69,6 +69,7 @@ internal class JsLinkTask(
         additionalSourceRoots: List<SourceRoot>,
         moduleName: String,
         compilationType: KotlinCompilationType,
+        buildType: BuildType,
         include: Path?,
     ): List<String> =
         kotlinJsCompilerArgs(
@@ -82,6 +83,7 @@ internal class JsLinkTask(
             additionalSourceRoots,
             moduleName,
             compilationType,
+            buildType,
             include,
         )
 }

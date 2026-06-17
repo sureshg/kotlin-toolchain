@@ -37,7 +37,7 @@ internal class WasmWasiLinkTask(
     isTest: Boolean,
     compileKLibTaskId: TaskId,
     processRunner: ProcessRunner,
-    buildType: BuildType? = null,
+    buildType: BuildType,
     kotlinArtifactsDownloader: KotlinArtifactsDownloader =
         KotlinArtifactsDownloader(userCacheRoot, incrementalCache),
 ) : WebLinkTask(
@@ -69,6 +69,7 @@ internal class WasmWasiLinkTask(
         additionalSourceRoots: List<SourceRoot>,
         moduleName: String,
         compilationType: KotlinCompilationType,
+        buildType: BuildType,
         include: Path?,
     ): List<String> =
         kotlinWasmCompilerArgs(
@@ -83,6 +84,7 @@ internal class WasmWasiLinkTask(
             additionalSourceRoots,
             moduleName,
             compilationType,
+            buildType,
             include,
         )
 }

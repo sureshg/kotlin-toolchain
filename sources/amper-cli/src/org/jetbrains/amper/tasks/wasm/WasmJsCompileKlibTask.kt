@@ -82,6 +82,7 @@ internal class WasmJsCompileKlibTask(
             additionalSourceRoots,
             moduleName,
             compilationType,
+            buildType,
             include,
         )
 }

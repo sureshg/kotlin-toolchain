@@ -80,6 +80,7 @@ internal class JsCompileKlibTask(
         additionalSourceRoots,
         moduleName,
         compilationType,
+        buildType,
         include,
     )
 }

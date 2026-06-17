@@ -82,6 +82,7 @@ internal class WasmWasiCompileKlibTask(
             additionalSourceRoots,
             moduleName,
             compilationType,
+            buildType,
             include,
         )
 }

@@ -320,6 +320,7 @@ internal fun kotlinWasmCompilerArgs(
     additionalSourceRoots: List<SourceRoot>,
     moduleName: String,
     compilationType: KotlinCompilationType,
+    buildType: BuildType?,
     include: Path?,
 ): List<String> = buildList {
     add("-Xwasm")
@@ -337,6 +338,7 @@ internal fun kotlinWasmCompilerArgs(
             additionalSourceRoots,
             moduleName,
             compilationType,
+            buildType,
             include,
         )
     )
@@ -353,6 +355,7 @@ internal fun kotlinJsCompilerArgs(
     additionalSourceRoots: List<SourceRoot>,
     moduleName: String,
     compilationType: KotlinCompilationType,
+    buildType: BuildType?,
     include: Path?,
 ): List<String> = buildList {
     add("-Xir-per-file")
@@ -376,6 +379,7 @@ internal fun kotlinJsCompilerArgs(
             additionalSourceRoots,
             moduleName,
             compilationType,
+            buildType,
             include,
         )
     )
@@ -392,6 +396,7 @@ private fun kotlinWebCompilerArgs(
     additionalSourceRoots: List<SourceRoot>,
     moduleName: String,
     compilationType: KotlinCompilationType,
+    buildType: BuildType?,
     include: Path?,
 ): List<String> = buildList {
 
@@ -413,7 +418,9 @@ private fun kotlinWebCompilerArgs(
     add("-ir-output-name")
     add(moduleName)
 
-    add("-Xir-dce")
+    if (buildType == BuildType.Release) {
+        add("-Xir-dce")
+    }
 
     // -d is after freeCompilerArgs because we don't allow overriding the output dir (it breaks task dependencies)
     // (specifying -d multiple times generates a warning, and only the last value is used)

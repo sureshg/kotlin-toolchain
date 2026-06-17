@@ -63,7 +63,7 @@ internal abstract class WebLinkTask(
     override val taskName: TaskName,
     private val tempRoot: AmperProjectTempRoot,
     override val isTest: Boolean,
-    override val buildType: BuildType? = null,
+    override val buildType: BuildType,
     private val processRunner: ProcessRunner,
     /**
      * The name of the task that produces the klib for the sources of this module.
@@ -180,6 +180,7 @@ internal abstract class WebLinkTask(
             additionalSourceRoots = emptyList(),
             moduleName = module.kotlinModuleName(isTest),
             compilationType = KotlinCompilationType.BINARY,
+            buildType = buildType,
             include = includeArtifact,
         )
 
@@ -221,6 +222,7 @@ internal abstract class WebLinkTask(
         additionalSourceRoots: List<SourceRoot>,
         moduleName: String,
         compilationType: KotlinCompilationType,
+        buildType: BuildType,
         include: Path?,
     ): List<String>
 
