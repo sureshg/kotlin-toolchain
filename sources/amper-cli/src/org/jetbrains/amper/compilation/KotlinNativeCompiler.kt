@@ -15,6 +15,7 @@ import org.jetbrains.amper.core.downloader.downloadAndExtractKotlinNative
 import org.jetbrains.amper.frontend.AmperModule
 import org.jetbrains.amper.frontend.dr.resolver.native.KonanDistribution
 import org.jetbrains.amper.frontend.dr.resolver.native.commonizedRoot
+import org.jetbrains.amper.frontend.dr.resolver.native.platformLibsDir
 import org.jetbrains.amper.jdk.provisioning.Jdk
 import org.jetbrains.amper.jdk.provisioning.JdkProvider
 import org.jetbrains.amper.jvm.getDefaultJdk
@@ -27,9 +28,7 @@ import org.jetbrains.amper.telemetry.spanBuilder
 import org.jetbrains.amper.telemetry.use
 import org.jetbrains.amper.util.ShellQuoting
 import org.slf4j.LoggerFactory
-import java.net.URLEncoder
 import java.nio.file.Path
-import kotlin.io.path.Path
 import kotlin.io.path.div
 
 suspend fun downloadNativeCompiler(
@@ -51,21 +50,16 @@ class KotlinNativeCompiler(
     val jdk: Jdk,
 ) {
     companion object {
-        private const val KONAN_DATA_DIR = "KONAN_DATA_DIR"
         private val logger = LoggerFactory.getLogger(KotlinNativeCompiler::class.java)
     }
 
-    private val konanDataDir by lazy {
-        val explicitKonanDataDir = System.getenv(KONAN_DATA_DIR)
-        if (explicitKonanDataDir != null) Path(explicitKonanDataDir) else kotlinNativeHome
-    }
+    private val konanDistribution = KonanDistribution(kotlinNativeHome)
+
+    val platformPath = konanDistribution.platformLibsDir
 
     val commonizedPath by lazy {
-        KonanDistribution(kotlinNativeHome).commonizedRoot(kotlinVersion)
+        konanDistribution.commonizedRoot(kotlinVersion)
     }
-
-    val platformPath
-        get() = konanDataDir / "klib" / "platform"
 
     suspend fun compile(
         processRunner: ProcessRunner,

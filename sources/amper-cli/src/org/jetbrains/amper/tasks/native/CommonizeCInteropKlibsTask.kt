@@ -18,6 +18,7 @@ import org.jetbrains.amper.engine.TaskGraphExecutionContext
 import org.jetbrains.amper.engine.TaskName
 import org.jetbrains.amper.frontend.Fragment
 import org.jetbrains.amper.frontend.LeafFragment
+import org.jetbrains.amper.frontend.dr.resolver.native.commonizedPlatformsIdentifier
 import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.jdk.provisioning.JdkProvider
 import org.jetbrains.amper.processes.ArgsMode
@@ -111,7 +112,7 @@ class CommonizeCInteropKlibsTask(
         name: String,
         klibs: List<CinteropKlibsArtifact.Klib>,
     ): Path {
-        val target = fragment.platforms.formatCompilerPlatformSetId()
+        val target = fragment.platforms.commonizedPlatformsIdentifier()
 
         val dependencies = buildList {
             // Commonized platform libs (we depend on the corresponding task)

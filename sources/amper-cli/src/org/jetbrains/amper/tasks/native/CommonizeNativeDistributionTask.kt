@@ -17,6 +17,7 @@ import org.jetbrains.amper.engine.TaskGraphExecutionContext
 import org.jetbrains.amper.engine.TaskName
 import org.jetbrains.amper.frontend.Model
 import org.jetbrains.amper.frontend.Platform
+import org.jetbrains.amper.frontend.dr.resolver.native.commonizedPlatformsIdentifier
 import org.jetbrains.amper.frontend.isDescendantOf
 import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.jdk.provisioning.JdkProvider
@@ -63,9 +64,7 @@ class CommonizeNativeDistributionTask(
     }
 
     private suspend fun commonize(kotlinVersion: String, sharedPlatformSets: Set<List<Platform>>) {
-        val sharedPlatforms = sharedPlatformSets.map { set ->
-            set.formatCompilerPlatformSetId()
-        }.toSet()
+        val sharedPlatforms = sharedPlatformSets.map {  it.commonizedPlatformsIdentifier() }.toSet()
 
         // TODO Maybe this should be separated into something more than a suspend function.
         val compiler = downloadNativeCompiler(kotlinVersion, userCacheRoot, jdkProvider)
@@ -115,11 +114,11 @@ class CommonizeNativeDistributionTask(
     private fun Model.nativePlatformSetsToCommonizeByKotlinVersion(): Map<String, Set<List<Platform>>> {
         val sharedPlatformSetsByKotlinVersion = mutableMapOf<String, MutableSet<List<Platform>>>()
         for (module in modules) {
-            for (fragment in module.fragments.sortedBy { it.name }) {
+            for (fragment in module.fragments) {
                 val platforms = fragment.platforms.filter { it.isDescendantOf(Platform.NATIVE) }
                 if (platforms.size > 1) {
                     val kotlinVersion = fragment.settings.kotlin.version
-                    sharedPlatformSetsByKotlinVersion.getOrPut(kotlinVersion) { mutableSetOf() } += platforms.toList().sorted()
+                    sharedPlatformSetsByKotlinVersion.getOrPut(kotlinVersion) { mutableSetOf() } += platforms.toList()
                 }
             }
         }

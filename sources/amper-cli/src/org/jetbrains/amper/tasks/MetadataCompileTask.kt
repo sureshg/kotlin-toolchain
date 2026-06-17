@@ -8,6 +8,7 @@ import kotlinx.serialization.json.Json
 import org.jetbrains.amper.CliReportingMavenResolver
 import org.jetbrains.amper.ProcessRunner
 import org.jetbrains.amper.cli.AmperProjectTempRoot
+import org.jetbrains.amper.cli.logging.infoNoConsole
 import org.jetbrains.amper.cli.telemetry.setAmperModule
 import org.jetbrains.amper.cli.userReadableError
 import org.jetbrains.amper.compilation.KotlinArtifactsDownloader
@@ -111,8 +112,6 @@ internal class MetadataCompileTask(
     override suspend fun run(dependenciesResult: List<TaskResult>, executionContext: TaskGraphExecutionContext): Result {
         checkFragment()
 
-        logger.info("compile metadata for '${module.userReadableName}' -- ${fragment.name}")
-
         val kotlinSettings = fragment.serializableKotlinSettings()
         val fragmentPlatforms = fragment.platforms.mapNotNull { it.toResolutionPlatform() }.toSet()
 
@@ -157,7 +156,7 @@ internal class MetadataCompileTask(
     }
 
     fun Path.isEmptyDirectory(): Boolean {
-        return isDirectory() && Files.newDirectoryStream(this).use { !it.iterator().hasNext() }/*.isEmpty()*/
+        return isDirectory() && Files.newDirectoryStream(this).use { it.none() }
     }
 
     private suspend fun compileCommonMetadata(
@@ -249,16 +248,16 @@ internal class MetadataCompileTask(
             compilerPlugins = compilerPlugins,
             entryPoint = null,
             libraryPaths = commonizedKlibs + classpath,
-            exportedLibraryPaths = emptyList(),
-            fragments = listOf(fragment),
+            exportedLibraryPaths = [],
+            fragments = [fragment],
             sourceFiles = sourceDirectories.flatMap { it.walk() }.toList(),
             additionalSourceRoots = additionalSourceRoots,
-            refinesPaths = refinesPaths,
+            binaryOptions = emptyMap(),
             outputPath = taskOutputRoot.path,
             compilationType = KotlinCompilationType.LIBRARY,
-            binaryOptions = emptyMap(),
             include = null,
             fragmentPlatforms = fragmentPlatforms.map { it.toPlatform() }.toSet(),
+            refinesPaths = refinesPaths,
         )
 
         spanBuilder("kotlin-native-metadata-compilation")
@@ -267,7 +266,7 @@ internal class MetadataCompileTask(
             .setAttribute("compiler-version", kotlinUserSettings.compilerVersion)
             .setListAttribute("compiler-args", compilerArgs)
             .use {
-                logger.info("Compiling Native Kotlin metadata for module '${module.userReadableName}(:${fragment.name})'...")
+                logger.infoNoConsole("Compiling Native Kotlin metadata for '${fragment.identificationPhrase()})'...")
                 nativeCompiler.compile(processRunner, compilerArgs, tempRoot, module)
             }
     }
@@ -293,7 +292,7 @@ internal class MetadataCompileTask(
     }
 
     private fun KonanDistribution.commonizedKlibs(platforms: List<Platform>, kotlinUserSettings: KotlinUserSettings) =
-        commonizedKlibs(platforms.compilerPlatforms(), kotlinUserSettings.compilerVersion)
+        commonizedKlibs(platforms, kotlinUserSettings.compilerVersion)
 
     private suspend fun compileCommonSources(
         jdk: Jdk,
@@ -340,7 +339,7 @@ internal class MetadataCompileTask(
             .setAttribute("compiler-version", kotlinUserSettings.compilerVersion)
             .setListAttribute("compiler-args", compilerArgs)
             .use {
-                logger.info("Compiling Kotlin metadata for module '${module.userReadableName}'...")
+                logger.infoNoConsole("Compiling Kotlin metadata for module '${module.userReadableName}'...")
                 val result = processRunner.runJava(
                     jdk = jdk,
                     workingDir = Path("."),
@@ -365,8 +364,6 @@ internal class MetadataCompileTask(
         fragmentPlatforms: Set<ResolutionPlatform>,
         jdk: Jdk,
     ): Result {
-        val jdk = jdkProvider.getJdkOrUserError(jdkSettings = fragment.settings.jvm.jdk)
-
         val inputValues = mapOf(
             "jdk.version" to jdk.version,
             "jdk.home" to jdk.homeDir.pathString,
@@ -413,10 +410,8 @@ internal class MetadataCompileTask(
     }
 
     private fun checkFragment() {
-        if (fragment.isTest)
-            error("Metadata compilation is not supported for test fragments: ${fragment.module.userReadableName}#${fragment.name}")
-        if (fragment.platforms.size == 1)
-            error("Metadata compilation is not supported for single-platform fragments: ${fragment.module.userReadableName}#${fragment.name}")
+        check(!fragment.isTest) { "Metadata compilation is not supported for test fragments: ${fragment.module.userReadableName}#${fragment.name}" }
+        check (fragment.platforms.size > 1) { "Metadata compilation is not supported for single-platform fragments: ${fragment.module.userReadableName}#${fragment.name}" }
     }
 
     class Result(

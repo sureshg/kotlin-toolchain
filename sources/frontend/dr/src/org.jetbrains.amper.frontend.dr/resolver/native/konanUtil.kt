@@ -32,8 +32,14 @@ import kotlin.io.path.listDirectoryEntries
 
 // TODO: It should also operate on Platform API, perhaps.
 
+// Todo (AB): [AMPER-721] Think about extracting this utility class (and maybe more) to a separate module
+//  included into the list of modules available to the Amper idea Plugin.
+
 private const val KONAN_DATA_DIR = "KONAN_DATA_DIR"
 
+// TODO: Should we use KONAN_DATA_DIR here and elsewhere instead of Amper user cache folder?
+//  (as well as for the location of downloading compiler distribution itself. 
+//  See AMPER-5319.
 @JvmInline
 value class KonanDistribution(val path: Path)
 
@@ -61,9 +67,8 @@ fun KonanDistribution.platformDir(platform: String): Path =
 fun Collection<Platform>.compilerPlatforms(): List<String> = map { it.nameForCompiler }
 
 @UsedInIdePlugin
-fun KonanDistribution.commonizedKlibs(compilerPlatforms: List<String>, kotlinVersion: String): List<Path> {
-    val sortedPlatforms = compilerPlatforms.sorted().toSet()
-    val commonizedPath = commonizedRoot(kotlinVersion).commonizedPlatformsDirectory(sortedPlatforms)
+fun KonanDistribution.commonizedKlibs(compilerPlatforms: List<Platform>, kotlinVersion: String): List<Path> {
+    val commonizedPath = commonizedRoot(kotlinVersion).commonizedPlatformsDirectory(compilerPlatforms)
     val chosenCommonized = commonizedPath
         .takeIf { it.exists() }
         ?.listDirectoryEntries()
@@ -73,23 +78,31 @@ fun KonanDistribution.commonizedKlibs(compilerPlatforms: List<String>, kotlinVer
 }
 
 fun KonanDistribution.commonizedRoot(kotlinVersion: String): Path {
-    val explicitKonanDataDir = System.getenv(KONAN_DATA_DIR)
-    val konanDataDir = if (explicitKonanDataDir != null) Path(explicitKonanDataDir) else path
+    val konanDataDir = path
     val encodedVersion = URLEncoder.encode(kotlinVersion, Charsets.UTF_8.name())
-    // TODO: We should probably use KONAN_DATA_DIR here instead. See AMPER-5319.
     val commonizedRoot = konanDataDir.commonizedLibrariesDir / encodedVersion
 
     return commonizedRoot
 }
 
-private fun Path.commonizedPlatformsDirectory(platforms: Set<String>): Path {
+/**
+ * Special format to uniquely identify a set of platforms in a compiler-specific way.
+ * Required for interoperability with the commonization mechanisms.
+ */
+fun Collection<Platform>.commonizedPlatformsIdentifier(): String {
+    val sortedPlatforms = mapTo(sortedSetOf()) { it.nameForCompiler }
     // native/commonizer-api/src/org/jetbrains/kotlin/commonizer/CommonizerTarget.kt
-    val identityString = platforms.joinToString(
-        separator = ", ",
+    return sortedPlatforms.joinToString(
         prefix = "(",
+        separator = ", ",
         postfix = ")",
     )
-    return this / nameTrimmedWithHash(identityString)
+}
+
+
+private fun Path.commonizedPlatformsDirectory(platforms: Collection<Platform>): Path {
+    val commonizedPlatformsIdentifier = platforms.commonizedPlatformsIdentifier()
+    return this / nameTrimmedWithHash(commonizedPlatformsIdentifier)
 }
 
 private const val maxFileNameLength = 150

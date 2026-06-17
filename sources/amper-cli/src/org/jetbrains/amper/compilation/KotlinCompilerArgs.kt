@@ -208,12 +208,12 @@ internal fun kotlinNativeCompilerArgs(
     fragments: List<Fragment>,
     sourceFiles: List<Path>,
     additionalSourceRoots: List<SourceRoot>,
-    refinesPaths: List<Path> = emptyList(),
     binaryOptions: Map<String, String>,
     outputPath: Path,
     compilationType: KotlinCompilationType,
     include: Path?,
-    fragmentPlatforms: Set<Platform> = setOf(task.platform),
+    fragmentPlatforms: Set<Platform>,
+    refinesPaths: List<Path> = emptyList(),
 ): List<String> = buildList {
     if (kotlinUserSettings.debug ?: (buildType == BuildType.Debug)) {
         add("-g")
@@ -239,8 +239,9 @@ internal fun kotlinNativeCompilerArgs(
     // TODO full module path including entire hierarchy? -Xshort-module-name)
     val isMetadataCompilation = fragmentPlatforms.size > 1 && fragments.size == 1
     if (isMetadataCompilation) {
-        add("-module-name=${compilationType.moduleName(task.module, task.isTest)}_${fragments.single().name}")
-        add("-Xshort-module-name=${compilationType.moduleName(task.module, task.isTest)}_${fragments.single().name}")
+        val moduleName = "${compilationType.moduleName(task.module, task.isTest)}_${fragments.single().name}"
+        add("-module-name=$moduleName")
+        add("-Xshort-module-name=$moduleName")
 
         add("-Xmetadata-klib")
 
@@ -303,8 +304,8 @@ internal fun kotlinNativeCompilerArgs(
         addAll(sourceFiles.map { it.pathString })
     }
 
-    logger.debug("Native metadata compilation args:")
-    logger.debug(joinToString(System.lineSeparator()) { it })
+    // todo (AB) : [AMPER-721] Remove this logging after AMPER-721 is done
+    logger.debug("Native metadata compilation args: \n${joinToString(System.lineSeparator()) { it }}")
 }
 
 internal fun kotlinWasmCompilerArgs(
@@ -459,7 +460,7 @@ internal fun kotlinMetadataCompilerArgs(
     val kotlinVersion = ComparableVersion(kotlinUserSettings.compilerVersion)
     val targetPlatforms = fragmentPlatforms.mapNotNull { it.toPlatform().toXTargetPlatform(kotlinVersion) }.toSet()
     if (targetPlatforms.isNotEmpty()) {
-        add("-Xtarget-platform=${targetPlatforms.joinToString(",")}")
+        add("-Xtarget-platform=${targetPlatforms.joinToString(",") { it.cliValue }}")
     }
 
     if (friendPaths.isNotEmpty()) {
@@ -484,13 +485,13 @@ internal fun kotlinMetadataCompilerArgs(
 
     // -d is after freeCompilerArgs because we don't allow overriding the output dir (it breaks task dependencies)
     // (specifying -d multiple times generates a warning, and only the last value is used)
-    // TODO forbid -d in freeCompilerArgs in the frontendC:\Sources\Git\git.jetbrains.team\amper-branch\build\metadataCompiled\, so it's clearer for the users
+    // TODO forbid -d in freeCompilerArgs in the frontend, so it's clearer for the users
     add("-d=${outputPath.pathString}")
 
     addAll(sourceFiles.map { it.pathString })
 
-    logger.debug("Common metadata compilation args:")
-    logger.debug(joinToString(System.lineSeparator()) { it })
+    // todo (AB) : [AMPER-721] Remove this logging after AMPER-721 is done
+    logger.debug("Common metadata compilation args: \n${joinToString(System.lineSeparator()) { it }}")
 }
 
 inline fun <R> withKotlinCompilerArgFile(args: List<String>, tempRoot: AmperProjectTempRoot, block: (Path) -> R): R {
@@ -513,8 +514,12 @@ inline fun <R> withKotlinCompilerArgFile(args: List<String>, tempRoot: AmperProj
     }
 }
 
-private enum class XTargetPlatform {
-    JVM, JS, WasmJs, WasmWasi, Native;
+private enum class XTargetPlatform(val cliValue: String) {
+    JVM("JVM"),
+    JS("JS"),
+    WasmJs("WasmJs"),
+    WasmWasi("WasmWasi"),
+    Native("Native");
 
     val since: ComparableVersion = ComparableVersion("2.3.20-Beta1")
 }

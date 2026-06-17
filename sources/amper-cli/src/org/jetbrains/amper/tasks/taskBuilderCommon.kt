@@ -80,7 +80,7 @@ fun ProjectTasksBuilder.setupCommonTasks() {
 
     allFragments()
         // Metadata compilation is done for multi-platform main fragments.
-        // todo (AB) : [AMPER-721] "android+jvm", "webMuain" should be also skipped.
+        // todo (AB) : [AMPER-721] "android+jvm", "webMain" should be also skipped.
         .filter { it.platforms.size > 1 && !it.isTest }
         .forEach {
             val taskName = CommonFragmentTaskType.CompileMetadata.getTaskName(it)
@@ -96,27 +96,19 @@ fun ProjectTasksBuilder.setupCommonTasks() {
                     tempRoot = context.projectTempRoot,
                     jdkProvider = context.jdkProvider,
                     processRunner = context.processRunner,
-                )
-            )
+                ),
+                dependsOn = buildList {
+                    val allFragmentDependencies = with(ModuleDependencies) {
+                        // todo (AB) : [AMPER-721] Check that native-only and mixed metadata-compilation
+                        //  works with this compile dependencies classpath. Perhaps, all true native compile dependencies
+                        //  should be used instead (including all transitive dependencies).
+                        it.getSymbolsVisibilityFragmentsDependencies(moduleDependenciesMap[it.module]!!,
+                            it.isTest, it.platforms)
+                    }
+                    addAll(allFragmentDependencies.map{ CommonFragmentTaskType.CompileMetadata.getTaskName(it) })
 
-            val allFragmentDependencies = with(ModuleDependencies) {
-                // todo (AB) : [AMPER-721] Check that native-only and mixed metadata-compilation
-                //  works with this compile dependencies classpath. Perhaps, all true native compile dependencies
-                //  should be used instead (including all transitive dependencies).
-                it.getSymbolsVisibilityFragmentsDependencies(moduleDependenciesMap[it.module]!!,
-                    it.isTest, it.platforms)
-            }
-           allFragmentDependencies
-                .forEach { otherFragment ->
-                    tasks.registerDependency(
-                        taskName = taskName,
-                        dependsOn = CommonFragmentTaskType.CompileMetadata.getTaskName(otherFragment)
-                    )
+                    add(CommonizeNativeDistributionTask.TASK_NAME)
                 }
-
-            tasks.registerDependency(
-                taskName = taskName,
-                dependsOn = CommonizeNativeDistributionTask.TASK_NAME
             )
         }
 

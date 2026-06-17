@@ -15,12 +15,3 @@ internal fun Iterable<Path>.filterKLibs() = filter {
         else -> error("Unexpected file '${it.fileName}' in the native classpath. A bug in the DR?")
     }
 }
-
-/**
- * Special format to uniquely identify a set of platforms in a compiler-specific way.
- * Required for interoperability with the commonization mechanisms.
- */
-internal fun Collection<Platform>.formatCompilerPlatformSetId(): String =
-    // native/commonizer-api/src/org/jetbrains/kotlin/commonizer/CommonizerTarget.kt
-    mapTo(sortedSetOf()) { it.nameForCompiler }
-        .joinToString(prefix = "(", separator = ", ", postfix = ")")

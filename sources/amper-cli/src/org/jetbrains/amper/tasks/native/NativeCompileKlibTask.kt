@@ -164,13 +164,14 @@ internal class NativeCompileKlibTask(
                 compilerPlugins = compilerPlugins,
                 entryPoint = null,
                 libraryPaths = libraryPaths,
-                exportedLibraryPaths = emptyList(),
+                exportedLibraryPaths = [],
                 fragments = fragments,
+                fragmentPlatforms = setOf(platform),
                 sourceFiles = sourceFiles,
                 additionalSourceRoots = additionalSources,
+                binaryOptions = emptyMap(),
                 outputPath = artifact,
                 compilationType = KotlinCompilationType.LIBRARY,
-                binaryOptions = emptyMap(),
                 include = null,
             )
 

@@ -192,11 +192,12 @@ internal class NativeLinkTask(
                 exportedLibraryPaths = exportedKLibs,
                 // no need to pass fragments nor sources, we only build from klibs
                 fragments = emptyList(),
+                fragmentPlatforms = setOf(platform),
                 sourceFiles = emptyList(),
                 additionalSourceRoots = emptyList(),
+                binaryOptions = binaryOptions,
                 outputPath = artifactPath,
                 compilationType = compilationType,
-                binaryOptions = binaryOptions,
                 include = includeArtifact,
             )
 
