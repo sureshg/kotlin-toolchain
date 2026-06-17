@@ -293,8 +293,8 @@ class AndroidExampleProjectsTest : AmperCliTestBase() {
     private fun AmperCliResult.getArtifactPath(taskName: String, extension: String = "apk"): Path =
         getTaskOutputPath(taskName)
             .walk(PathWalkOption.BREADTH_FIRST)
-            .filter { it.extension.lowercase() == extension.lowercase() }
-            .firstOrNull() ?: fail("artifact not found")
+            .firstOrNull { it.extension.equals(extension, ignoreCase = true) }
+            ?: fail("artifact not found")
 
     private fun assertClassContainsInApk(dalvikFqn: String, apkPath: Path) {
         val extractedApkPath = apkPath.parent.resolve("extractedApk")
@@ -325,7 +325,7 @@ class AndroidExampleProjectsTest : AmperCliTestBase() {
         val typesInDexes = extractedApkPath
             .walk()
             .map { it.extension }
-            .filter { it.lowercase() == extension.lowercase() }
-        assertEquals(typesInDexes.toList().size, 0)
+            .filter { it.equals(extension, ignoreCase = true) }
+        assertEquals(0, typesInDexes.toList().size)
     }
 }
