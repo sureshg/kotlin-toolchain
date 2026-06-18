@@ -12,6 +12,7 @@ import org.jetbrains.amper.frontend.fragmentsTargeting
 import org.jetbrains.amper.frontend.isDescendantOf
 import org.jetbrains.amper.tasks.CommonFragmentTaskType
 import org.jetbrains.amper.tasks.CommonTaskType
+import org.jetbrains.amper.tasks.LinkTaskType
 import org.jetbrains.amper.tasks.ModuleTaskTypes
 import org.jetbrains.amper.tasks.ProjectTasksBuilder
 import org.jetbrains.amper.tasks.ProjectTasksBuilder.Companion.getTaskOutputPath
@@ -190,7 +191,7 @@ fun ProjectTasksBuilder.setupNativeTasks() {
                     terminal = context.terminal,
                     processRunner = context.processRunner,
                 ),
-                NativeTaskType.Link.getTaskName(module, platform, isTest = false, buildType)
+                LinkTaskType.getTaskName(module, platform, isTest = false, buildType)
             )
         }
 
@@ -212,7 +213,7 @@ fun ProjectTasksBuilder.setupNativeTasks() {
                     terminal = context.terminal,
                     processRunner = context.processRunner,
                 ),
-                NativeTaskType.Link.getTaskName(module, platform, isTest = true, buildType)
+                LinkTaskType.getTaskName(module, platform, isTest = true, buildType)
             )
         }
 }
@@ -238,7 +239,7 @@ private fun getNativeLinkTaskDetails(
         ) to KotlinCompilationType.IOS_FRAMEWORK
 
     else ->
-        NativeTaskType.Link.getTaskName(module, platform, isTest, buildType) to KotlinCompilationType.BINARY
+        LinkTaskType.getTaskName(module, platform, isTest, buildType) to KotlinCompilationType.BINARY
 }
 
 enum class NativeTaskType(
@@ -247,5 +248,4 @@ enum class NativeTaskType(
 ) : TaskNameFactory.LeafPlatform {
     CompileKLib("compile", "compiling"),
     Cinterop("cinterop", "processing cinterop definitions"),
-    Link("link", "linking"),
 }

@@ -8,10 +8,10 @@ import org.jetbrains.amper.dependency.resolution.ResolutionScope
 import org.jetbrains.amper.frontend.AmperModule
 import org.jetbrains.amper.frontend.Platform
 import org.jetbrains.amper.tasks.CommonTaskType
+import org.jetbrains.amper.tasks.LinkTaskType
 import org.jetbrains.amper.tasks.ProjectTasksBuilder
 import org.jetbrains.amper.tasks.ProjectTasksBuilder.Companion.getTaskOutputPath
 import org.jetbrains.amper.tasks.getTaskName
-import org.jetbrains.amper.tasks.native.NativeTaskType
 import org.jetbrains.amper.util.BuildType
 
 fun ProjectTasksBuilder.setupJsTasks() {
@@ -45,7 +45,7 @@ fun ProjectTasksBuilder.setupJsTasks() {
             )
 
             if (needsLinkedExecutable(module, isTest)) {
-                val linkAppTaskName = NativeTaskType.Link.getTaskName(module, platform, isTest)
+                val linkAppTaskName = LinkTaskType.getTaskName(module, platform, isTest)
                 tasks.registerTask(
                     task = JsLinkTask(
                         module = module,
@@ -83,7 +83,7 @@ fun ProjectTasksBuilder.setupJsTasks() {
 
             if (needsLinkedExecutable(module, isTest)) {
                 tasks.registerDependency(
-                    NativeTaskType.Link.getTaskName(module, platform, isTest),
+                    LinkTaskType.getTaskName(module, platform, isTest),
                     CommonTaskType.Compile.getTaskName(dependsOn, platform, false)
                 )
             }

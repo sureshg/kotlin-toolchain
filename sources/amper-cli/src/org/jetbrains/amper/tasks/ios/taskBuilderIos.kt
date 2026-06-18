@@ -7,13 +7,13 @@ package org.jetbrains.amper.tasks.ios
 import org.jetbrains.amper.frontend.Platform
 import org.jetbrains.amper.frontend.schema.ProductType
 import org.jetbrains.amper.tasks.CommonTaskType
+import org.jetbrains.amper.tasks.LinkTaskType
 import org.jetbrains.amper.tasks.ModuleTaskTypes
 import org.jetbrains.amper.tasks.ProjectTasksBuilder
 import org.jetbrains.amper.tasks.ProjectTasksBuilder.Companion.getTaskOutputPath
 import org.jetbrains.amper.tasks.TaskNameFactory
 import org.jetbrains.amper.tasks.compose.isComposeEnabledFor
 import org.jetbrains.amper.tasks.getTaskName
-import org.jetbrains.amper.tasks.native.NativeTaskType
 
 /**
  * Set up apple-related tasks.
@@ -38,7 +38,7 @@ fun ProjectTasksBuilder.setupIosTasks() {
                     buildType = buildType,
                     processRunner = context.processRunner,
                 ),
-                dependsOn = NativeTaskType.Link.getTaskName(module, platform, isTest = true, buildType)
+                dependsOn = LinkTaskType.getTaskName(module, platform, isTest = true, buildType)
             )
         }
 
