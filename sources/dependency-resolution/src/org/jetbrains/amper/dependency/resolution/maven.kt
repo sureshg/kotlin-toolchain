@@ -1084,6 +1084,18 @@ class MavenDependencyImpl internal constructor(
                             dependencyConstraints = it
                         }
                     }
+
+                // BOM declared in Gradle metadata as a dependency of type 'platform' can depend on other BOMs
+                variants.flatMap {
+                    // resolve transitive BOM dependencies even if isTransitive is set to false,
+                    // because BOM sequence is an atomic thing that ia intended to be applied to the graph as a whole thing.
+                    it.dependencies(context, level, diagnosticsReporter)
+                    // `available-at` doesn't make sense for the BOM dependency, skip its processing
+                }.map {
+                    it.toMavenDependency(context, diagnosticsReporter)
+                }.let {
+                    children = it
+                }
             }
         } else {
             // Regular library

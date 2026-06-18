@@ -1547,6 +1547,40 @@ class BuildGraphTest : BaseDRTest() {
     }
 
     /**
+     * This test checks that a transitive BOM dependency (declared as a dependency of directly specified BOM) is
+     * taken into account while resolving the graph.
+     *
+     * In particular, it is met in the following typical configuration of android project with open telemetry.
+     * dependencies:
+     *   - bom: io.opentelemetry.android:opentelemetry-android-bom:1.4.0-alpha
+     *   - io.opentelemetry.android:android-agent:1.4.0
+     *
+     * 'io.opentelemetry.android:agent-api:1.4.0' depends on 'io.opentelemetry:opentelemetry-sdk'
+     * but leaves its version unspecified.
+     *
+     * The version of 'io.opentelemetry:opentelemetry-sdk' is provided by BOM 'io.opentelemetry:opentelemetry-bom:1.62.0'.
+     * But the BOM itself is not directly added as a project dependency usually,
+     * Instead, android-specific aggregating BOM 'io.opentelemetry.android:opentelemetry-android-bom:1.4.0-alpha' is
+     * added to the project. And it in turn depends on the BOM 'io.opentelemetry:opentelemetry-bom:1.62.0'.
+     *
+     * This way, the BOM ('io.opentelemetry:opentelemetry-bom:1.62.0') resolved as a transitive dependency of directly declared BOM
+     * is used for resolving version of the transitive dependency on 'io.opentelemetry:opentelemetry-sdk'.
+     */
+    @Test
+    fun `resolving unspecified versions of android dependencies from BOM`(testInfo: TestInfo) = runDrTest {
+        val root = doTestByFile(
+            testInfo,
+            dependency = listOf(
+                "bom: io.opentelemetry.android:opentelemetry-android-bom:1.4.0-alpha",
+                "io.opentelemetry.android:android-agent:1.4.0"
+            ),
+            scope = ResolutionScope.COMPILE,
+            repositories = listOf(REDIRECTOR_MAVEN_CENTRAL, REDIRECTOR_MAVEN_GOOGLE),
+            verifyMessages = true
+        )
+    }
+
+    /**
      * BOM is published with pom.xml only (no Gradle metadata in .module file)
      */
     @Test

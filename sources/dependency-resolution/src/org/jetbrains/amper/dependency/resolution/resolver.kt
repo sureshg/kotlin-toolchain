@@ -807,8 +807,19 @@ open class MavenDependencyUnspecifiedVersionResolverBase: UnspecifiedVersionReso
     protected open fun getBomNodes(node: MavenDependencyNodeWithContext): List<MavenDependencyNode> = node.parents.map { parent ->
         parent.children
             .filterIsInstance<MavenDependencyNode>()
-            .filter { it.isBom }
+            .filterBomDependencies()
     }.flatten()
+
+    /**
+     * @return list of Filtered BOM dependencies together with their nested BOM-to-BOM dependencies (if any).
+     */
+    protected fun List<MavenDependencyNode>.filterBomDependencies(): List<MavenDependencyNode> {
+        return filter { it.isBom }
+            .flatMap {
+                // BOM declared in Gradle metadata as a dependency of type 'platform' can depend on other BOMs
+                it.distinctBfsSequence { child, _ -> child is MavenDependencyNode && child.isBom }
+            }.filterIsInstance<MavenDependencyNode>()
+    }
 }
 
 class Progress

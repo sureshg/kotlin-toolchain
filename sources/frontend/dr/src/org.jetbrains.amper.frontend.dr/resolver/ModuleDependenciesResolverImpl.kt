@@ -103,8 +103,7 @@ class DirectMavenDependencyUnspecifiedVersionResolver: MavenDependencyUnspecifie
                     parent.children
                         .filterIsInstance<DirectFragmentDependencyNode>()
                         .map { it.dependencyNode }
-                        .filterIsInstance<MavenDependencyNode>()
-                        .filter { it.isBom }
+                        .filterBomDependencies()
                 }.flatten()
         } else {
             super.getBomNodes(node)
