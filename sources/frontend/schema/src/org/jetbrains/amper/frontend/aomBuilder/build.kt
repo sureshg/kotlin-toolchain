@@ -27,8 +27,8 @@ import org.jetbrains.amper.frontend.contexts.plus
 import org.jetbrains.amper.frontend.contexts.tryReadMinimalModule
 import org.jetbrains.amper.frontend.diagnostics.AomModelDiagnosticFactories
 import org.jetbrains.amper.frontend.diagnostics.AomSingleModuleDiagnosticFactories
+import org.jetbrains.amper.frontend.diagnostics.TreeDiagnosticFactories
 import org.jetbrains.amper.frontend.diagnostics.UnresolvedModuleDependency
-import org.jetbrains.amper.frontend.diagnostics.treeDiagnosticFactories
 import org.jetbrains.amper.frontend.plus
 import org.jetbrains.amper.frontend.processing.addImplicitDependencies
 import org.jetbrains.amper.frontend.processing.configureLombokDefaults
@@ -193,7 +193,7 @@ internal fun readModuleMergedTree(
     // safe: `plugins` has a default
     val pluginsTree = processedCommonTree[Module::plugins] as RefinedMappingNode
 
-    treeDiagnosticFactories(refiner).forEach { diagnosticFactory ->
+    TreeDiagnosticFactories.forEach { diagnosticFactory ->
         diagnosticFactory.analyze(processedTree, minimalModule.module, problemReporter)
     }
 
