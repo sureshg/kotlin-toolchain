@@ -13,16 +13,6 @@ inline fun <reified T : SchemaNode> SchemaTypeDeclaration.isSameAs(): Boolean = 
 fun SchemaTypeDeclaration.isSameAs(`class`: KClass<out SchemaNode>): Boolean = qualifiedName == `class`.qualifiedName
 
 /**
- * Whether the user must explicitly specify the value for this property.
- * This is true for any property that has no default value.
- *
- * Note that this is orthogonal to whether the property has a nullable type. Nullable properties don't necessarily have
- * a default value. If they do, the default is not necessarily null. If they don't, they are required despite being
- * nullable.
- */
-fun SchemaObjectDeclaration.Property.isValueRequired() = default != null
-
-/**
  * Builds a user-readable string representation of the type.
  *
  * @param includeSyntax if true, some grammar-like syntax will be included in the representation to describe

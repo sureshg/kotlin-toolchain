@@ -122,7 +122,6 @@ private class ObjectPropertiesVisitorRecurring(
  */
 fun TreeNode.collectScalarPropertiesWithOwners() = AllScalarPropertiesCollector.visit(this)
 
-private typealias PropertiesWithOwner = List<PropertyWithOwner>
 data class PropertyWithOwner(val owner: MappingNode, val scalarProp: KeyValue)
 
 private object AllScalarPropertiesCollector : RecurringTreeVisitor<PropertiesWithOwner>() {
