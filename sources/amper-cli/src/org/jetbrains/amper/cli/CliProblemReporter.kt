@@ -5,6 +5,7 @@
 package org.jetbrains.amper.cli
 
 import org.jetbrains.amper.CliBundle
+import org.jetbrains.amper.frontend.api.TraceableString
 import org.jetbrains.amper.frontend.asBuildProblemSource
 import org.jetbrains.amper.frontend.catalogs.ComposeMaterial3UnknownVersionMappingProblem
 import org.jetbrains.amper.frontend.messages.PsiBuildProblemSource
@@ -92,7 +93,7 @@ internal object CliProblemReporter : ProblemReporter {
         is StringNode -> value
         is StringInterpolationNode -> parts.joinToString("") {
             when (it) {
-                is StringInterpolationNode.Part.Text -> it.text
+                is StringInterpolationNode.Part.Text -> it.text.value
                 is StringInterpolationNode.Part.Reference -> it.referencePath.renderReference()
             }
         }
@@ -100,5 +101,6 @@ internal object CliProblemReporter : ProblemReporter {
         is ListNode -> CliBundle.message("conflicting.properties.list.render")
     }
 
-    private fun List<String>.renderReference(): String = joinToString(separator = ".", prefix = $$"${", postfix = "}")
+    private fun List<TraceableString>.renderReference(): String =
+        joinToString(separator = ".", prefix = $$"${", postfix = "}")
 }

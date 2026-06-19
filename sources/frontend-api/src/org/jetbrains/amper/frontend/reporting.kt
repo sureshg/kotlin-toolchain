@@ -6,6 +6,7 @@ package org.jetbrains.amper.frontend
 
 import com.intellij.openapi.editor.Document
 import com.intellij.psi.PsiElement
+import org.jetbrains.amper.frontend.api.PsiTrace
 import org.jetbrains.amper.frontend.api.SchemaValueDelegate
 import org.jetbrains.amper.frontend.api.Trace
 import org.jetbrains.amper.frontend.api.Traceable
@@ -45,13 +46,40 @@ fun ProblemReporter.reportBundleError(
     )
 }
 
+@JvmName("reportBundleErrorWithContext")
+context(reporter: ProblemReporter)
+fun reportBundleError(
+    source: BuildProblemSource,
+    diagnosticId: DiagnosticId,
+    messageKey: String,
+    vararg arguments: Any?,
+    bundle: MessageBundle = SchemaBundle,
+    level: Level = Level.Error,
+    problemType: BuildProblemType = BuildProblemType.Generic,
+) {
+    reporter.reportBundleError(
+        source = source,
+        diagnosticId = diagnosticId,
+        messageKey = messageKey,
+        arguments = arguments,
+        bundle = bundle,
+        level = level,
+        problemType = problemType,
+    )
+}
+
 fun Traceable.asBuildProblemSource(): BuildProblemSource = trace.asBuildProblemSource()
 
 fun SchemaValueDelegate<*>.keyValueAsBuildProblemSource(): BuildProblemSource = keyValueTrace.asBuildProblemSource()
 
 @OptIn(NonIdealDiagnostic::class)
-fun Trace.asBuildProblemSource(): BuildProblemSource = extractPsiElementOrNull()?.asBuildProblemSource()
-    ?: GlobalBuildProblemSource
+fun Trace.asBuildProblemSource(): BuildProblemSource {
+    if (this is PsiTrace && rangeInElement != null) {
+        return PsiBuildProblemSource(psiElement, rangeInElement)
+    }
+    return extractPsiElementOrNull()?.asBuildProblemSource()
+        ?: GlobalBuildProblemSource
+}
 
 fun PsiElement.asBuildProblemSource(): PsiBuildProblemSource = PsiBuildProblemSource(this)
 
@@ -64,7 +92,7 @@ fun getLineAndColumnRangeInPsiFile(node: PsiElement): LineAndColumnRange {
     )
 }
 
-fun getLineAndColumnRangeInDocument(document: Document, range: IntRange): LineAndColumnRange {
+fun getLineAndColumnRangeInDocument(document: Document?, range: IntRange): LineAndColumnRange {
     return LineAndColumnRange(
         offsetToLineAndColumn(document, range.first),
         offsetToLineAndColumn(document, range.last),

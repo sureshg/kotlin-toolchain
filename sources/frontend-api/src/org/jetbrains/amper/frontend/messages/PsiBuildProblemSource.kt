@@ -11,8 +11,6 @@ import org.jetbrains.amper.problems.reporting.FileBuildProblemSource
 import org.jetbrains.amper.problems.reporting.FileWithRangesBuildProblemSource
 import java.nio.file.Path
 
-private const val NO_VIRTUAL_FILE_ERROR = "PSI element doesn't have real backing file"
-
 /**
  * Location in the file designated by the node of a PSI tree.
  * Is useful for IntelliJ integration as most of its features are working over PSI, so instead of determining
@@ -25,15 +23,30 @@ sealed interface PsiBuildProblemSource : FileBuildProblemSource {
     val psiElement: PsiElement
 
     override val file: Path
-        get() = psiElement.originalFilePath ?: error(NO_VIRTUAL_FILE_ERROR)
+        get() = psiElement.getOriginalFilePath()
 
-    data class FileSystemLike internal constructor(override val psiElement: PsiFileSystemItem) : PsiBuildProblemSource
+    data class FileSystemLike internal constructor(
+        override val psiElement: PsiFileSystemItem,
+    ) : PsiBuildProblemSource
 
-    data class Element internal constructor(override val psiElement: PsiElement) : PsiBuildProblemSource, FileWithRangesBuildProblemSource {
+    data class Element internal constructor(
+        override val psiElement: PsiElement,
+        /**
+         * See [org.jetbrains.amper.frontend.api.PsiTrace.rangeInElement]
+         */
+        val rangeInElement: IntRange? = null,
+    ) : PsiBuildProblemSource, FileWithRangesBuildProblemSource {
+        init {
+            require(psiElement !is PsiFileSystemItem) { "PsiFileSystemItem is unexpected here" }
+        }
+
         override val offsetRange: IntRange
             get() {
                 val range = psiElement.textRange
-                return IntRange(range.startOffset, range.endOffset)
+                val startOffset = range.startOffset
+                return if (rangeInElement != null) {
+                    (startOffset + rangeInElement.first)..(startOffset + rangeInElement.last)
+                } else IntRange(startOffset, range.endOffset)
             }
     }
 }
@@ -44,3 +57,9 @@ fun PsiBuildProblemSource(psiElement: PsiElement): PsiBuildProblemSource =
     } else {
         PsiBuildProblemSource.Element(psiElement)
     }
+
+fun PsiBuildProblemSource(
+    psiElement: PsiElement,
+    rangeInElement: IntRange,
+): PsiBuildProblemSource =
+    PsiBuildProblemSource.Element(psiElement, rangeInElement)

@@ -527,18 +527,18 @@ class PluginsTest : AmperCliTestBase() {
                 "${pluginYaml}:32:5: Cannot assign to property `taskOutputDir` – it is a built-in property available for reference only",
                 "${pluginYaml}:18:11: Expected `Dependency.Maven ( maven-coordinates )`, but got `sequence []`",
                 "${pluginYaml}:34:1: Cannot assign to property `module` – it is a built-in property available for reference only",
-                "${pluginYaml}:17:11: Referencing `markOutputsAs` is not allowed",
+                "${pluginYaml}:17:13: Referencing `markOutputsAs` is not allowed",
                 "${pluginYaml}:14:11: Maven coordinates should not contain slashes",
                 "${pluginYaml}:15:11: Maven coordinates `one-part` should contain at least two parts separated by `:`, but got `1`",
-                "${pluginYaml}:11:16: Referencing `module` is not allowed",
+                "${pluginYaml}:11:18: Referencing `module` is not allowed",
                 "${pluginYaml}:12:16: The value of type `mapping {string : Element}` cannot be assigned to the type `Nested`",
                 "${pluginYaml}:6:17: The value of type `string` cannot be assigned to the type `boolean`",
                 "${pluginYaml}:9:13: The value of type `Settings` cannot be assigned to the type `path`",
-                "${pluginYaml}:7:23: The value of type `boolean` cannot be used in string interpolation",
+                "${pluginYaml}:7:64: The value of type `boolean` cannot be used in string interpolation",
                 "${pluginYaml}:4:13: No value for required task action parameters: `int`, `classpath`.",
-                "${pluginYaml}:19:24: Unable to find reference's starting element `unknownRoot` in the current context",
-                "${pluginYaml}:19:24: Unable to resolve `missing` on a non-object type `string`",
-                "${pluginYaml}:19:24: Unable to resolve `unknown`: no such property is found in type `Settings`",
+                "${pluginYaml}:19:93: Unable to find reference's starting element `unknownRoot` in the current context",
+                "${pluginYaml}:19:56: Unable to resolve `missing` on a non-object type `string`",
+                "${pluginYaml}:19:82: Unable to resolve `unknown`: no such property is found in type `Settings`",
                 "${pluginYaml}:10:20: The value of type `path | null` cannot be assigned to the type `integer | null`",
                 "${pluginYaml}:20:7: Unknown property `unknownProperty1` (inferred type `string`) in `someAction`",
                 "${pluginYaml}:21:7: Unknown property `unknownProperty2` (inferred type `integer`) in `someAction`",
@@ -546,7 +546,7 @@ class PluginsTest : AmperCliTestBase() {
                 "${pluginYaml}:23:7: Unknown property `unknownProperty4` (inferred type `list [Dependency.Maven]`) in `someAction`",
                 "${pluginYaml}:24:7: Unknown property `unknownProperty5` (inferred type `string`) in `someAction`",
                 "${pluginYaml}:25:7: Unknown property `unknownProperty6` (inferred type `<undefined-type>`) in `someAction`",
-                "${pluginYaml}:25:25: Referencing `settings` is not allowed",
+                "${pluginYaml}:25:34: Referencing `settings` is not allowed",
                 "${pluginYaml}:26:7: Unknown property `unknownProperty7` (inferred type `KotlinVersion | null`) in `someAction`",
                 "${pluginYaml}:28:7: Unknown property `unknownProperty8` (inferred type `path`) in `someAction`",
                 "${pluginYaml}:29:7: Unknown property `unknownProperty9` (inferred type `path`) in `someAction`",
@@ -581,7 +581,7 @@ class PluginsTest : AmperCliTestBase() {
                    ├─ $pluginYaml:11:14
                    ╰─ $pluginYaml:12:11
                 """.trimIndent(),
-                "${pluginYaml}:15:11: Accessing properties/keys on the nullable type `Nested | null` is not allowed.",
+                "${pluginYaml}:15:43: Accessing properties/keys on the nullable type `Nested | null` is not allowed.",
                 "failed to read Kotlin project model, refer to the errors above",
             )
         }
@@ -651,9 +651,9 @@ class PluginsTest : AmperCliTestBase() {
             assertEmptyStdErr = false,
             expectedExitCode = 1,
         ).assertErrors(
-            "${pluginYaml}:6:19: Referencing `processors` is not allowed",
-            "${pluginYaml}:5:24: Referencing `publishing` is not allowed",
-            "${pluginYaml}:4:21: Referencing `settings` is not allowed",
+            "${pluginYaml}:6:48: Referencing `processors` is not allowed",
+            "${pluginYaml}:5:42: Referencing `publishing` is not allowed",
+            "${pluginYaml}:4:30: Referencing `settings` is not allowed",
             "failed to read Kotlin project model, refer to the errors above",
         )
     }

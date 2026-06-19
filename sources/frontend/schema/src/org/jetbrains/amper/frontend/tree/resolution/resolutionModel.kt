@@ -4,6 +4,7 @@
 
 package org.jetbrains.amper.frontend.tree.resolution
 
+import org.jetbrains.amper.frontend.api.TraceableString
 import org.jetbrains.amper.frontend.tree.RefinedTreeNode
 import org.jetbrains.amper.frontend.types.SchemaObjectDeclaration
 import org.jetbrains.amper.frontend.types.SchemaType
@@ -55,7 +56,7 @@ internal sealed interface ResolutionEdge {
     /**
      * String corresponding to the element of the `referencePath` of a reference.
      */
-    val text: String
+    val text: TraceableString
 
     /**
      * Resolved value/hole that this edge *leads to*.
@@ -67,7 +68,7 @@ internal sealed interface ResolutionEdge {
      */
     data class Key(
         override val step: ResolutionStep,
-        override val text: String,
+        override val text: TraceableString,
     ) : ResolutionEdge
 
     /**
@@ -76,7 +77,10 @@ internal sealed interface ResolutionEdge {
     data class Property(
         override val step: ResolutionStep,
         val property: SchemaObjectDeclaration.Property,
+        override val text: TraceableString,
     ) : ResolutionEdge {
-        override val text get() = property.name
+        init {
+            require(text.value == property.name)
+        }
     }
 }

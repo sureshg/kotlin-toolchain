@@ -8,9 +8,7 @@ import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.findDocument
 import org.jetbrains.amper.frontend.getLineAndColumnRangeInDocument
-import org.jetbrains.amper.frontend.getLineAndColumnRangeInPsiFile
 import org.jetbrains.amper.problems.reporting.FileWithRangesBuildProblemSource
-import org.jetbrains.amper.problems.reporting.LineAndColumn
 import org.jetbrains.amper.problems.reporting.LineAndColumnRange
 
 /**
@@ -18,11 +16,13 @@ import org.jetbrains.amper.problems.reporting.LineAndColumnRange
  * Can be used by clients to render the links to the exact location in the file or display an erroneous part of the
  * code.
  */
-fun FileWithRangesBuildProblemSource.computeRange(): LineAndColumnRange = when (this) {
-    is PsiBuildProblemSource -> getLineAndColumnRangeInPsiFile(psiElement)
-    else -> runReadAction {  // Fixme: do this via FrontendPathResolver?
-        VirtualFileManager.getInstance().findFileByNioPath(file)
-    }?.findDocument()?.let {
-        getLineAndColumnRangeInDocument(it, offsetRange)
-    } ?: LineAndColumnRange(LineAndColumn.NONE, LineAndColumn.NONE)
+fun FileWithRangesBuildProblemSource.computeRange(): LineAndColumnRange {
+    val document = when (this) {
+        is PsiBuildProblemSource -> psiElement.containingFile.viewProvider.document
+        else -> runReadAction {  // Fixme: do this via FrontendPathResolver?
+            VirtualFileManager.getInstance().findFileByNioPath(file)
+        }?.findDocument()
+    }
+
+    return getLineAndColumnRangeInDocument(document, offsetRange)
 }

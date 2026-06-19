@@ -15,7 +15,7 @@ import org.jetbrains.amper.frontend.api.asTrace
 import org.jetbrains.amper.frontend.asBuildProblemSource
 import org.jetbrains.amper.frontend.contexts.Context
 import org.jetbrains.amper.frontend.contexts.Contexts
-import org.jetbrains.amper.frontend.messages.originalFilePath
+import org.jetbrains.amper.frontend.messages.getOriginalFilePath
 import org.jetbrains.amper.frontend.project.AmperFrontendProjectRoot
 import org.jetbrains.amper.frontend.reportBundleError
 import org.jetbrains.amper.frontend.tree.MappingNode
@@ -53,7 +53,7 @@ fun readTree(
     return file.childrenOfType<YAMLDocument>().firstOrNull()?.topLevelValue?.let {
         val config = ParsingConfig(
             rootPath = projectRoot.path,
-            basePath = checkNotNull(file.originalFilePath).parent.absolute(),
+            basePath = file.getOriginalFilePath().parent.absolute(),
             unknownPropertiesMode = unknownPropertiesMode,
             supportContexts = parseContexts,
             referenceParsingMode = referenceParsingMode,

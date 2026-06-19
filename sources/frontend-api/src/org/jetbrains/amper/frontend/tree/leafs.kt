@@ -5,6 +5,8 @@
 package org.jetbrains.amper.frontend.tree
 
 import org.jetbrains.amper.frontend.api.Trace
+import org.jetbrains.amper.frontend.api.Traceable
+import org.jetbrains.amper.frontend.api.TraceableString
 import org.jetbrains.amper.frontend.contexts.Contexts
 import org.jetbrains.amper.frontend.types.SchemaType
 
@@ -57,7 +59,7 @@ annotation class DefaultsReferenceTransform
  * This is a reference value tree node, pointing to some subtree.
  */
 class ReferenceNode(
-    val referencedPath: List<String>,
+    val referencedPath: List<TraceableString>,
     override val expectedType: SchemaType,
     val transform: Transform? = null,
     override val trace: Trace,
@@ -104,18 +106,23 @@ class StringInterpolationNode(
         }
     }
 
-    sealed interface Part {
-        data class Reference(val referencePath: List<String>) : Part {
+    sealed interface Part : Traceable {
+        data class Reference(
+            val referencePath: List<TraceableString>,
+            override val trace: Trace,
+        ) : Part {
             init {
                 require(referencePath.isNotEmpty()) { "`referencePath` can't be empty" }
             }
         }
-        data class Text(val text: String): Part
+        data class Text(
+            val text: TraceableString,
+        ) : Part, Traceable by text
     }
 }
 
 fun ReferenceNode.copy(
-    referencedPath: List<String> = this.referencedPath,
+    referencedPath: List<TraceableString> = this.referencedPath,
     expectedType: SchemaType = this.expectedType,
     transform: ReferenceNode.Transform? = this.transform,
     trace: Trace = this.trace,

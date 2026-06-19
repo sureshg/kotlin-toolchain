@@ -40,7 +40,9 @@ internal fun Default.toTreeValue(type: SchemaType, trace: Trace): RefinedTreeNod
         }
         RefinedMappingNode(createDefaultProperties(type.declaration), type.declaration, trace, TypeLevelDefaultContexts)
     }
-    is Default.Reference -> ReferenceNode(referencedPath, type, transform, trace, TypeLevelDefaultContexts)
+    is Default.Reference -> ReferenceNode(
+        referencedPath.map { TraceableString(it, trace) }, type, transform, trace, TypeLevelDefaultContexts
+    )
 }
 
 fun Default.Static.toTreeValue(type: SchemaType, trace: Trace): RefinedTreeNode {

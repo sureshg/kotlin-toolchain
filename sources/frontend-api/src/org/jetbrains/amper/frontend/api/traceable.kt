@@ -69,8 +69,21 @@ data class PsiTrace(
      * The [PsiElement] that this value was read from.
      */
     val psiElement: PsiElement,
+    /**
+     * Text offset range inside the [psiElement] that pinpoints the location more precisely than the whole element.
+     */
+    val rangeInElement: IntRange? = null,
     override val precedingValue: TreeNode? = null,
-) : Trace
+) : Trace {
+    override fun toString(): String = buildString {
+        // TODO: Make tests independent on this format
+        append("PsiTrace(psiElement=$psiElement, ")
+        if (rangeInElement != null) {
+            append("rangeInElement=$rangeInElement, ")
+        }
+        append("precedingValue=$precedingValue)")
+    }
+}
 
 /**
  * Creates a [PsiTrace] that points to this [PsiElement].

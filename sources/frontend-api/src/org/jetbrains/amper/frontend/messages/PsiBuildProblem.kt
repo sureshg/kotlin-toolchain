@@ -48,9 +48,12 @@ fun Traceable.extractPsiElement(): PsiElement =
 fun Trace.extractPsiElement(): PsiElement =
     extractPsiElementOrNull() ?: error("Can't extract PSI element from trace $this")
 
-val PsiElement.originalFilePath: Path?
-    get() = when (this) {
-        is PsiFile -> originalFile.virtualFile?.toNioPathOrNull()
-        is PsiDirectory -> virtualFile.toNioPathOrNull()
-        else -> containingFile.originalFilePath
-    }
+fun PsiElement.getOriginalFilePathOrNull(): Path? = when (this) {
+    is PsiFile -> originalFile.virtualFile?.toNioPathOrNull()
+    is PsiDirectory -> virtualFile.toNioPathOrNull()
+    else -> containingFile.getOriginalFilePathOrNull()
+}
+
+fun PsiElement.getOriginalFilePath(): Path = getOriginalFilePathOrNull() ?: error(NO_VIRTUAL_FILE_ERROR)
+
+private const val NO_VIRTUAL_FILE_ERROR = "PSI element doesn't have real backing file"

@@ -6,6 +6,7 @@ package org.jetbrains.amper.frontend.tree.resolution
 
 import org.jetbrains.amper.frontend.SchemaBundle
 import org.jetbrains.amper.frontend.api.Default
+import org.jetbrains.amper.frontend.api.TraceableString
 import org.jetbrains.amper.frontend.api.TransformedValueTrace
 import org.jetbrains.amper.frontend.asBuildProblemSource
 import org.jetbrains.amper.frontend.reportBundleError
@@ -27,6 +28,7 @@ import org.jetbrains.amper.frontend.tree.copy
 import org.jetbrains.amper.frontend.tree.copyWithTrace
 import org.jetbrains.amper.frontend.tree.isAssignableFrom
 import org.jetbrains.amper.frontend.tree.toTreeValue
+import org.jetbrains.amper.frontend.tree.traceableValue
 import org.jetbrains.amper.frontend.types.SchemaObjectDeclaration
 import org.jetbrains.amper.frontend.types.SchemaType
 import org.jetbrains.amper.frontend.types.render
@@ -172,7 +174,7 @@ private class ReferenceResolutionSession(
     private fun resolveReferenceNode(
         referenceNode: ReferenceNode,
         context: ResolutionContext,
-    ): RefinedTreeNode? = when (val result = doResolve(referenceNode, context, referenceNode.referencedPath)) {
+    ): RefinedTreeNode? = when (val result = doResolve(context, referenceNode.referencedPath)) {
         is ResolutionStep.Value -> when {
             result.value.subtreeContainsResolvableNodes() -> {
                 if (referenceNode.expectedType == SchemaType.UndefinedType) {
@@ -232,22 +234,25 @@ private class ReferenceResolutionSession(
         interpolationNode: StringInterpolationNode,
         context: ResolutionContext,
     ): LeafTreeNode? {
-        val resolvedReferenceParts: Map<StringInterpolationNode.Part.Reference, ResolutionStep?> = interpolationNode.parts
+        val resolvedReferenceParts: Map<List<TraceableString>, ResolutionStep?> = interpolationNode.parts
             .filterIsInstance<StringInterpolationNode.Part.Reference>()
-            .distinct()  // Resolve identical parts only once
-            .associateWith { doResolve(interpolationNode, context, it.referencePath) }
+            .distinctBy { it.referencePath }  // Resolve identical parts only once
+            .associateBy(
+                keySelector = { it.referencePath },
+                valueTransform = { doResolve(context, it.referencePath) },
+            )
 
         val resolvedParts = interpolationNode.parts.map { part ->
             when (part) {
                 is StringInterpolationNode.Part.Reference -> {
-                    when (val result = resolvedReferenceParts.getValue(part)) {
+                    when (val result = resolvedReferenceParts.getValue(part.referencePath)) {
                         is ResolutionStep.Hole -> {
                             if (StringInterpolationExpectedType.isAssignableFrom(result.type)) {
                                 // Type-check - OK, leave the same part unresolved
                                 part
                             } else {
                                 reporter.reportBundleError(
-                                    source = interpolationNode.trace.asBuildProblemSource(),
+                                    source = part.trace.asBuildProblemSource(),
                                     diagnosticId = TreeDiagnosticId.ReferenceCannotBeUsedInStringInterpolation,
                                     messageKey = "validation.reference.unexpected.type.interpolation",
                                     result.type.render(includeSyntax = false),
@@ -259,7 +264,7 @@ private class ReferenceResolutionSession(
                             val value = StringInterpolationExpectedType.cast(result.value)
                         ) {
                             is StringNode -> {
-                                StringInterpolationNode.Part.Text(value.value)
+                                StringInterpolationNode.Part.Text(value.traceableValue) // FIXME: wrap into resolved trace?
                             }
                             is ErrorNode -> {
                                 // Type-check (cast) succeeded, but the node is not a string, then
@@ -269,7 +274,7 @@ private class ReferenceResolutionSession(
                             }
                             null -> {  // Type-check failed
                                 reporter.reportBundleError(
-                                    source = interpolationNode.trace.asBuildProblemSource(),
+                                    source = part.trace.asBuildProblemSource(),
                                     diagnosticId = TreeDiagnosticId.ReferenceCannotBeUsedInStringInterpolation,
                                     messageKey = "validation.reference.unexpected.type.interpolation",
                                     renderTypeOf(result.value),
@@ -316,14 +321,14 @@ private class ReferenceResolutionSession(
             }
             else -> {  // All parts are resolved - do the interpolation
                 val interpolated = resolvedParts.joinToString(separator = "") {
-                    (it as StringInterpolationNode.Part.Text).text
+                    (it as StringInterpolationNode.Part.Text).text.value
                 }
 
                 val trace = TransformedValueTrace(
                     description = "string interpolation: ${interpolationNode.parts.joinToString("") {
                         when(it) {
                             is StringInterpolationNode.Part.Reference -> $$"${$${it.referencePath.joinToString(".")}}"
-                            is StringInterpolationNode.Part.Text -> it.text
+                            is StringInterpolationNode.Part.Text -> it.text.value
                         }
                     }}",
                     definitionTrace = interpolationNode.trace,
@@ -379,9 +384,8 @@ private class ReferenceResolutionSession(
 
     context(reporter: ProblemReporter)
     private fun doResolve(
-        origin: ResolvableNode,
         resolutionContext: ResolutionContext,
-        referencePath: List<String>,
+        referencePath: List<TraceableString>,
     ): ResolutionStep? {
         val firstElement = referencePath.first()
 
@@ -390,7 +394,7 @@ private class ReferenceResolutionSession(
             it.resolveEdge(firstElement)
         } ?: run {
             reporter.reportBundleError(
-                origin.trace.asBuildProblemSource(),
+                firstElement.asBuildProblemSource(),
                 diagnosticId = TreeDiagnosticId.ReferenceResolutionRootNotFound,
                 "validation.reference.resolution.root.not.found",
                 firstElement,
@@ -403,8 +407,8 @@ private class ReferenceResolutionSession(
             add(startingEdge)
             for (refPart in referencePath.drop(1)) {
                 this@buildList += when (val currentStep = last().step) {
-                    is ResolutionStep.Hole -> doResolveEdgeFromHole(currentStep, refPart, origin)
-                    is ResolutionStep.Value -> doResolveEdgeFromValue(currentStep, refPart, origin)
+                    is ResolutionStep.Hole -> doResolveEdgeFromHole(currentStep, refPart)
+                    is ResolutionStep.Value -> doResolveEdgeFromValue(currentStep, refPart)
                 } ?: break
             }
         }
@@ -418,7 +422,7 @@ private class ReferenceResolutionSession(
 
         if (lastResolvedEdge is ResolutionEdge.Property && !lastResolvedEdge.property.canBeReferenced) {
             reporter.reportBundleError(
-                source = origin.trace.asBuildProblemSource(),
+                source = lastResolvedEdge.text.asBuildProblemSource(),
                 diagnosticId = TreeDiagnosticId.NonReferenceableElement,
                 messageKey = "validation.reference.resolution.not.referencable", lastResolvedEdge.text,
             )
@@ -438,8 +442,7 @@ private class ReferenceResolutionSession(
     context(reporter: ProblemReporter)
     private fun doResolveEdgeFromValue(
         currentStep: ResolutionStep.Value,
-        refPart: String,
-        origin: ResolvableNode,
+        refPart: TraceableString,
     ): ResolutionEdge? = when (val value = currentStep.value) {
         is RefinedMappingNode -> value.resolveEdge(refPart).also {
             if (it == null) {
@@ -448,7 +451,7 @@ private class ReferenceResolutionSession(
                     else -> "type `${declaration.displayName}`"
                 }
                 reporter.reportBundleError(
-                    source = origin.trace.asBuildProblemSource(),
+                    source = refPart.asBuildProblemSource(),
                     diagnosticId = TreeDiagnosticId.UnresolvedReference,
                     messageKey = "validation.reference.resolution.not.found",
                     refPart, where,
@@ -460,15 +463,15 @@ private class ReferenceResolutionSession(
             val resolved = resolvedNodes[value]
             if (resolved == null) {
                 // Transition to hole resolution
-                doResolveEdgeFromHole(ResolutionStep.Hole(value.expectedType), refPart, origin)
+                doResolveEdgeFromHole(ResolutionStep.Hole(value.expectedType), refPart)
             } else {
                 // Continue value resolution
-                doResolveEdgeFromValue(ResolutionStep.Value(resolved), refPart, origin)
+                doResolveEdgeFromValue(ResolutionStep.Value(resolved), refPart)
             }
         }
         else -> {
             reporter.reportBundleError(
-                source = origin.trace.asBuildProblemSource(),
+                source = refPart.asBuildProblemSource(),
                 diagnosticId = TreeDiagnosticId.ReferenceSegmentIsNotMapping,
                 messageKey = "validation.reference.resolution.not.a.mapping",
                 refPart, renderTypeOf(value),
@@ -480,13 +483,12 @@ private class ReferenceResolutionSession(
     context(reporter: ProblemReporter)
     private fun doResolveEdgeFromHole(
         currentStep: ResolutionStep.Hole,
-        refPart: String,
-        origin: ResolvableNode,
+        refPart: TraceableString,
     ): ResolutionEdge? = when (val type = currentStep.type) {
         is SchemaType.ObjectType -> when {
             type.isMarkedNullable -> {
                 reporter.reportBundleError(
-                    source = origin.trace.asBuildProblemSource(),
+                    source = refPart.asBuildProblemSource(),
                     diagnosticId = TreeDiagnosticId.ReferenceMemberAccessOnNullable,
                     messageKey = "validation.reference.resolution.nullable.access",
                     type.render(includeSyntax = false),
@@ -496,7 +498,7 @@ private class ReferenceResolutionSession(
             else -> type.declaration.resolveEdge(refPart).also {
                 if (it == null) {
                     reporter.reportBundleError(
-                        source = origin.trace.asBuildProblemSource(),
+                        source = refPart.asBuildProblemSource(),
                         diagnosticId = TreeDiagnosticId.UnresolvedReference,
                         messageKey = "validation.reference.resolution.not.found.type",
                         refPart, type.render(includeSyntax = false),
@@ -507,7 +509,7 @@ private class ReferenceResolutionSession(
         // NOTE: We don't handle SchemaType.MapType here, as we can't assume any keys are present.
         else -> {
             reporter.reportBundleError(
-                source = origin.trace.asBuildProblemSource(),
+                source = refPart.asBuildProblemSource(),
                 diagnosticId = TreeDiagnosticId.ReferenceSegmentIsNotMapping,
                 messageKey = "validation.reference.resolution.not.an.object",
                 refPart, type.render(includeSyntax = false),
@@ -525,24 +527,24 @@ private class ReferenceResolutionSession(
 }
 
 private fun RefinedMappingNode.resolveEdge(
-    text: String,
-): ResolutionEdge? = when (val property = declaration?.getProperty(text)) {
+    text: TraceableString,
+): ResolutionEdge? = when (val property = declaration?.getProperty(text.value)) {
     // Map or unknown property in an object
-    null -> when (val keyValue = refinedChildren[text]) {
+    null -> when (val keyValue = refinedChildren[text.value]) {
         null -> null
         else -> ResolutionEdge.Key(ResolutionStep.Value(keyValue.value), text)
     }
     // Known object property
-    else -> when (val keyValue = refinedChildren[text]) {
-        null -> ResolutionEdge.Property(ResolutionStep.Hole(property.type), property)
-        else -> ResolutionEdge.Property(ResolutionStep.Value(keyValue.value), property)
+    else -> when (val keyValue = refinedChildren[text.value]) {
+        null -> ResolutionEdge.Property(ResolutionStep.Hole(property.type), property, text)
+        else -> ResolutionEdge.Property(ResolutionStep.Value(keyValue.value), property, text)
     }
 }
 
 private fun SchemaObjectDeclaration.resolveEdge(
-    text: String,
-): ResolutionEdge? = getProperty(text)?.let {
-    ResolutionEdge.Property(ResolutionStep.Hole(it.type), it)
+    text: TraceableString,
+): ResolutionEdge? = getProperty(text.value)?.let {
+    ResolutionEdge.Property(ResolutionStep.Hole(it.type), it, text)
 }
 
 private val StringInterpolationExpectedType = SchemaType.StringType

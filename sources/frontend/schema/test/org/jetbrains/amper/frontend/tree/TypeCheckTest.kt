@@ -5,6 +5,7 @@
 package org.jetbrains.amper.frontend.tree
 
 import org.jetbrains.amper.frontend.api.DefaultTrace
+import org.jetbrains.amper.frontend.api.TraceableString
 import org.jetbrains.amper.frontend.contexts.EmptyContexts
 import org.jetbrains.amper.frontend.types.SchemaType
 import org.jetbrains.amper.frontend.types.generated.*
@@ -361,13 +362,13 @@ class TypeCheckTest {
 
     @Test
     fun `cast - resolvable node`() {
-        val refNode = ReferenceNode(listOf("foo"), stringType, null, DefaultTrace, EmptyContexts)
+        val refNode = ReferenceNode(listOf("foo".ts), stringType, null, DefaultTrace, EmptyContexts)
         
         assertSame(refNode, stringType.cast(refNode))
         assertNull(intType.cast(refNode))
         
         // "Covariance" in resolvable node
-        val pathRefNode = ReferenceNode(listOf("foo"), pathType, null, DefaultTrace, EmptyContexts)
+        val pathRefNode = ReferenceNode(listOf("foo".ts), pathType, null, DefaultTrace, EmptyContexts)
         assertSame(pathRefNode, stringType.cast(pathRefNode))
     }
 
@@ -415,11 +416,13 @@ class TypeCheckTest {
         val errorNode = ErrorNode(stringType, DefaultTrace, EmptyContexts)
         assertSame(errorNode, SchemaType.UndefinedType.cast(errorNode))
 
-        val refNode = ReferenceNode(listOf("foo"), stringType, null, DefaultTrace, EmptyContexts)
+        val refNode = ReferenceNode(listOf("foo".ts), stringType, null, DefaultTrace, EmptyContexts)
         assertSame(refNode, SchemaType.UndefinedType.cast(refNode))
 
         // UndefinedType nodes cannot be cast to other types
-        val undefinedNode = ReferenceNode(listOf("foo"), SchemaType.UndefinedType, null, DefaultTrace, EmptyContexts)
+        val undefinedNode = ReferenceNode(listOf("foo".ts), SchemaType.UndefinedType, null, DefaultTrace, EmptyContexts)
         allWellDefinedTypes.forEach { assertNull(it.cast(undefinedNode)) }
     }
+
+    private val String.ts get() = TraceableString(this, DefaultTrace)
 }

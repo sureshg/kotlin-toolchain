@@ -4,6 +4,7 @@
 
 package org.jetbrains.amper.frontend.tree.reading
 
+import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.elementType
 import org.jetbrains.yaml.YAMLTokenTypes
@@ -30,6 +31,15 @@ sealed interface YamlValue {
     interface Scalar : YamlValue {
         val textValue: String
         val isLiteral: Boolean
+
+        /**
+         * Maps the given [range][rangeInTextValue] in terms of the [textValue] string
+         * to the [host element][psi] offsets system.
+         *
+         * @param rangeInTextValue text offset range in the [textValue] string
+         * @return mapped text offset range inside the [psi] element (host) or `null` if that is not possible/supported.
+         */
+        fun mapToHostElementRange(rangeInTextValue: IntRange): IntRange?
     }
 
     interface Sequence : YamlValue {
@@ -64,8 +74,8 @@ private class MissingImpl(
 fun YamlValue(value: YAMLValue, tag: PsiElement?) : YamlValue {
     @Suppress("unused") // mixin override for YamlValue
     open class YAMLValueBased {
-        val psi get() = value
-        val tag get() = tag  // implicit (mixin) override for YamlValue.tag
+        val psi = value
+        val tag = tag  // implicit (mixin) override for YamlValue.tag
     }
     return when (value) {
         is YAMLScalar if value.isLiteral && value.textValue.startsWith("!") -> {
@@ -75,6 +85,9 @@ fun YamlValue(value: YAMLValue, tag: PsiElement?) : YamlValue {
         is YAMLScalar -> object : YamlValue.Scalar, YAMLValueBased() {
             override val textValue = value.textValue
             override val isLiteral get() = value.isLiteral
+            override fun mapToHostElementRange(rangeInTextValue: IntRange): IntRange? {
+                return mapToHostElementRangeImpl(value, rangeInTextValue)
+            }
         }
         is YAMLMapping -> object : YamlValue.Mapping, YAMLValueBased() {
             override val keyValues = value.keyValues.map { YamlKeyValueImpl(it) }
@@ -134,7 +147,38 @@ private class YamlKeyValueImpl(
         override val textValue: String,
     ) : YamlValue.Scalar {
         override val isLiteral: Boolean = psi.text == textValue
+        override fun mapToHostElementRange(rangeInTextValue: IntRange): IntRange? {
+            if (psi is YAMLScalar) return mapToHostElementRangeImpl(psi, rangeInTextValue)
+            val text = psi.text
+            if (StringUtil.isQuotedString(text)) {
+                // Move the range right to accommodate the opening quote
+                return rangeInTextValue.let { it.first + 1..it.last + 1 }
+            }
+            return rangeInTextValue
+        }
     }
+}
+
+private fun mapToHostElementRangeImpl(
+    psi: YAMLScalar,
+    rangeInTextValue: IntRange,
+): IntRange? {
+    // `text` is the raw scalar element text, while `textValue` is the decoded YAML value.
+    // The literal text escaper knows how to map an offset in the decoded value back to an
+    // offset in the raw host text (accounting for quotes, escapes, line folding, indentation, etc.).
+    val escaper = psi.createLiteralTextEscaper()
+    val relevantRange = escaper.relevantTextRange
+    // `decode` must be called first: it initializes the internal state used by `getOffsetInHost`.
+    if (!escaper.decode(relevantRange, StringBuilder())) {
+        return null
+    }
+
+    val startInHost = escaper.getOffsetInHost(rangeInTextValue.first, relevantRange)
+    // `rangeInTextValue` is inclusive on both ends, so the exclusive end is `last + 1`.
+    val endInHost = escaper.getOffsetInHost(rangeInTextValue.last + 1, relevantRange)
+    if (startInHost < 0 || endInHost < 0) return null
+
+    return startInHost..endInHost
 }
 
 private val PsiElement.isYamlTag get() = elementType == YAMLTokenTypes.TAG

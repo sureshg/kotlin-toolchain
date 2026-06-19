@@ -6,6 +6,7 @@ package org.jetbrains.amper.frontend.tree
 
 import org.jetbrains.amper.frontend.api.Trace
 import org.jetbrains.amper.frontend.api.TraceablePath
+import org.jetbrains.amper.frontend.api.TraceableString
 import org.jetbrains.amper.frontend.contexts.Contexts
 import org.jetbrains.amper.frontend.types.SchemaEnumDeclaration
 import org.jetbrains.amper.frontend.types.SchemaType
@@ -31,6 +32,8 @@ class StringNode(
 ) : ScalarNode
 
 fun StringNode.copyWithValue(value: String) = StringNode(value, semantics, trace, contexts)
+
+val StringNode.traceableValue get() = TraceableString(value, trace)
 
 /**
  * A [ScalarNode] with integer [value].

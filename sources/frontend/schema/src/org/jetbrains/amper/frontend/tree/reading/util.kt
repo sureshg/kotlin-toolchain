@@ -5,6 +5,8 @@
 package org.jetbrains.amper.frontend.tree.reading
 
 import com.intellij.psi.PsiElement
+import org.jetbrains.amper.frontend.api.PsiTrace
+import org.jetbrains.amper.frontend.api.Trace
 import org.jetbrains.amper.frontend.api.asTrace
 import org.jetbrains.amper.frontend.asBuildProblemSource
 import org.jetbrains.amper.frontend.contexts.Contexts
@@ -47,6 +49,9 @@ internal fun enumNode(origin: YamlValue.Scalar, declaration: SchemaEnumDeclarati
 context(contexts: Contexts)
 internal fun pathNode(origin: YamlValue.Scalar, value: Path) =
     PathNode(value, origin.asTrace(), contexts)
+
+internal fun YamlValue.Scalar.asPreciseTrace(rangeInTextValue: IntRange): Trace =
+    mapToHostElementRange(rangeInTextValue)?.let { PsiTrace(psi, it) } ?: psi.asTrace()
 
 context(contexts: Contexts)
 internal fun mapNode(
@@ -109,7 +114,7 @@ internal fun reportUnexpectedValue(
     )
 }
 
-context(reporter: ProblemReporter)
+context(_: ProblemReporter)
 internal fun reportParsing(
     psi: PsiElement,
     diagnosticId: DiagnosticId,
@@ -118,7 +123,7 @@ internal fun reportParsing(
     level: Level = Level.Error,
     type: BuildProblemType = BuildProblemType.Generic,
 ) {
-    reporter.reportBundleError(
+    reportBundleError(
         source = psi.asBuildProblemSource(),
         diagnosticId = diagnosticId,
         messageKey = messageKey,
@@ -128,7 +133,7 @@ internal fun reportParsing(
     )
 }
 
-context(reporter: ProblemReporter)
+context(_: ProblemReporter)
 internal fun reportParsing(
     value: YamlValue,
     diagnosticId: DiagnosticId,
@@ -137,7 +142,7 @@ internal fun reportParsing(
     level: Level = Level.Error,
     type: BuildProblemType = BuildProblemType.Generic,
 ) {
-    reporter.reportBundleError(
+    reportBundleError(
         source = value.psi.asBuildProblemSource(),
         diagnosticId = diagnosticId,
         messageKey = messageKey,

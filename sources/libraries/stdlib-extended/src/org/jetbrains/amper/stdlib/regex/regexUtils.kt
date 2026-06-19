@@ -12,3 +12,7 @@ import kotlin.reflect.KProperty
 operator fun MatchResult.getValue(thisRef: Any?, property: KProperty<*>): String? {
     return groups[property.name]?.value
 }
+
+operator fun MatchGroupCollection.getValue(thisRef: Any?, property: KProperty<*>): MatchGroup? {
+    return get(property.name)
+}

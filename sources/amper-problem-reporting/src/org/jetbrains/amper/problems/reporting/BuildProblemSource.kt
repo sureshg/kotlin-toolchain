@@ -41,20 +41,10 @@ interface FileBuildProblemSource : BuildProblemSource {
     val file: Path
 }
 
-/**
- * Source, pointing to the whole Amper file.
- *
- * N.B. Use only when there is no way to pinpoint the cause of the problem inside the Amper files.
- */
-@NonIdealDiagnostic
-class WholeFileBuildProblemSource(override val file: Path) : FileBuildProblemSource
-
 interface FileWithRangesBuildProblemSource : FileBuildProblemSource {
 
     /**
      * Range of problematic code expressed in terms of character offsets inside the file.
-     * Depending on the client, it might choose [range] or [offsetRange] for displaying an error.
-     * The choice depends on what primitives does the client operate with.
      */
     val offsetRange: IntRange
 }
