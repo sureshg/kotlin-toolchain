@@ -4,6 +4,7 @@
 
 package org.jetbrains.amper.frontend.diagnostics.helpers
 
+import org.jetbrains.amper.core.UsedInIdePlugin
 import org.jetbrains.amper.frontend.api.SchemaNode
 import org.jetbrains.amper.frontend.tree.EnumNode
 import org.jetbrains.amper.frontend.tree.ErrorNode
@@ -120,17 +121,18 @@ private class ObjectPropertiesVisitorRecurring(
  * Visit all scalar properties within passed [TreeNode].
  * FIXME Need also check non scalars, but not objects.
  */
+@UsedInIdePlugin
 fun TreeNode.collectScalarPropertiesWithOwners() = AllScalarPropertiesCollector.visit(this)
 
 data class PropertyWithOwner(val owner: MappingNode, val scalarProp: KeyValue)
 
-private object AllScalarPropertiesCollector : RecurringTreeVisitor<PropertiesWithOwner>() {
+private object AllScalarPropertiesCollector : RecurringTreeVisitor<List<PropertyWithOwner>>() {
     override fun visitNull(node: NullLiteralNode) = emptyList<Nothing>()
     override fun visitScalar(node: ScalarNode) = emptyList<Nothing>()
     override fun visitError(node: ErrorNode) = emptyList<Nothing>()
     override fun visitReference(node: ReferenceNode) = emptyList<Nothing>()
     override fun visitStringInterpolation(node: StringInterpolationNode) = emptyList<Nothing>()
-    override fun aggregate(node: TreeNode, childResults: List<PropertiesWithOwner>) = childResults.flatten()
-    override fun visitMap(node: MappingNode): PropertiesWithOwner = super.visitMap(node) +
+    override fun aggregate(node: TreeNode, childResults: List<List<PropertyWithOwner>>) = childResults.flatten()
+    override fun visitMap(node: MappingNode): List<PropertyWithOwner> = super.visitMap(node) +
             node.children.filter { it.value is ScalarNode }.map { PropertyWithOwner(owner = node, scalarProp = it) }
 }
