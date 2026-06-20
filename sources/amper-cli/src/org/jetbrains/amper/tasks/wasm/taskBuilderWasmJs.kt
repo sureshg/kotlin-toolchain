@@ -5,6 +5,7 @@
 package org.jetbrains.amper.tasks.wasm
 
 import org.jetbrains.amper.frontend.Platform
+import org.jetbrains.amper.tasks.CommonTaskType
 import org.jetbrains.amper.tasks.LinkTaskType
 import org.jetbrains.amper.tasks.ProjectTasksBuilder
 import org.jetbrains.amper.tasks.ProjectTasksBuilder.Companion.getTaskOutputPath
@@ -26,6 +27,8 @@ fun ProjectTasksBuilder.setupWasmJsTasks() {
         }
         .filter { needsLinkedExecutable(it.module, isTest = false) }
         .withEach {
+            val resolveDependenciesTaskName = CommonTaskType.Dependencies.getTaskName(module, platform, isTest)
+
             val linkAppTaskName = LinkTaskType.getTaskName(module, platform, isTest, buildType)
 
             val buildAppTaskName = WasmJsTaskType.BuildWasmJsApp.getTaskName(module, platform, isTest, buildType)
@@ -36,8 +39,9 @@ fun ProjectTasksBuilder.setupWasmJsTasks() {
                     buildType = buildType,
                     taskOutputPath = context.getTaskOutputPath(buildAppTaskName),
                     taskName = buildAppTaskName,
+                    tempRoot = context.projectTempRoot,
                 ),
-                dependsOn = listOf(linkAppTaskName)
+                dependsOn = listOf(linkAppTaskName, resolveDependenciesTaskName)
             )
 
             val runTaskName = WasmJsTaskType.RunWasmJsApp.getTaskName(module, platform, isTest = false, buildType)
