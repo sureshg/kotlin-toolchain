@@ -26,6 +26,8 @@ import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
+import kotlin.io.path.invariantSeparatorsPathString
+import kotlin.io.path.isRegularFile
 import kotlin.io.path.readText
 
 internal class InitCommand : AmperSubcommand(name = "init") {
@@ -97,14 +99,33 @@ internal class InitCommand : AmperSubcommand(name = "init") {
     }
 
     private fun checkTemplateFilesConflicts(templateFiles: List<TemplateFile>, outputDir: Path) {
-        val filesToCheck = templateFiles.map { it.relativePath }
-        val alreadyExistingFiles = filesToCheck.filter { outputDir.resolve(it).exists() }
-        if (alreadyExistingFiles.isNotEmpty()) {
-            userReadableError(
-                "The following files already exist in the output directory and would be overwritten by the generation:\n" +
-                        alreadyExistingFiles.sorted().joinToString("\n").prependIndent("  ") + "\n\n" +
-                        "Please move, rename, or delete them before running the command again."
-            )
-        }
+        val alreadyExistingFiles = templateFiles
+            .map { it.relativePath }
+            .filter { outputDir.resolve(it).exists() }
+
+        val pathsBlockingDirectories = templateFiles
+            .flatMap { it.relativePath.ancestorRelativePaths() }
+            .distinct()
+            .filter { outputDir.resolve(it).isRegularFile() }
+
+        if (alreadyExistingFiles.isEmpty() && pathsBlockingDirectories.isEmpty()) return
+
+        userReadableError(buildString {
+            appendLine("The following conflicts must be resolved before generating the project:")
+            if (alreadyExistingFiles.isNotEmpty()) {
+                appendLine()
+                appendLine("Files that would be overwritten by the template:")
+                alreadyExistingFiles.sorted().forEach { appendLine("  $it") }
+            }
+            if (pathsBlockingDirectories.isNotEmpty()) {
+                appendLine()
+                appendLine("Paths that exist as files but are needed as directories:")
+                pathsBlockingDirectories.sorted().forEach { appendLine("  ${it.invariantSeparatorsPathString}") }
+            }
+            appendLine()
+            append("Please move, rename, or delete them before running the command again.")
+        })
     }
 }
+
+private fun String.ancestorRelativePaths(): Sequence<Path> = generateSequence(Path(this).parent) { it.parent }

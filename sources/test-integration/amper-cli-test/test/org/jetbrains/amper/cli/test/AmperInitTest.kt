@@ -9,11 +9,11 @@ import org.jetbrains.amper.cli.test.utils.assertFileContentEquals
 import org.jetbrains.amper.cli.test.utils.assertStderrContains
 import org.jetbrains.amper.cli.test.utils.runSlowTest
 import org.jetbrains.amper.test.LocalAmperPublication
+import kotlin.io.path.createDirectories
 import kotlin.io.path.createParentDirectories
 import kotlin.io.path.isExecutable
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -80,7 +80,9 @@ class AmperInitTest : AmperCliTestBase() {
             wrapperMode = WrapperMode.GlobalIntrinsicVersion,
         )
         val expectedStderr = """
-            ERROR: The following files already exist in the output directory and would be overwritten by the generation:
+            ERROR: The following conflicts must be resolved before generating the project:
+
+            Files that would be overwritten by the template:
               jvm-cli/module.yaml
 
             Please move, rename, or delete them before running the command again.
@@ -89,6 +91,54 @@ class AmperInitTest : AmperCliTestBase() {
 
         newRoot.assertContainsRelativeFiles("jvm-cli/module.yaml")
         assertEquals("some text in module.yaml", existingModuleFile.readText())
+    }
+
+    @Test
+    fun `init fails with clear error when a top-level directory needed by the template exists as a file`() = runSlowTest {
+        val newRoot = newEmptyProjectDir()
+        // The jvm-cli template expects src/ to be a directory, but it exists as a regular file here
+        newRoot.resolve("src").writeText("not a directory")
+
+        val r = runCli(
+            newRoot, "init", "jvm-cli",
+            expectedExitCode = 1,
+            assertEmptyStdErr = false,
+            wrapperMode = WrapperMode.GlobalIntrinsicVersion,
+        )
+        val expectedStderr = """
+            ERROR: The following conflicts must be resolved before generating the project:
+
+            Paths that exist as files but are needed as directories:
+              src
+            
+            Please move, rename, or delete them before running the command again.
+        """.trimIndent()
+        r.assertStderrContains(expectedStderr)
+    }
+
+    @Test
+    fun `init fails with clear error when a nested directory needed by the template exists as a file`() = runSlowTest {
+        val newRoot = newEmptyProjectDir()
+        // The multiplatform-cli template has shared/src/main.kt, so shared/src must be a directory.
+        // Create shared/ as a real directory but shared/src as a regular file to exercise a nested ancestor conflict.
+        newRoot.resolve("shared").createDirectories()
+        newRoot.resolve("shared/src").writeText("not a directory")
+
+        val r = runCli(
+            newRoot, "init", "multiplatform-cli",
+            expectedExitCode = 1,
+            assertEmptyStdErr = false,
+            wrapperMode = WrapperMode.GlobalIntrinsicVersion,
+        )
+        val expectedStderr = """
+            ERROR: The following conflicts must be resolved before generating the project:
+
+            Paths that exist as files but are needed as directories:
+              shared/src
+            
+            Please move, rename, or delete them before running the command again.
+        """.trimIndent()
+        r.assertStderrContains(expectedStderr)
     }
 
     @Test
@@ -106,7 +156,9 @@ class AmperInitTest : AmperCliTestBase() {
             wrapperMode = WrapperMode.GlobalIntrinsicVersion,
         )
         val expectedStderr = """
-            ERROR: The following files already exist in the output directory and would be overwritten by the generation:
+            ERROR: The following conflicts must be resolved before generating the project:
+
+            Files that would be overwritten by the template:
               jvm-cli/module.yaml
               project.yaml
             
