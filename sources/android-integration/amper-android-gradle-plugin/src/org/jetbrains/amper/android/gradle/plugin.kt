@@ -228,6 +228,7 @@ class AmperAndroidIntegrationProjectPlugin @Inject constructor(private val probl
                 .singleSourceRoot("Android application must have a single source root")
                 .resolve("AndroidManifest.xml")
             it.manifest.srcFile(androidApplicationSourceRoot)
+            it.assets.setSrcDirs(setOf(module.buildDir.resolve("assets")))
             it.res.setSrcDirs(setOf(module.buildDir.resolve("res")))
             it.jniLibs.setSrcDirs(setOf(module.buildDir.resolve("jniLibs")))
         }
