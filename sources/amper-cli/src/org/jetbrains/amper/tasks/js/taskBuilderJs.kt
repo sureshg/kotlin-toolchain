@@ -51,7 +51,7 @@ fun ProjectTasksBuilder.setupJsTasks() {
                         module = module,
                         platform = platform,
                         userCacheRoot = context.userCacheRoot,
-                        taskOutputRoot = context.getTaskOutputPath(linkAppTaskName),
+                        buildOutputRoot = context.buildOutputRoot,
                         incrementalCache = context.incrementalCache,
                         taskName = linkAppTaskName,
                         tempRoot = context.projectTempRoot,

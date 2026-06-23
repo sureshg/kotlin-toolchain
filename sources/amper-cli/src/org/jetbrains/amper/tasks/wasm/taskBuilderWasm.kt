@@ -6,6 +6,7 @@ package org.jetbrains.amper.tasks.wasm
 
 import com.github.ajalt.mordant.terminal.Terminal
 import org.jetbrains.amper.ProcessRunner
+import org.jetbrains.amper.cli.AmperBuildOutputRoot
 import org.jetbrains.amper.cli.AmperProjectTempRoot
 import org.jetbrains.amper.core.AmperUserCacheRoot
 import org.jetbrains.amper.dependency.resolution.ResolutionScope
@@ -45,7 +46,7 @@ internal fun ProjectTasksBuilder.setupWasmTasks(
         platform: Platform,
         userCacheRoot: AmperUserCacheRoot,
         jdkProvider: JdkProvider,
-        taskOutputRoot: TaskOutputRoot,
+        buildOutputRoot: AmperBuildOutputRoot,
         incrementalCache: IncrementalCache,
         taskName: TaskName,
         tempRoot: AmperProjectTempRoot,
@@ -99,7 +100,7 @@ internal fun ProjectTasksBuilder.setupWasmTasks(
                         platform,
                         context.userCacheRoot,
                         context.jdkProvider,
-                        context.getTaskOutputPath(linkAppTaskName),
+                        context.buildOutputRoot,
                         context.incrementalCache,
                         linkAppTaskName,
                         context.projectTempRoot,

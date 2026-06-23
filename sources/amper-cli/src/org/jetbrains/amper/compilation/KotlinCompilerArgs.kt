@@ -322,6 +322,7 @@ internal fun kotlinWasmCompilerArgs(
     compilationType: KotlinCompilationType,
     buildType: BuildType?,
     include: Path?,
+    cacheDirectory: Path? = null,
 ): List<String> = buildList {
     add("-Xwasm")
     add("-Xwasm-target=wasm-${wasmTarget.name.lowercase()}")
@@ -340,6 +341,7 @@ internal fun kotlinWasmCompilerArgs(
             compilationType,
             buildType,
             include,
+            cacheDirectory,
         )
     )
 }
@@ -357,6 +359,7 @@ internal fun kotlinJsCompilerArgs(
     compilationType: KotlinCompilationType,
     buildType: BuildType?,
     include: Path?,
+    cacheDirectory: Path? = null,
 ): List<String> = buildList {
     add("-Xir-per-file")
     add("-Xir-minimized-member-names")
@@ -381,6 +384,7 @@ internal fun kotlinJsCompilerArgs(
             compilationType,
             buildType,
             include,
+            cacheDirectory,
         )
     )
 }
@@ -398,6 +402,7 @@ private fun kotlinWebCompilerArgs(
     compilationType: KotlinCompilationType,
     buildType: BuildType?,
     include: Path?,
+    cacheDirectory: Path?,
 ): List<String> = buildList {
 
     if (friendPaths.isNotEmpty()) {
@@ -433,6 +438,8 @@ private fun kotlinWebCompilerArgs(
     } else {
         add("-Xir-produce-klib-file")
     }
+
+    cacheDirectory?.let { add("-Xcache-directory=${it.pathString}") }
 
     add("-libraries")
     add(libraryPaths.joinToString(File.pathSeparator) { it.pathString })

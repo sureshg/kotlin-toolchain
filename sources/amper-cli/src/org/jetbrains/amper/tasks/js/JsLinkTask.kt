@@ -5,6 +5,7 @@
 package org.jetbrains.amper.tasks.js
 
 import org.jetbrains.amper.ProcessRunner
+import org.jetbrains.amper.cli.AmperBuildOutputRoot
 import org.jetbrains.amper.cli.AmperProjectTempRoot
 import org.jetbrains.amper.compilation.KotlinArtifactsDownloader
 import org.jetbrains.amper.compilation.KotlinCompilationType
@@ -20,7 +21,6 @@ import org.jetbrains.amper.frontend.TaskId
 import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.jdk.provisioning.JdkProvider
 import org.jetbrains.amper.tasks.SourceRoot
-import org.jetbrains.amper.tasks.TaskOutputRoot
 import org.jetbrains.amper.tasks.web.WebLinkTask
 import org.jetbrains.amper.util.BuildType
 import java.nio.file.Path
@@ -29,7 +29,7 @@ internal class JsLinkTask(
     module: AmperModule,
     platform: Platform,
     userCacheRoot: AmperUserCacheRoot,
-    taskOutputRoot: TaskOutputRoot,
+    buildOutputRoot: AmperBuildOutputRoot,
     incrementalCache: IncrementalCache,
     taskName: TaskName,
     tempRoot: AmperProjectTempRoot,
@@ -45,7 +45,7 @@ internal class JsLinkTask(
     platform,
     userCacheRoot,
     jdkProvider,
-    taskOutputRoot,
+    buildOutputRoot,
     incrementalCache,
     taskName,
     tempRoot,
@@ -71,6 +71,7 @@ internal class JsLinkTask(
         compilationType: KotlinCompilationType,
         buildType: BuildType,
         include: Path?,
+        cacheDirectory: Path?,
     ): List<String> =
         kotlinJsCompilerArgs(
             kotlinUserSettings,
@@ -85,5 +86,6 @@ internal class JsLinkTask(
             compilationType,
             buildType,
             include,
+            cacheDirectory,
         )
 }

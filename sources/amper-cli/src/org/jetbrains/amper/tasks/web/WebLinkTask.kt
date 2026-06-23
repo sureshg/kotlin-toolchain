@@ -6,6 +6,7 @@ package org.jetbrains.amper.tasks.web
 
 import kotlinx.serialization.json.Json
 import org.jetbrains.amper.ProcessRunner
+import org.jetbrains.amper.cli.AmperBuildOutputRoot
 import org.jetbrains.amper.cli.AmperProjectTempRoot
 import org.jetbrains.amper.cli.telemetry.setAmperModule
 import org.jetbrains.amper.cli.userReadableError
@@ -40,8 +41,8 @@ import org.jetbrains.amper.processes.LoggingProcessOutputListener
 import org.jetbrains.amper.processes.runJava
 import org.jetbrains.amper.tasks.ResolveExternalDependenciesTask
 import org.jetbrains.amper.tasks.SourceRoot
-import org.jetbrains.amper.tasks.TaskOutputRoot
 import org.jetbrains.amper.tasks.TaskResult
+import org.jetbrains.amper.tasks.artifacts.ArtifactTaskBase
 import org.jetbrains.amper.tasks.identificationPhrase
 import org.jetbrains.amper.tasks.native.filterKLibs
 import org.jetbrains.amper.telemetry.setListAttribute
@@ -58,7 +59,7 @@ internal abstract class WebLinkTask(
     override val platform: Platform,
     private val userCacheRoot: AmperUserCacheRoot,
     private val jdkProvider: JdkProvider,
-    private val taskOutputRoot: TaskOutputRoot,
+    private val buildOutputRoot: AmperBuildOutputRoot,
     private val incrementalCache: IncrementalCache,
     override val taskName: TaskName,
     private val tempRoot: AmperProjectTempRoot,
@@ -74,7 +75,7 @@ internal abstract class WebLinkTask(
      */
     private val kotlinArtifactsDownloader: KotlinArtifactsDownloader =
         KotlinArtifactsDownloader(userCacheRoot, incrementalCache),
-) : BuildTask {
+) : ArtifactTaskBase(), BuildTask {
 
     abstract val expectedPlatform: Platform
 
@@ -82,6 +83,17 @@ internal abstract class WebLinkTask(
         require(platform.isLeaf)
         require(platform.isDescendantOf(expectedPlatform))
     }
+
+    private val compiledWebArtifact by CompiledWebArtifact(
+        buildOutputRoot = buildOutputRoot,
+        module = module,
+        platform = platform,
+        isTest = isTest,
+        buildType = buildType,
+    )
+
+    val taskOutputRoot
+        get() = compiledWebArtifact.path
 
     override suspend fun run(
         dependenciesResult: List<TaskResult>,
@@ -128,24 +140,27 @@ internal abstract class WebLinkTask(
 
         val inputs = compiledKLibs + listOfNotNull(includeArtifact)
 
-
         val artifact = incrementalCache.executeForFiles(
             key = taskName.id.value,
             inputValues = mapOf(
                 "kotlin.settings" to Json.encodeToString<KotlinUserSettings>(kotlinUserSettings),
-                "task.output.root" to taskOutputRoot.path.pathString,
+                "task.output.root" to taskOutputRoot.pathString,
             ),
             inputFiles = inputs,
         ) {
-            cleanDirectory(taskOutputRoot.path)
+            if (!kotlinUserSettings.compileIncrementally) { // we keep compiler outputs to update incrementally
+                cleanDirectory(compiledWebArtifact.kotlinCompilerOutputRoot)
+                cleanDirectory(compiledWebArtifact.kotlinIcDataDir)
+            }
 
-            val artifactPath = taskOutputRoot.path
+            val artifactPath = compiledWebArtifact.kotlinCompilerOutputRoot
 
             compileSources(
                 jdk,
                 kotlinUserSettings = kotlinUserSettings,
                 librariesPaths = externalKLibs + inputs,
                 includeArtifact = includeArtifact,
+                compileIncrementally = kotlinUserSettings.compileIncrementally,
             )
 
             listOf(artifactPath)
@@ -161,6 +176,7 @@ internal abstract class WebLinkTask(
         kotlinUserSettings: KotlinUserSettings,
         librariesPaths: List<Path>,
         includeArtifact: Path?,
+        compileIncrementally: Boolean,
     ) {
         val compilerJars = kotlinArtifactsDownloader.downloadKotlinCompilerEmbeddable(
             version = kotlinUserSettings.compilerVersion,
@@ -173,7 +189,7 @@ internal abstract class WebLinkTask(
             kotlinUserSettings = kotlinUserSettings,
             compilerPlugins = compilerPlugins,
             libraryPaths = librariesPaths,
-            outputPath = taskOutputRoot.path,
+            outputPath = compiledWebArtifact.kotlinCompilerOutputRoot,
             friendPaths = emptyList(),
             fragments = emptyList(),
             sourceFiles = emptyList(),
@@ -182,6 +198,9 @@ internal abstract class WebLinkTask(
             compilationType = KotlinCompilationType.BINARY,
             buildType = buildType,
             include = includeArtifact,
+            cacheDirectory = compiledWebArtifact.kotlinIcDataDir.takeIf {
+                compileIncrementally && buildType == BuildType.Debug
+            },
         )
 
         if (isTest) {
@@ -224,6 +243,7 @@ internal abstract class WebLinkTask(
         compilationType: KotlinCompilationType,
         buildType: BuildType,
         include: Path?,
+        cacheDirectory: Path?,
     ): List<String>
 
     class Result(
