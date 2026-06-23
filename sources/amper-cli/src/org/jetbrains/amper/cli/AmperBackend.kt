@@ -36,6 +36,8 @@ import org.jetbrains.amper.system.info.SystemInfo
 import org.jetbrains.amper.tasks.AllRunSettings
 import org.jetbrains.amper.tasks.ProjectTasksBuilder
 import org.jetbrains.amper.tasks.TaskResult
+import org.jetbrains.amper.tasks.compose.GenerateResClassTask
+import org.jetbrains.amper.tasks.compose.GenerateResourceAccessorsTask
 import org.jetbrains.amper.tasks.compose.isComposeEnabledFor
 import org.jetbrains.amper.tasks.getTaskName
 import org.jetbrains.amper.tasks.ios.IosPreBuildTask
@@ -737,6 +739,21 @@ class AmperBackend(
         runTasks(
             taskIds
         )
+    }
+
+    /**
+     * @see org.jetbrains.amper.cli.commands.ide.PrepareComposeResourcesCommand
+     */
+    suspend fun prepareComposeResourcesForIde() {
+        val taskIds = taskGraph.tasks
+            .filter {
+                // PrepareResources that lays out Compose resources in the generated `preparedComposeResources`
+                // directory is a dependency of GenerateResourceAccessorsTask.
+                it is GenerateResourceAccessorsTask || it is GenerateResClassTask
+            }
+            .mapTo(mutableSetOf(), Task::id)
+        if (taskIds.isEmpty()) return
+        runTasks(taskIds)
     }
 
     private fun resolveModule(moduleName: String) = modulesByName[moduleName] ?: userReadableError(

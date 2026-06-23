@@ -6,7 +6,11 @@ package org.jetbrains.amper.cli.test
 
 import org.jetbrains.amper.cli.test.utils.runSlowTest
 import org.jetbrains.amper.test.MacOnly
+import kotlin.io.path.div
+import kotlin.io.path.exists
+import kotlin.io.path.isDirectory
 import kotlin.test.Test
+import kotlin.test.assertTrue
 
 class ComposeResourcesTest : AmperCliTestBase() {
 
@@ -48,5 +52,18 @@ class ComposeResourcesTest : AmperCliTestBase() {
             "build", "--platform=iosSimulatorArm64",
             assertEmptyStdErr = false,  // xcodebuild prints a bunch of warnings (unrelated to resources) for now :(
         )
+    }
+
+    @Test
+    fun `compose resources IDE preparation`() = runSlowTest {
+        val result = runCli(
+            projectDir = testProject("compose-resources-demo"),
+            "ide-integration", "prepare-compose-resources",
+        )
+        val sharedDir = result.buildDir / "generated" / "shared"
+        assertTrue(sharedDir.exists())
+        assertTrue((sharedDir / "common" / "preparedComposeResources" / "composeResources" / "com.example.gen").isDirectory())
+        assertTrue((sharedDir / "common" / "src" / "compose" / "resources" / "accessors").isDirectory())
+        assertTrue((sharedDir / "common" / "src" / "compose" / "resources" / "commonResClass").isDirectory())
     }
 }

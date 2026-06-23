@@ -16,9 +16,6 @@ import org.jetbrains.amper.cli.withBackend
  * @see org.jetbrains.amper.engine.GenerateKlibsForIdeTask
  */
 internal class GenerateKlibsCommand : AmperProjectAwareCommand(name = "generate-klibs") {
-    override val hiddenFromHelp: Boolean
-        get() = true
-
     override suspend fun run(cliContext: CliContext) {
         withBackend(cliContext, model = cliContext.preparePluginsAndReadModel()) { backend ->
             backend.generateKlibsForIde()

@@ -17,6 +17,7 @@ internal class IdeIntegrationCommand : AmperSubcommand(name = "ide-integration")
     init {
         subcommands(
             GenerateKlibsCommand(),
+            PrepareComposeResourcesCommand(),
         )
     }
 
