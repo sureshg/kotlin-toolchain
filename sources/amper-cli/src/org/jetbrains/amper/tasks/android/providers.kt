@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.tasks.android
@@ -23,10 +23,5 @@ interface AdditionalAndroidAssetsProvider : TaskResult {
          * Root directory containing assets.
          */
         val path: Path,
-
-        /**
-         * The path with the uniform path separator '/' relative to the package root.
-         */
-        val relativePackagingPath: String,
     )
 }

@@ -113,6 +113,12 @@ interface Fragment {
      */
     @UsedInIdePlugin
     fun generatedClassDirs(buildOutputRoot: Path): List<Path>
+
+    /**
+     * Path to converted Compose resources that can be used on the runtime to access the resources.
+     */
+    @UsedInIdePlugin
+    fun preparedComposeResourcesConventionPath(buildOutputRoot: Path): Path
 }
 
 /**

@@ -275,6 +275,7 @@ internal class ResolveCustomExternalDependenciesTask(
             override fun generatedSourceDirs(buildOutputRoot: Path): List<Path> = emptyList()
             override fun generatedResourceDirs(buildOutputRoot: Path): List<Path> = emptyList()
             override fun generatedClassDirs(buildOutputRoot: Path): List<Path> = emptyList()
+            override fun preparedComposeResourcesConventionPath(buildOutputRoot: Path): Path = Path(".")
         }
 
         syntheticModule.fragments.add(fragment)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.tasks.android
@@ -31,16 +31,16 @@ class AndroidComposeResourcesTask(
         quantifier = Quantifier.Single,
     )
 
-    override suspend fun run(dependenciesResult: List<TaskResult>, executionContext: TaskGraphExecutionContext): TaskResult {
+    override suspend fun run(
+        dependenciesResult: List<TaskResult>,
+        executionContext: TaskGraphExecutionContext,
+    ): TaskResult {
         val preparedResourcesPath = preparedResources.path
 
         return Result(
             assetsRoots = if (preparedResourcesPath.exists()) {
-                AdditionalAndroidAssetsProvider.AssetsRoot(
-                    path = preparedResourcesPath,
-                    relativePackagingPath = preparedResources.packagingDir,
-                ).let(::listOf)
-            } else emptyList()
+                [AdditionalAndroidAssetsProvider.AssetsRoot(path = preparedResourcesPath)]
+            } else []
         )
     }
 

@@ -109,7 +109,7 @@ class AndroidAarTask(
                             asset.assetsRoots.forEach { assetsRoot ->
                                 this += ZipInput(
                                     path = assetsRoot.path,
-                                    destPathInArchive = assetsDir / assetsRoot.relativePackagingPath,
+                                    destPathInArchive = assetsDir,
                                 )
                             }
                         }

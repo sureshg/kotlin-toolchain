@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.tasks.compose
@@ -32,7 +32,13 @@ class PreparedComposeResourcesDirArtifact(
      * The relative path where the runtime library expects to find the resources.
      */
     val packagingDir: String,
-) : FragmentScopedArtifact(buildOutputRoot, fragment)
+    override val conventionPath: Path,
+) : FragmentScopedArtifact(buildOutputRoot, fragment) {
+    /**
+     * Path where actual resources are placed.
+     */
+    val preparedPath: Path get() = path.resolve(packagingDir)
+}
 
 class ComposeResourcesAccessorsDirArtifact(
     buildOutputRoot: AmperBuildOutputRoot,

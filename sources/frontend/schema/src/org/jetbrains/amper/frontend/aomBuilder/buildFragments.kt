@@ -145,7 +145,10 @@ open class DefaultFragment(
         if (settings.compose.enabled) {
             add(composeResourcesGeneratedAccessorsPath(buildOutputRoot))
             add(composeResourcesGeneratedCollectorsPath(buildOutputRoot))
-            add(composeResourcesGeneratedCommonResClassPath(buildOutputRoot))
+            if (fragmentDependencies.isEmpty()) {
+                // Common resources class exists only for the root fragment
+                add(composeResourcesGeneratedCommonResClassPath(buildOutputRoot))
+            }
         }
 
         // TODO add custom-task-generated sources here
@@ -166,6 +169,9 @@ open class DefaultFragment(
 
         // TODO add custom-task-generated classes here
     }
+
+    override fun preparedComposeResourcesConventionPath(buildOutputRoot: Path): Path =
+        generatedFilesRoot(buildOutputRoot) / "preparedComposeResources"
 }
 
 /**

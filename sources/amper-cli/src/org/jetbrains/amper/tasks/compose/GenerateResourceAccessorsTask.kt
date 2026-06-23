@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.tasks.compose
@@ -45,13 +45,13 @@ class GenerateResourceAccessorsTask(
     )
 
     override suspend fun run(executionContext: TaskGraphExecutionContext) {
-        if (prepared.path.exists()) {
+        if (prepared.preparedPath.exists()) {
             generateResourceAccessors(
                 packageName = packageName,
                 qualifier = prepared.fragmentName,
                 makeAccessorsPublic = makeAccessorsPublic,
                 packagingDir = packagingDir,
-                preparedResourcesDirectory = prepared.path,
+                preparedResourcesDirectory = prepared.preparedPath,
                 outputSourceDirectory = codeDir.path.createDirectory(),
                 resClassName = resClassName,
             )

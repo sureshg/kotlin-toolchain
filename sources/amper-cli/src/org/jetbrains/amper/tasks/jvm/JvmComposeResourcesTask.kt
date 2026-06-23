@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.tasks.jvm
@@ -16,7 +16,6 @@ import org.jetbrains.amper.tasks.artifacts.api.Quantifier
 import org.jetbrains.amper.tasks.compose.PreparedComposeResourcesDirArtifact
 import kotlin.io.path.createDirectories
 import kotlin.io.path.deleteRecursively
-import kotlin.io.path.div
 import kotlin.io.path.isDirectory
 
 /**
@@ -41,11 +40,11 @@ class JvmComposeResourcesTask(
     )
 
     override suspend fun run(executionContext: TaskGraphExecutionContext) {
-        val outputRoot = outputJvmResources.path / preparedResources.packagingDir
+        val outputRoot = outputJvmResources.path
 
         val dir = preparedResources.path
         if (!dir.isDirectory()) {
-            outputRoot.deleteRecursively()
+            outputRoot.resolve(preparedResources.packagingDir).deleteRecursively()
             return
         }
 
