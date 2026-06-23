@@ -13,6 +13,7 @@ import org.jetbrains.amper.frontend.Layout
 import org.jetbrains.amper.frontend.LeafFragment
 import org.jetbrains.amper.frontend.Notation
 import org.jetbrains.amper.frontend.Platform
+import org.jetbrains.amper.frontend.SourceAndroidConventionPaths
 import org.jetbrains.amper.frontend.contexts.EmptyContexts
 import org.jetbrains.amper.frontend.contexts.PathCtx
 import org.jetbrains.amper.frontend.contexts.PlatformCtx
@@ -114,6 +115,18 @@ open class DefaultFragment(
                 moduleFile.parent.toNioPath() / "src" / (if (isTest) "test" else "main") / "composeResources"
             }
         }
+    }
+
+    override val sourceAndroidConventionPaths: SourceAndroidConventionPaths? by lazy {
+        if (Platform.ANDROID !in platforms) return@lazy null
+
+        SourceAndroidConventionPaths(
+            // We are safe to use just src because Maven layout is supported only in jvm/app and jvm/lib product types.
+            manifestPath = moduleFile.parent.toNioPath() / "src" / "AndroidManifest.xml",
+            resourcesPath = moduleFile.parent.toNioPath() / "res",
+            assetsPath = moduleFile.parent.toNioPath() / "assets",
+            jniLibsPath = moduleFile.parent.toNioPath() / "jniLibs",
+        )
     }
 
     override val hasAnyComposeResources: Boolean by lazy {

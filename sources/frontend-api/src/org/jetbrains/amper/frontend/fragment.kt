@@ -91,6 +91,12 @@ interface Fragment {
     val hasAnyComposeResources: Boolean
 
     /**
+     * Paths to the source directories specific for Android.
+     */
+    @UsedInIdePlugin
+    val sourceAndroidConventionPaths: SourceAndroidConventionPaths?
+
+    /**
      * Paths to the generated source roots that will be used to build the fragment.
      */
     @UsedInIdePlugin

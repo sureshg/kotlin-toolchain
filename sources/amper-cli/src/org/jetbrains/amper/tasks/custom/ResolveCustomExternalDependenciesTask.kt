@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.tasks.custom
@@ -27,6 +27,7 @@ import org.jetbrains.amper.frontend.MavenDependency
 import org.jetbrains.amper.frontend.ModulePart
 import org.jetbrains.amper.frontend.Notation
 import org.jetbrains.amper.frontend.Platform
+import org.jetbrains.amper.frontend.SourceAndroidConventionPaths
 import org.jetbrains.amper.frontend.VersionCatalog
 import org.jetbrains.amper.frontend.aomBuilder.DefaultLocalModuleDependency
 import org.jetbrains.amper.frontend.api.DefaultTrace
@@ -264,6 +265,7 @@ internal class ResolveCustomExternalDependenciesTask(
             override val sourceRoots: List<Path> = emptyList()
             override val resourcesPath: Path = Path(".")
             override val composeResourcesPath: Path = Path(".")
+            override val sourceAndroidConventionPaths: SourceAndroidConventionPaths? = null
             override val hasAnyComposeResources: Boolean = false
             override val cinteropPath: Path? get() = null
 
