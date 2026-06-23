@@ -2,9 +2,10 @@
  * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
-package org.jetbrains.amper.cli.commands
+package org.jetbrains.amper.cli.commands.ide
 
 import org.jetbrains.amper.cli.CliContext
+import org.jetbrains.amper.cli.commands.AmperProjectAwareCommand
 import org.jetbrains.amper.cli.project.preparePluginsAndReadModel
 import org.jetbrains.amper.cli.withBackend
 
@@ -14,7 +15,7 @@ import org.jetbrains.amper.cli.withBackend
  *
  * @see org.jetbrains.amper.engine.GenerateKlibsForIdeTask
  */
-internal class GenerateKlibsForIdeCommand : AmperProjectAwareCommand(name = "generate-klibs-for-ide") {
+internal class GenerateKlibsCommand : AmperProjectAwareCommand(name = "generate-klibs") {
     override val hiddenFromHelp: Boolean
         get() = true
 

@@ -41,7 +41,7 @@ class CinteropTest : AmperCliTestBase() {
     fun `commonize common cinterop for ios platforms`() = runSlowTest {
         val result = runCli(
             projectDir = testProject("cinterop/ios-cinterop"),
-            "generate-klibs-for-ide",
+            "ide-integration", "generate-klibs",
         )
 
         val commonized = result.buildDir / "cinterop/commonized"

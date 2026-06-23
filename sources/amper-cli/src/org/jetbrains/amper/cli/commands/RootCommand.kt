@@ -29,6 +29,7 @@ import kotlinx.datetime.LocalDateTime
 import org.jetbrains.amper.buildinfo.AmperBuild
 import org.jetbrains.amper.cli.AmperHelpFormatter
 import org.jetbrains.amper.cli.AmperVersion
+import org.jetbrains.amper.cli.commands.ide.IdeIntegrationCommand
 import org.jetbrains.amper.cli.commands.show.ShowCommand
 import org.jetbrains.amper.cli.commands.tools.ToolCommand
 import org.jetbrains.amper.cli.logging.LoggingInitializer
@@ -70,7 +71,7 @@ internal class RootCommand : SuspendingCliktCommand(name = "kotlin") {
             SuspendingCompletionCommand(
                 help = "Generate a tab-completion script for the Kotlin CLI for the given shell (bash, zsh, or fish)",
             ),
-            GenerateKlibsForIdeCommand(),
+            IdeIntegrationCommand(),
             InitCommand(),
             PackageCommand(),
             PublishCommand(),

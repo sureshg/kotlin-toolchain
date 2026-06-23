@@ -727,7 +727,7 @@ class AmperBackend(
     }
 
     /**
-     * @see org.jetbrains.amper.cli.commands.GenerateKlibsForIdeCommand
+     * @see org.jetbrains.amper.cli.commands.ide.GenerateKlibsCommand
      */
     suspend fun generateKlibsForIde() {
         val taskIds = taskGraph.tasks
