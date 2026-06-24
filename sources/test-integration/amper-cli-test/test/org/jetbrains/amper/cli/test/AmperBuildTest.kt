@@ -366,6 +366,17 @@ class AmperBuildTest : AmperCliTestBase() {
         secondRun.assertStdoutContains(firstWarning)
     }
 
+    @Test
+    fun `wasm js app should compile wasm js`() = runSlowTest {
+        val projectContext = testProject("wasm-js-app")
+        val result = runCli(projectDir = projectContext, "build", "--platform=wasmJs")
+
+        assertTrue {
+            val wasmFile = result.getTaskOutputPath(":wasm-js-app:buildWasmJsAppWasmJsDebug") / "wasm-js-app.wasm"
+            wasmFile.exists()
+        }
+    }
+
     // AMPER-5259
     @Test
     fun `AARs in test dependencies are properly processed`() = runSlowTest {

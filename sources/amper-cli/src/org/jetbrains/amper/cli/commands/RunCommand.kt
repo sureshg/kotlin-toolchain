@@ -9,6 +9,7 @@ import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.clikt.parameters.types.path
 import org.jetbrains.amper.cli.CliContext
 import org.jetbrains.amper.cli.options.UserJvmArgsOption
@@ -66,6 +67,15 @@ internal class RunCommand : AmperModelAwareCommand(name = "run") {
             "Note: in this mode, the Java runtime is overridden to the JetBrains Runtime, which is required for Compose Hot Reload to work.")
         .flag()
 
+    private val port by option(
+        "--port",
+        help = """
+            Run a server with web application on the specified port. Default port is 8080.
+            
+            Only Wasm/JS platform is currently supported.
+        """.trimIndent(),
+    ).int()
+
     private val programArguments by argument(name = "app_arguments").multiple()
 
     override fun help(context: Context): String = "Run your application"
@@ -83,6 +93,7 @@ internal class RunCommand : AmperModelAwareCommand(name = "run") {
                 userJvmMainClass = jvmMainClass,
                 deviceId = deviceId,
                 composeHotReloadMode = composeHotReloadMode,
+                port = port,
             ),
         ) { backend ->
             backend.runApplication(moduleName = module, platform = platform, buildType = variant)

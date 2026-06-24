@@ -35,11 +35,17 @@ class BrowserRunTask(
         val port = runSettings.port ?: defaultWebBrowserRunPort
         val builtApp = dependenciesResult.requireSingleDependency<WasmJsBuildTask.Result>().appPath
 
-        embeddedServer(Netty, port = port) {
+        val wait = System.getProperty("amper.web.run.wait")?.toBoolean() ?: true
+
+        embeddedServer(
+            Netty,
+            host = "127.0.0.1",
+            port = port
+        ) {
             routing {
                 staticFiles("/", builtApp.toFile())
             }
-        }.start(wait = true)
+        }.start(wait = wait)
 
         return EmptyTaskResult
     }

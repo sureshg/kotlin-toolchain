@@ -426,17 +426,18 @@ ARG2: <${argumentsWithSpecialChars[2]}>"""
     }
 
     @Test
-    fun `run fails gracefully for Wasm JS app`() = runSlowTest {
+    fun `run wasm-js application on wasm-js`() = runSlowTest {
         val projectRoot = testProject("wasm-js-app")
 
         val result = runCli(
             projectDir = projectRoot,
             "run",
-            expectedExitCode = 1,
-            assertEmptyStdErr = false,
+            "--port=0",
+            amperJvmArgs = listOf("-Damper.web.run.wait=false"),
         )
 
-        result.assertStderrContains("Module 'wasm-js-app' of type 'wasm-js/app' cannot be run directly by the Kotlin Toolchain at the moment")
+        val expectedOutput = "Responding at http://127.0.0.1:"
+        result.assertStdoutContains(expectedOutput)
     }
 
     @Test
