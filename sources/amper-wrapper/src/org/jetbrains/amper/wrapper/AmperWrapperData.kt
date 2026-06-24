@@ -26,9 +26,9 @@ data class AmperWrapperData private constructor(
         fun parseFromProjectRoot(
             projectRoot: Path,
         ): AmperWrapperData? {
-            val wrapperPath = wrapperTypesForCurrentPlatform()
-                .map { projectRoot / it.wrapperFileName }
-                .find { it.isRegularFile() }
+            val wrapperPath = wrapperTypeForCurrentPlatform()
+                .let { projectRoot / it.wrapperFileName }
+                .takeIf { it.isRegularFile() }
                 ?: return null
             return parse(wrapperPath = wrapperPath)
         }
@@ -54,15 +54,14 @@ data class AmperWrapperData private constructor(
             )
         }
 
-        private fun wrapperTypesForCurrentPlatform() = when (SystemInfo.CurrentHost.family) {
-            OsFamily.Windows -> setOf(WrapperType.KotlinBatch, WrapperType.AmperBatch)
+        private fun wrapperTypeForCurrentPlatform() = when (SystemInfo.CurrentHost.family) {
+            OsFamily.Windows -> WrapperType.KotlinBatch
             OsFamily.Linux,
             OsFamily.MacOs,
             OsFamily.FreeBSD,
-            OsFamily.Solaris -> setOf(WrapperType.KotlinSh, WrapperType.AmperSh)
+            OsFamily.Solaris -> WrapperType.KotlinSh
         }
 
-        // TODO AMPER-5342 remove old wrapper names once external projects are migrated
         private enum class WrapperType(
             val versionRegex: Regex,
             val checkSumRegex: Regex,
@@ -77,16 +76,6 @@ data class AmperWrapperData private constructor(
                 versionRegex = "^kotlin_cli_version=(.*)$".toRegex(RegexOption.MULTILINE),
                 checkSumRegex = "^kotlin_cli_sha256=(.*)$".toRegex(RegexOption.MULTILINE),
                 wrapperFileName = "kotlin"
-            ),
-            AmperBatch(
-                versionRegex = "^set amper_version=(.*)$".toRegex(RegexOption.MULTILINE),
-                checkSumRegex = "^set amper_sha256=(.*)$".toRegex(RegexOption.MULTILINE),
-                wrapperFileName = "amper.bat"
-            ),
-            AmperSh(
-                versionRegex = "^amper_version=(.*)$".toRegex(RegexOption.MULTILINE),
-                checkSumRegex = "^amper_sha256=(.*)$".toRegex(RegexOption.MULTILINE),
-                wrapperFileName = "amper"
             ),
         }
     }

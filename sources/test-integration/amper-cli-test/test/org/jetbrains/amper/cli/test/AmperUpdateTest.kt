@@ -33,8 +33,7 @@ class AmperUpdateTest : AmperCliTestBase() {
     fun `update command without options creates wrappers with confirmation`() = runSlowTest {
         val projectDir = newEmptyProjectDir()
 
-        // TODO AMPER-5342 Remove --dev once we have a release with the kotlin-cli wrapper
-        val result = runCli(projectDir, "update", "--dev", stdin = ProcessInput.Text("y\n"), wrapperMode = WrapperMode.GlobalIntrinsicVersion)
+        val result = runCli(projectDir, "update", stdin = ProcessInput.Text("y\n"), wrapperMode = WrapperMode.GlobalIntrinsicVersion)
 
         assertTrue(result.stdout.contains("Would you like to create"), "The Kotlin CLI should ask for confirmation")
         assertEquals(listOf("kotlin", "kotlin.bat"), projectDir.relativeChildren(), "kotlin CLI wrapper scripts should be created")
@@ -44,14 +43,12 @@ class AmperUpdateTest : AmperCliTestBase() {
     fun `update --create command creates wrappers without confirmation`() = runSlowTest {
         val projectDir = newEmptyProjectDir()
 
-        // TODO AMPER-5342 Remove --dev once we have a release with the kotlin-cli wrapper
-        val result = runCli(projectDir, "update", "--create", "--dev", wrapperMode = WrapperMode.GlobalIntrinsicVersion)
+        val result = runCli(projectDir, "update", "--create", wrapperMode = WrapperMode.GlobalIntrinsicVersion)
 
         assertFalse(result.stdout.contains("?"), "The Kotlin CLI should not ask for confirmation")
         assertEquals(listOf("kotlin", "kotlin.bat"), projectDir.relativeChildren(), "The Kotlin CLI wrapper scripts should be created")
     }
 
-    @Disabled // TODO AMPER-5342 Re-enable when we have a release with the kotlin-cli wrapper
     @Test
     fun `update command without options replaces existing wrappers with latest release`() = runSlowTest {
         val projectDir = newEmptyProjectDir(setupWrappers = true)
@@ -89,22 +86,20 @@ class AmperUpdateTest : AmperCliTestBase() {
         assertEquals("0.11.0-dev-3939", batVersion, "kotlin bat script should have the new version")
     }
 
-    // TODO AMPER-5342 use a new version once a kotlin-cli wrapper has been released
     @Test
-    fun `can downgrade from current to 0_11_0-dev-3939`() = runSlowTest {
+    fun `can downgrade from current to 0_11_0`() = runSlowTest {
         val projectDir = newEmptyProjectDir(setupWrappers = true)
 
-        val (bashVersion, batVersion, commandResult) = runAmperUpdateAndAwaitWinWrapper(projectDir, "--target-version=0.11.0-dev-3939")
+        val (bashVersion, batVersion, commandResult) = runAmperUpdateAndAwaitWinWrapper(projectDir, "--target-version=0.11.0")
 
         assertTrue(commandResult.stdout.contains("Update successful"), "Update should be successful")
-        assertEquals("0.11.0-dev-3939", bashVersion, "kotlin bash script should have the new version")
-        assertEquals("0.11.0-dev-3939", batVersion, "kotlin bat script should have the new version")
+        assertEquals("0.11.0", bashVersion, "kotlin bash script should have the new version")
+        assertEquals("0.11.0", batVersion, "kotlin bat script should have the new version")
     }
 
-    // TODO AMPER-5342 use a new version once a kotlin-cli wrapper has been released
     @Test
-    fun `can update from 0_11_0-dev-3939 to current`() = runSlowTest {
-        val projectDir = createEmptyProjectWithWrappers(version = "0.11.0-dev-3939")
+    fun `can update from 0_11_1 to current`() = runSlowTest {
+        val projectDir = createEmptyProjectWithWrappers(version = "0.11.1")
         assertCanUpdateToCurrent(projectDir)
     }
 

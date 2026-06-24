@@ -47,8 +47,7 @@ abstract class AmperCliWithWrapperTestBase {
     private val httpServer = HttpServerExtension(
         wwwRoot = Dirs.m2repository,
         wwwInterceptor = { urlPath ->
-            // TODO AMPER-5342 simplify the regex once we use 'kotlin' wrappers everywhere (including external projects)
-            val amperCliDistRegex = Regex("org/jetbrains/(kotlin|amper)/(kotlin-|amper-)?cli/(?<version>[^/]+)/.*")
+            val amperCliDistRegex = Regex("org/jetbrains/kotlin/(kotlin-)?cli/(?<version>[^/]+)/.*")
             val match = amperCliDistRegex.matchEntire(urlPath)
             if (match != null && match.groups["version"]!!.value != "1.0-SNAPSHOT") {
                 // we only want to serve 1.0-SNAPSHOT from local m2 (and serve other versions from the real maven)

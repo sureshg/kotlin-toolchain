@@ -23,6 +23,7 @@ import kotlin.io.path.absolutePathString
 import kotlin.io.path.copyToRecursively
 import kotlin.io.path.createDirectories
 import kotlin.io.path.div
+import kotlin.io.path.exists
 import kotlin.io.path.pathString
 
 abstract class AmperCliTestBase : AmperCliWithWrapperTestBase() {
@@ -105,10 +106,9 @@ abstract class AmperCliTestBase : AmperCliWithWrapperTestBase() {
         val kotlinWrapperPath = if (wrapperMode.isGlobal) {
             tempWrappersDir / scriptNameForCurrentOs
         } else {
-            // TODO AMPER-5342 Simplify this once external projects are migrated to kotlin(.bat)
-            // This is to handle the different possible wrappers in the project root (amper vs kotlin)
-            AmperWrapperData.parseFromProjectRoot(projectDir)?.path
-                ?: error("Using project-local wrapper mode, but the wrapper is missing in $projectDir")
+            (projectDir / scriptNameForCurrentOs).also {
+                check(it.exists()) { "Using project-local wrapper mode, but the wrapper is missing in $projectDir" }
+            }
         }
 
         val effectiveArgs = buildList {
