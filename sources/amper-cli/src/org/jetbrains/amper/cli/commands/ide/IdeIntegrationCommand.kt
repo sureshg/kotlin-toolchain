@@ -17,6 +17,7 @@ import org.jetbrains.amper.cli.commands.AmperSubcommand
 internal class IdeIntegrationCommand : AmperSubcommand(name = "ide-integration") {
     init {
         subcommands(
+            CommonizeNativeDistributionCommand(),
             GenerateKlibsCommand(),
             PrepareComposeResourcesCommand(),
         )

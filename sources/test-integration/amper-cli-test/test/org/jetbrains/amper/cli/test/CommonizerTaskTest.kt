@@ -25,7 +25,7 @@ class CommonizerTaskTest: AmperCliTestBase() {
     @Test
     @MacOnly
     fun `commonize ios`() = runSlowTest {
-        val commonizedRootDir = runCommonizerTask(projectName = "kmp-mobile")
+        val commonizedRootDir = runCommonizerCommand(projectName = "kmp-mobile")
 
         val expectedPlatformSets = listOf(
             listOf("ios_arm64", "ios_simulator_arm64", "ios_x64")
@@ -35,7 +35,7 @@ class CommonizerTaskTest: AmperCliTestBase() {
 
     @Test
     fun `commonize one windows and one linux`() = runSlowTest {
-        val commonizedRootDir = runCommonizerTask(projectName = "win-and-linuxX64")
+        val commonizedRootDir = runCommonizerCommand(projectName = "win-and-linuxX64")
 
         val expectedPlatformSets = listOf(
             listOf("linux_x64", "mingw_x64")
@@ -46,7 +46,7 @@ class CommonizerTaskTest: AmperCliTestBase() {
     @Test
     @MacOnly
     fun `commonize ios and two linuxes`() = runSlowTest {
-        val commonizedRootDir = runCommonizerTask(projectName = "ios-and-two-linux")
+        val commonizedRootDir = runCommonizerCommand(projectName = "ios-and-two-linux")
 
         val expectedPlatformSets = listOf(
             listOf("ios_arm64", "ios_simulator_arm64", "ios_x64"), // for the 'ios' fragment
@@ -58,7 +58,7 @@ class CommonizerTaskTest: AmperCliTestBase() {
 
     @Test
     fun `commonize one windows and two linuxes`() = runSlowTest {
-        val commonizedRootDir = runCommonizerTask(projectName = "win-and-two-linux")
+        val commonizedRootDir = runCommonizerCommand(projectName = "win-and-two-linux")
 
         val expectedPlatformSets = listOf(
             listOf("linux_arm64", "linux_x64"),  // for the 'linux' fragment
@@ -67,7 +67,7 @@ class CommonizerTaskTest: AmperCliTestBase() {
         assertCommonizedPlatformSets(expectedPlatformSets, commonizedRootDir)
     }
 
-    private suspend fun runCommonizerTask(projectName: String): Path {
+    private suspend fun runCommonizerCommand(projectName: String): Path {
         val userCacheDir = tempRoot / "user-cache"
         userCacheDir.createDirectories()
 
@@ -77,7 +77,7 @@ class CommonizerTaskTest: AmperCliTestBase() {
         val runResult = runCli(
             projectDir = testProject("commonizer/$projectName"),
             "--shared-cache-dir=$userCacheDir",
-            "task", "commonizeNativeDistribution",
+            "ide-integration", "commonize-native-distribution",
         )
 
         assertEquals(0, runResult.exitCode, "The commonizer task failed with exit code ${runResult.exitCode}")
