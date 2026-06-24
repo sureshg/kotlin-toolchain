@@ -4,6 +4,7 @@
 
 package org.jetbrains.amper.cli.commands.ide
 
+import com.github.ajalt.clikt.core.Context
 import org.jetbrains.amper.cli.CliContext
 import org.jetbrains.amper.cli.commands.AmperProjectAwareCommand
 import org.jetbrains.amper.cli.project.preparePluginsAndReadModel
@@ -21,4 +22,7 @@ internal class GenerateKlibsCommand : AmperProjectAwareCommand(name = "generate-
             backend.generateKlibsForIde()
         }
     }
+
+    override fun help(context: Context): String =
+        "Generates cinterop Klibs and their commonized variants so IDE can analyze such code usage and provide correct code insight"
 }

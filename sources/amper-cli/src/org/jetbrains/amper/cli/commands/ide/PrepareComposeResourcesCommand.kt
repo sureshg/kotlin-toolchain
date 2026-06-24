@@ -4,6 +4,7 @@
 
 package org.jetbrains.amper.cli.commands.ide
 
+import com.github.ajalt.clikt.core.Context
 import org.jetbrains.amper.cli.CliContext
 import org.jetbrains.amper.cli.commands.AmperProjectAwareCommand
 import org.jetbrains.amper.cli.project.preparePluginsAndReadModel
@@ -26,4 +27,7 @@ internal class PrepareComposeResourcesCommand : AmperProjectAwareCommand(name = 
             backend.prepareComposeResourcesForIde()
         }
     }
+
+    override fun help(context: Context): String =
+        "Prepares Compose resources and generates classes (resource class, accessors, collectors) for IDE analysis"
 }

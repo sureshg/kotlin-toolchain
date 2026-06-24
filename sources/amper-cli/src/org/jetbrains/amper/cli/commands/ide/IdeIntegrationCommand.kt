@@ -4,6 +4,7 @@
 
 package org.jetbrains.amper.cli.commands.ide
 
+import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.core.subcommands
 import org.jetbrains.amper.cli.commands.AmperSubcommand
 
@@ -22,6 +23,8 @@ internal class IdeIntegrationCommand : AmperSubcommand(name = "ide-integration")
     }
 
     override val hiddenFromHelp: Boolean = true
+
+    override fun help(context: Context): String = "Entrypoint for different commands required for IDE integration"
 
     override suspend fun run() = Unit
 }
