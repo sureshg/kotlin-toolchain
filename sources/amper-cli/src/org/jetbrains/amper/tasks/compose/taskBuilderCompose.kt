@@ -10,6 +10,9 @@ import org.jetbrains.amper.frontend.schema.ComposeResourcesSettings
 import org.jetbrains.amper.tasks.ProjectTasksBuilder
 import org.jetbrains.amper.tasks.refinedLeafFragmentsDependingOn
 import org.jetbrains.amper.tasks.rootFragment
+import kotlin.io.path.isDirectory
+import kotlin.io.path.isHidden
+import kotlin.io.path.walk
 
 fun ProjectTasksBuilder.setupComposeTasks() {
     configureComposeResourcesGeneration()
@@ -40,7 +43,10 @@ private fun ProjectTasksBuilder.configureComposeResourcesGeneration() {
             We generate public code to make API not depend on the actual presence of the resources,
             because the user already opted-in to their usage.
         */
-        val shouldGenerateCode = makeAccessorsPublic || module.fragments.any { it.hasAnyComposeResources }
+        val shouldGenerateCode = makeAccessorsPublic || module.fragments.any {
+            // TODO: Do we need this requirement here? Can we always generate this code?
+            it.composeResourcesPath.isDirectory() && it.composeResourcesPath.walk().any { file -> !file.isHidden() }
+        }
 
         // Configure "global" tasks that generate common code (into rootFragment).
         tasks.registerTask(

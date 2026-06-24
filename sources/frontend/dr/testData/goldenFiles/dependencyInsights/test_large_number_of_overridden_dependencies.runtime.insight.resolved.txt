@@ -38,14 +38,26 @@ Module ios-app
 │    │    │    ╰─── org.jetbrains.compose.foundation:foundation:#composeDefaultVersion (*)
 │    │    ├─── ui:iosArm64:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion
+│    │    ├─── ui:iosArm64:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    │    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion
+│    │    │         ╰─── org.jetbrains.compose.components:components-resources-iosArm64:#composeDefaultVersion
+│    │    │              ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion
 │    │    ├─── ui:apple:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion
+│    │    ├─── ui:apple:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    │    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 │    │    ├─── ui:common:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion
+│    │    ├─── ui:common:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    │    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 │    │    ├─── ui:ios:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion
-│    │    ╰─── ui:native:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
-│    │         ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion
+│    │    ├─── ui:ios:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    │    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
+│    │    ├─── ui:native:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion
+│    │    ╰─── ui:native:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │         ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 │    ├─── Module fyp
 │    │    ├─── fyp:iosArm64:org.jetbrains.compose.foundation:foundation:#composeDefaultVersion
 │    │    │    ╰─── org.jetbrains.compose.foundation:foundation:#composeDefaultVersion (*)
@@ -59,14 +71,24 @@ Module ios-app
 │    │    │    ╰─── org.jetbrains.compose.foundation:foundation:#composeDefaultVersion (*)
 │    │    ├─── fyp:iosArm64:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion
+│    │    ├─── fyp:iosArm64:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    │    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 │    │    ├─── fyp:apple:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion
+│    │    ├─── fyp:apple:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    │    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 │    │    ├─── fyp:common:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion
+│    │    ├─── fyp:common:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    │    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 │    │    ├─── fyp:ios:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion
-│    │    ╰─── fyp:native:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
-│    │         ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion
+│    │    ├─── fyp:ios:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    │    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
+│    │    ├─── fyp:native:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion
+│    │    ╰─── fyp:native:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │         ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 │    ├─── Module list
 │    │    ├─── list:iosArm64:org.jetbrains.compose.foundation:foundation:#composeDefaultVersion
 │    │    │    ╰─── org.jetbrains.compose.foundation:foundation:#composeDefaultVersion (*)
@@ -91,41 +113,81 @@ Module ios-app
 │    │    │    │    ╰─── org.jetbrains.compose.foundation:foundation:#composeDefaultVersion (*)
 │    │    │    ├─── model:iosArm64:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    │    │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion
+│    │    │    ├─── model:iosArm64:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    │    │    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 │    │    │    ├─── model:apple:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    │    │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion
+│    │    │    ├─── model:apple:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    │    │    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 │    │    │    ├─── model:common:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    │    │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion
+│    │    │    ├─── model:common:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    │    │    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 │    │    │    ├─── model:ios:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    │    │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion
-│    │    │    ╰─── model:native:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
-│    │    │         ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion
+│    │    │    ├─── model:ios:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    │    │    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
+│    │    │    ├─── model:native:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion
+│    │    │    ╰─── model:native:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    │         ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 │    │    ├─── list:iosArm64:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion
+│    │    ├─── list:iosArm64:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    │    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 │    │    ├─── list:apple:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion
+│    │    ├─── list:apple:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    │    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 │    │    ├─── list:common:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion
+│    │    ├─── list:common:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    │    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 │    │    ├─── list:ios:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion
-│    │    ╰─── list:native:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
-│    │         ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion
+│    │    ├─── list:ios:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    │    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
+│    │    ├─── list:native:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion
+│    │    ╰─── list:native:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │         ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 │    ├─── shared:iosArm64:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion
+│    ├─── shared:iosArm64:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 │    ├─── shared:apple:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion
+│    ├─── shared:apple:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 │    ├─── shared:common:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion
+│    ├─── shared:common:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 │    ├─── shared:ios:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion
-│    ╰─── shared:native:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
-│         ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion
+│    ├─── shared:ios:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
+│    ├─── shared:native:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion
+│    ╰─── shared:native:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│         ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 ├─── ios-app:iosArm64:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion
+├─── ios-app:iosArm64:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 ├─── ios-app:apple:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion
+├─── ios-app:apple:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 ├─── ios-app:common:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion
+├─── ios-app:common:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 ├─── ios-app:ios:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion
-╰─── ios-app:native:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
-     ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion
+├─── ios-app:ios:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
+├─── ios-app:native:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
+│    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion
+╰─── ios-app:native:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+     ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)

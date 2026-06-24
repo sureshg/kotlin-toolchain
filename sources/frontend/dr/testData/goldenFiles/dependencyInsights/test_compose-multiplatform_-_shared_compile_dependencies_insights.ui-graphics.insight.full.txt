@@ -40,5 +40,17 @@ Module shared
 │    ╰─── org.jetbrains.compose.material3:material3:1.10.0-alpha05 (*)
 ├─── shared:native:org.jetbrains.compose.foundation:foundation:#composeDefaultVersion
 │    ╰─── org.jetbrains.compose.foundation:foundation:#composeDefaultVersion (*)
-╰─── shared:native:org.jetbrains.compose.material3:material3:1.10.0-alpha05
-     ╰─── org.jetbrains.compose.material3:material3:1.10.0-alpha05 (*)
+├─── shared:native:org.jetbrains.compose.material3:material3:1.10.0-alpha05
+│    ╰─── org.jetbrains.compose.material3:material3:1.10.0-alpha05 (*)
+├─── shared:iosArm64:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion
+│         ╰─── org.jetbrains.compose.components:components-resources-iosArm64:#composeDefaultVersion
+│              ╰─── org.jetbrains.compose.foundation:foundation:#composeDefaultVersion (*)
+├─── shared:apple:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
+├─── shared:common:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
+├─── shared:ios:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
+╰─── shared:native:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+     ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)

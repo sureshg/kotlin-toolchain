@@ -16,6 +16,11 @@ collection-darwinMain-1.5.0.klib
 collection-nativeMain-1.5.0.klib
 collection-nonJvmMain-1.5.0.klib
 collection-unixMain-1.5.0.klib
+components-resources-blockingMain-1.10.3.klib
+components-resources-commonMain-1.10.3.klib
+components-resources-iosMain-1.10.3.klib
+components-resources-nativeMain-1.10.3.klib
+components-resources-skikoMain-1.10.3.klib
 foundation-commonMain-1.10.3.klib
 foundation-darwinMain-1.10.3.klib
 foundation-layout-commonMain-1.10.3.klib

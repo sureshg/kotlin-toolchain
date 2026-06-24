@@ -554,6 +554,13 @@ Module ios-app
 │    │    │              ╰─── org.jetbrains.kotlinx:kotlinx-serialization-core:1.10.0 (*)
 │    │    ├─── ui:iosArm64:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+│    │    ├─── ui:iosArm64:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    │    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion
+│    │    │         ╰─── org.jetbrains.compose.components:components-resources-iosArm64:#composeDefaultVersion
+│    │    │              ├─── org.jetbrains.kotlin:kotlin-stdlib:2.2.20 -> #kotlinVersion (*)
+│    │    │              ├─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+│    │    │              ├─── org.jetbrains.compose.foundation:foundation:#composeDefaultVersion (*)
+│    │    │              ╰─── org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0 -> 1.9.0 (*)
 │    │    ├─── ui:apple:io.insert-koin:koin-bom:4.2.0-alpha2
 │    │    │    ╰─── io.insert-koin:koin-bom:4.2.0-alpha2 (*)
 │    │    ├─── ui:apple:org.jetbrains.kotlinx:kotlinx-datetime:0.7.1
@@ -566,6 +573,8 @@ Module ios-app
 │    │    │    ╰─── org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0 (*)
 │    │    ├─── ui:apple:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+│    │    ├─── ui:apple:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    │    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 │    │    ├─── ui:common:io.insert-koin:koin-bom:4.2.0-alpha2
 │    │    │    ╰─── io.insert-koin:koin-bom:4.2.0-alpha2 (*)
 │    │    ├─── ui:common:org.jetbrains.kotlinx:kotlinx-datetime:0.7.1
@@ -578,6 +587,8 @@ Module ios-app
 │    │    │    ╰─── org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0 (*)
 │    │    ├─── ui:common:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+│    │    ├─── ui:common:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    │    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 │    │    ├─── ui:ios:io.insert-koin:koin-bom:4.2.0-alpha2
 │    │    │    ╰─── io.insert-koin:koin-bom:4.2.0-alpha2 (*)
 │    │    ├─── ui:ios:org.jetbrains.kotlinx:kotlinx-datetime:0.7.1
@@ -590,6 +601,8 @@ Module ios-app
 │    │    │    ╰─── org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0 (*)
 │    │    ├─── ui:ios:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+│    │    ├─── ui:ios:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    │    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 │    │    ├─── ui:native:io.insert-koin:koin-bom:4.2.0-alpha2
 │    │    │    ╰─── io.insert-koin:koin-bom:4.2.0-alpha2 (*)
 │    │    ├─── ui:native:org.jetbrains.kotlinx:kotlinx-datetime:0.7.1
@@ -600,8 +613,10 @@ Module ios-app
 │    │    │    ╰─── org.jetbrains.kotlinx:kotlinx-serialization-core:1.10.0 (*)
 │    │    ├─── ui:native:org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0, implicit (because kotlin.serialization.format=json)
 │    │    │    ╰─── org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0 (*)
-│    │    ╰─── ui:native:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
-│    │         ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+│    │    ├─── ui:native:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+│    │    ╰─── ui:native:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │         ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 │    ├─── Module fyp
 │    │    ├─── fyp:iosArm64:io.insert-koin:koin-core:unspecified
 │    │    │    ╰─── io.insert-koin:koin-core:unspecified -> 4.2.0-alpha2 (*)
@@ -695,6 +710,8 @@ Module ios-app
 │    │    │    ╰─── org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0 (*)
 │    │    ├─── fyp:iosArm64:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+│    │    ├─── fyp:iosArm64:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    │    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 │    │    ├─── fyp:apple:io.insert-koin:koin-bom:4.2.0-alpha2
 │    │    │    ╰─── io.insert-koin:koin-bom:4.2.0-alpha2 (*)
 │    │    ├─── fyp:apple:org.jetbrains.kotlinx:kotlinx-datetime:0.7.1
@@ -707,6 +724,8 @@ Module ios-app
 │    │    │    ╰─── org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0 (*)
 │    │    ├─── fyp:apple:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+│    │    ├─── fyp:apple:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    │    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 │    │    ├─── fyp:common:io.insert-koin:koin-bom:4.2.0-alpha2
 │    │    │    ╰─── io.insert-koin:koin-bom:4.2.0-alpha2 (*)
 │    │    ├─── fyp:common:org.jetbrains.kotlinx:kotlinx-datetime:0.7.1
@@ -719,6 +738,8 @@ Module ios-app
 │    │    │    ╰─── org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0 (*)
 │    │    ├─── fyp:common:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+│    │    ├─── fyp:common:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    │    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 │    │    ├─── fyp:ios:io.insert-koin:koin-bom:4.2.0-alpha2
 │    │    │    ╰─── io.insert-koin:koin-bom:4.2.0-alpha2 (*)
 │    │    ├─── fyp:ios:org.jetbrains.kotlinx:kotlinx-datetime:0.7.1
@@ -731,6 +752,8 @@ Module ios-app
 │    │    │    ╰─── org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0 (*)
 │    │    ├─── fyp:ios:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+│    │    ├─── fyp:ios:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    │    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 │    │    ├─── fyp:native:io.insert-koin:koin-bom:4.2.0-alpha2
 │    │    │    ╰─── io.insert-koin:koin-bom:4.2.0-alpha2 (*)
 │    │    ├─── fyp:native:org.jetbrains.kotlinx:kotlinx-datetime:0.7.1
@@ -741,8 +764,10 @@ Module ios-app
 │    │    │    ╰─── org.jetbrains.kotlinx:kotlinx-serialization-core:1.10.0 (*)
 │    │    ├─── fyp:native:org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0, implicit (because kotlin.serialization.format=json)
 │    │    │    ╰─── org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0 (*)
-│    │    ╰─── fyp:native:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
-│    │         ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+│    │    ├─── fyp:native:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+│    │    ╰─── fyp:native:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │         ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 │    ├─── Module list
 │    │    ├─── list:iosArm64:io.insert-koin:koin-core:unspecified
 │    │    │    ╰─── io.insert-koin:koin-core:unspecified -> 4.2.0-alpha2 (*)
@@ -921,6 +946,8 @@ Module ios-app
 │    │    │    │    ╰─── org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0 (*)
 │    │    │    ├─── model:iosArm64:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    │    │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+│    │    │    ├─── model:iosArm64:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    │    │    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 │    │    │    ├─── model:apple:io.insert-koin:koin-bom:4.2.0-alpha2
 │    │    │    │    ╰─── io.insert-koin:koin-bom:4.2.0-alpha2 (*)
 │    │    │    ├─── model:apple:org.jetbrains.kotlinx:kotlinx-datetime:0.7.1
@@ -933,6 +960,8 @@ Module ios-app
 │    │    │    │    ╰─── org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0 (*)
 │    │    │    ├─── model:apple:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    │    │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+│    │    │    ├─── model:apple:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    │    │    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 │    │    │    ├─── model:common:io.insert-koin:koin-bom:4.2.0-alpha2
 │    │    │    │    ╰─── io.insert-koin:koin-bom:4.2.0-alpha2 (*)
 │    │    │    ├─── model:common:org.jetbrains.kotlinx:kotlinx-datetime:0.7.1
@@ -945,6 +974,8 @@ Module ios-app
 │    │    │    │    ╰─── org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0 (*)
 │    │    │    ├─── model:common:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    │    │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+│    │    │    ├─── model:common:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    │    │    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 │    │    │    ├─── model:ios:io.insert-koin:koin-bom:4.2.0-alpha2
 │    │    │    │    ╰─── io.insert-koin:koin-bom:4.2.0-alpha2 (*)
 │    │    │    ├─── model:ios:org.jetbrains.kotlinx:kotlinx-datetime:0.7.1
@@ -957,6 +988,8 @@ Module ios-app
 │    │    │    │    ╰─── org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0 (*)
 │    │    │    ├─── model:ios:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    │    │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+│    │    │    ├─── model:ios:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    │    │    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 │    │    │    ├─── model:native:io.insert-koin:koin-bom:4.2.0-alpha2
 │    │    │    │    ╰─── io.insert-koin:koin-bom:4.2.0-alpha2 (*)
 │    │    │    ├─── model:native:org.jetbrains.kotlinx:kotlinx-datetime:0.7.1
@@ -967,8 +1000,10 @@ Module ios-app
 │    │    │    │    ╰─── org.jetbrains.kotlinx:kotlinx-serialization-core:1.10.0 (*)
 │    │    │    ├─── model:native:org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0, implicit (because kotlin.serialization.format=json)
 │    │    │    │    ╰─── org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0 (*)
-│    │    │    ╰─── model:native:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
-│    │    │         ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+│    │    │    ├─── model:native:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+│    │    │    ╰─── model:native:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    │         ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 │    │    ├─── list:iosArm64:org.jetbrains.kotlin:kotlin-stdlib:#kotlinVersion, implicit
 │    │    │    ╰─── org.jetbrains.kotlin:kotlin-stdlib:#kotlinVersion (*)
 │    │    ├─── list:iosArm64:org.jetbrains.kotlinx:kotlinx-serialization-core:1.10.0, implicit (because Kotlinx Serialization is enabled)
@@ -977,6 +1012,8 @@ Module ios-app
 │    │    │    ╰─── org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0 (*)
 │    │    ├─── list:iosArm64:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+│    │    ├─── list:iosArm64:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    │    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 │    │    ├─── list:apple:io.insert-koin:koin-bom:4.2.0-alpha2
 │    │    │    ╰─── io.insert-koin:koin-bom:4.2.0-alpha2 (*)
 │    │    ├─── list:apple:org.jetbrains.kotlinx:kotlinx-datetime:0.7.1
@@ -989,6 +1026,8 @@ Module ios-app
 │    │    │    ╰─── org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0 (*)
 │    │    ├─── list:apple:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+│    │    ├─── list:apple:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    │    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 │    │    ├─── list:common:io.insert-koin:koin-bom:4.2.0-alpha2
 │    │    │    ╰─── io.insert-koin:koin-bom:4.2.0-alpha2 (*)
 │    │    ├─── list:common:org.jetbrains.kotlinx:kotlinx-datetime:0.7.1
@@ -1001,6 +1040,8 @@ Module ios-app
 │    │    │    ╰─── org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0 (*)
 │    │    ├─── list:common:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+│    │    ├─── list:common:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    │    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 │    │    ├─── list:ios:io.insert-koin:koin-bom:4.2.0-alpha2
 │    │    │    ╰─── io.insert-koin:koin-bom:4.2.0-alpha2 (*)
 │    │    ├─── list:ios:org.jetbrains.kotlinx:kotlinx-datetime:0.7.1
@@ -1013,6 +1054,8 @@ Module ios-app
 │    │    │    ╰─── org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0 (*)
 │    │    ├─── list:ios:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+│    │    ├─── list:ios:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    │    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 │    │    ├─── list:native:io.insert-koin:koin-bom:4.2.0-alpha2
 │    │    │    ╰─── io.insert-koin:koin-bom:4.2.0-alpha2 (*)
 │    │    ├─── list:native:org.jetbrains.kotlinx:kotlinx-datetime:0.7.1
@@ -1023,8 +1066,10 @@ Module ios-app
 │    │    │    ╰─── org.jetbrains.kotlinx:kotlinx-serialization-core:1.10.0 (*)
 │    │    ├─── list:native:org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0, implicit (because kotlin.serialization.format=json)
 │    │    │    ╰─── org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0 (*)
-│    │    ╰─── list:native:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
-│    │         ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+│    │    ├─── list:native:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+│    │    ╰─── list:native:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │         ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 │    ├─── shared:iosArm64:org.jetbrains.kotlin:kotlin-stdlib:#kotlinVersion, implicit
 │    │    ╰─── org.jetbrains.kotlin:kotlin-stdlib:#kotlinVersion (*)
 │    ├─── shared:iosArm64:org.jetbrains.kotlinx:kotlinx-serialization-core:1.10.0, implicit (because Kotlinx Serialization is enabled)
@@ -1033,6 +1078,8 @@ Module ios-app
 │    │    ╰─── org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0 (*)
 │    ├─── shared:iosArm64:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+│    ├─── shared:iosArm64:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 │    ├─── shared:apple:io.insert-koin:koin-bom:4.2.0-alpha2
 │    │    ╰─── io.insert-koin:koin-bom:4.2.0-alpha2 (*)
 │    ├─── shared:apple:org.jetbrains.kotlinx:kotlinx-datetime:0.7.1
@@ -1045,6 +1092,8 @@ Module ios-app
 │    │    ╰─── org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0 (*)
 │    ├─── shared:apple:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+│    ├─── shared:apple:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 │    ├─── shared:common:io.insert-koin:koin-bom:4.2.0-alpha2
 │    │    ╰─── io.insert-koin:koin-bom:4.2.0-alpha2 (*)
 │    ├─── shared:common:org.jetbrains.kotlinx:kotlinx-datetime:0.7.1
@@ -1057,6 +1106,8 @@ Module ios-app
 │    │    ╰─── org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0 (*)
 │    ├─── shared:common:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+│    ├─── shared:common:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 │    ├─── shared:ios:io.insert-koin:koin-bom:4.2.0-alpha2
 │    │    ╰─── io.insert-koin:koin-bom:4.2.0-alpha2 (*)
 │    ├─── shared:ios:org.jetbrains.kotlinx:kotlinx-datetime:0.7.1
@@ -1069,6 +1120,8 @@ Module ios-app
 │    │    ╰─── org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0 (*)
 │    ├─── shared:ios:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+│    ├─── shared:ios:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 │    ├─── shared:native:io.insert-koin:koin-bom:4.2.0-alpha2
 │    │    ╰─── io.insert-koin:koin-bom:4.2.0-alpha2 (*)
 │    ├─── shared:native:org.jetbrains.kotlinx:kotlinx-datetime:0.7.1
@@ -1079,25 +1132,37 @@ Module ios-app
 │    │    ╰─── org.jetbrains.kotlinx:kotlinx-serialization-core:1.10.0 (*)
 │    ├─── shared:native:org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0, implicit (because kotlin.serialization.format=json)
 │    │    ╰─── org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0 (*)
-│    ╰─── shared:native:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
-│         ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+│    ├─── shared:native:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
+│    │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+│    ╰─── shared:native:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│         ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 ├─── ios-app:iosArm64:org.jetbrains.kotlin:kotlin-stdlib:#kotlinVersion, implicit
 │    ╰─── org.jetbrains.kotlin:kotlin-stdlib:#kotlinVersion (*)
 ├─── ios-app:iosArm64:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+├─── ios-app:iosArm64:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 ├─── ios-app:apple:org.jetbrains.kotlin:kotlin-stdlib:#kotlinVersion, implicit
 │    ╰─── org.jetbrains.kotlin:kotlin-stdlib:#kotlinVersion (*)
 ├─── ios-app:apple:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+├─── ios-app:apple:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 ├─── ios-app:common:org.jetbrains.kotlin:kotlin-stdlib:#kotlinVersion, implicit
 │    ╰─── org.jetbrains.kotlin:kotlin-stdlib:#kotlinVersion (*)
 ├─── ios-app:common:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+├─── ios-app:common:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 ├─── ios-app:ios:org.jetbrains.kotlin:kotlin-stdlib:#kotlinVersion, implicit
 │    ╰─── org.jetbrains.kotlin:kotlin-stdlib:#kotlinVersion (*)
 ├─── ios-app:ios:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+├─── ios-app:ios:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 ├─── ios-app:native:org.jetbrains.kotlin:kotlin-stdlib:#kotlinVersion, implicit
 │    ╰─── org.jetbrains.kotlin:kotlin-stdlib:#kotlinVersion (*)
-╰─── ios-app:native:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
-     ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+├─── ios-app:native:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
+│    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+╰─── ios-app:native:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+     ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)

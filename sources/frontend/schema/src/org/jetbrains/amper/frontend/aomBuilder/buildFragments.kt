@@ -31,9 +31,6 @@ import org.jetbrains.amper.frontend.types.generated.*
 import org.jetbrains.amper.problems.reporting.ProblemReporter
 import java.nio.file.Path
 import kotlin.io.path.div
-import kotlin.io.path.isDirectory
-import kotlin.io.path.isHidden
-import kotlin.io.path.walk
 
 class DefaultLeafFragment(
     seed: FragmentSeed,
@@ -127,10 +124,6 @@ open class DefaultFragment(
             assetsPath = moduleFile.parent.toNioPath() / "assets",
             jniLibsPath = moduleFile.parent.toNioPath() / "jniLibs",
         )
-    }
-
-    override val hasAnyComposeResources: Boolean by lazy {
-        composeResourcesPath.isDirectory() && composeResourcesPath.walk().any { !it.isHidden() }
     }
 
     override fun generatedSourceDirs(buildOutputRoot: Path): List<Path> = buildList {

@@ -5,6 +5,7 @@ annotation-experimental-1.4.1.aar
 annotation-jvm-1.9.1.jar
 annotations-23.0.0.jar
 collection-jvm-1.5.0.jar
+components-resources-android-1.10.3.aar
 core-common-2.2.0.jar
 foundation-android-1.10.5.aar
 foundation-layout-android-1.10.5.aar

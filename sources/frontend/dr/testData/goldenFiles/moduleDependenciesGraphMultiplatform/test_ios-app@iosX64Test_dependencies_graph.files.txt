@@ -5,6 +5,7 @@ annotation-iosx64-1.9.1.klib
 atomicfu-iosx64-0.27.0-cinterop-interop.klib
 atomicfu-iosx64-0.27.0.klib
 collection-iosx64-1.5.0.klib
+components-resources-iosX64-1.10.3.klib
 foundation-layout-uikitx64-1.10.3.klib
 foundation-uikitx64-1.10.3.klib
 graphics-shapes-iosx64-1.1.0.klib

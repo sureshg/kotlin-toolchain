@@ -295,5 +295,9 @@ Module android-app
 │    ╰─── org.jetbrains.kotlin:kotlin-stdlib-jdk8:#kotlinVersion
 │         ├─── org.jetbrains.kotlin:kotlin-stdlib:#kotlinVersion (*)
 │         ╰─── org.jetbrains.kotlin:kotlin-stdlib-jdk7:#kotlinVersion (*)
-╰─── android-app:main:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
-     ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+├─── android-app:main:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
+│    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+╰─── android-app:main:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+     ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion
+          ╰─── org.jetbrains.compose.components:components-resources-android:#composeDefaultVersion
+               ╰─── org.jetbrains.kotlin:kotlin-stdlib:2.2.20 -> #kotlinVersion (*)

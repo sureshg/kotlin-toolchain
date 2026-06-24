@@ -86,11 +86,6 @@ interface Fragment {
     val composeResourcesPath: Path
 
     /**
-     * Whether any processable files are present in [composeResourcesPath].
-     */
-    val hasAnyComposeResources: Boolean
-
-    /**
      * Paths to the source directories specific for Android.
      */
     @UsedInIdePlugin

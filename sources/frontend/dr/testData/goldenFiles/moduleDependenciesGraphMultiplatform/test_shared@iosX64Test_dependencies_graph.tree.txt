@@ -280,6 +280,13 @@ Module shared
 │         ╰─── org.jetbrains.kotlin:kotlin-test:#kotlinVersion
 ├─── shared:iosX64Test:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+├─── shared:iosX64Test:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion
+│         ╰─── org.jetbrains.compose.components:components-resources-iosX64:#composeDefaultVersion
+│              ├─── org.jetbrains.kotlin:kotlin-stdlib:2.2.20 -> #kotlinVersion
+│              ├─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+│              ├─── org.jetbrains.compose.foundation:foundation:#composeDefaultVersion (*)
+│              ╰─── org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0 -> 1.9.0 (*)
 ├─── shared:appleTest:org.jetbrains.kotlin:kotlin-stdlib:#kotlinVersion, implicit
 │    ╰─── org.jetbrains.kotlin:kotlin-stdlib:#kotlinVersion
 ├─── shared:appleTest:org.jetbrains.kotlin:kotlin-test:#kotlinVersion, implicit
@@ -288,6 +295,8 @@ Module shared
 │    ╰─── org.jetbrains.kotlin:kotlin-test-annotations-common:#kotlinVersion (*)
 ├─── shared:appleTest:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+├─── shared:appleTest:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 ├─── shared:commonTest:org.jetbrains.kotlin:kotlin-stdlib:#kotlinVersion, implicit
 │    ╰─── org.jetbrains.kotlin:kotlin-stdlib:#kotlinVersion
 ├─── shared:commonTest:org.jetbrains.kotlin:kotlin-test:#kotlinVersion, implicit
@@ -296,6 +305,8 @@ Module shared
 │    ╰─── org.jetbrains.kotlin:kotlin-test-annotations-common:#kotlinVersion (*)
 ├─── shared:commonTest:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+├─── shared:commonTest:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 ├─── shared:iosTest:org.jetbrains.kotlin:kotlin-stdlib:#kotlinVersion, implicit
 │    ╰─── org.jetbrains.kotlin:kotlin-stdlib:#kotlinVersion
 ├─── shared:iosTest:org.jetbrains.kotlin:kotlin-test:#kotlinVersion, implicit
@@ -304,11 +315,15 @@ Module shared
 │    ╰─── org.jetbrains.kotlin:kotlin-test-annotations-common:#kotlinVersion (*)
 ├─── shared:iosTest:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
 │    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+├─── shared:iosTest:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+│    ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)
 ├─── shared:nativeTest:org.jetbrains.kotlin:kotlin-stdlib:#kotlinVersion, implicit
 │    ╰─── org.jetbrains.kotlin:kotlin-stdlib:#kotlinVersion
 ├─── shared:nativeTest:org.jetbrains.kotlin:kotlin-test:#kotlinVersion, implicit
 │    ╰─── org.jetbrains.kotlin:kotlin-test:#kotlinVersion
 ├─── shared:nativeTest:org.jetbrains.kotlin:kotlin-test-annotations-common:#kotlinVersion, implicit
 │    ╰─── org.jetbrains.kotlin:kotlin-test-annotations-common:#kotlinVersion (*)
-╰─── shared:nativeTest:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
-     ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+├─── shared:nativeTest:org.jetbrains.compose.runtime:runtime:#composeDefaultVersion, implicit (because Compose is enabled)
+│    ╰─── org.jetbrains.compose.runtime:runtime:#composeDefaultVersion (*)
+╰─── shared:nativeTest:org.jetbrains.compose.components:components-resources:#composeDefaultVersion, implicit (because Compose is enabled)
+     ╰─── org.jetbrains.compose.components:components-resources:#composeDefaultVersion (*)

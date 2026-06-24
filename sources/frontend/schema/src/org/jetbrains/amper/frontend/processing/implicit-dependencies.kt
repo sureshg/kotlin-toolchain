@@ -219,10 +219,8 @@ private fun Fragment.calculateImplicitDependencies(): List<MavenDependencyBase> 
         )
         add(composeRuntimeDependency(composeVersion, dependencyTrace = composeDependencyTrace))
 
-        // Have to add dependency because generated code depends on it
-        if (settings.compose.resources.exposedAccessors || module.fragments.any { it.hasAnyComposeResources }) {
-            add(composeResourcesDependency(composeVersion, dependencyTrace = composeDependencyTrace))
-        }
+        // Compose resources dependency is always added when compose is enabled.
+        add(composeResourcesDependency(composeVersion, dependencyTrace = composeDependencyTrace))
     }
 
     if (settings.kotlin.rpc.enabled) {

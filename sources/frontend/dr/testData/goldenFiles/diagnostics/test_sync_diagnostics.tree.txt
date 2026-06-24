@@ -19,10 +19,14 @@ Module shared
 │         ╰─── org.jetbrains:annotations:13.0
 ├─── shared:common:org.jetbrains.compose.runtime:runtime:12.12.12, implicit (because Compose is enabled)
 │    ╰─── org.jetbrains.compose.runtime:runtime:12.12.12
+├─── shared:common:org.jetbrains.compose.components:components-resources:12.12.12, implicit (because Compose is enabled)
+│    ╰─── org.jetbrains.compose.components:components-resources:12.12.12
 ├─── shared:jvm:org.jetbrains.kotlin:kotlin-stdlib:#kotlinVersion, implicit
 │    ╰─── org.jetbrains.kotlin:kotlin-stdlib:#kotlinVersion (*)
-╰─── shared:jvm:org.jetbrains.compose.runtime:runtime:12.12.12, implicit (because Compose is enabled)
-     ╰─── org.jetbrains.compose.runtime:runtime:12.12.12
+├─── shared:jvm:org.jetbrains.compose.runtime:runtime:12.12.12, implicit (because Compose is enabled)
+│    ╰─── org.jetbrains.compose.runtime:runtime:12.12.12
+╰─── shared:jvm:org.jetbrains.compose.components:components-resources:12.12.12, implicit (because Compose is enabled)
+     ╰─── org.jetbrains.compose.components:components-resources:12.12.12
 Module shared
 │ - main
 │ - scope = RUNTIME
@@ -44,10 +48,14 @@ Module shared
 │         ╰─── org.jetbrains:annotations:13.0
 ├─── shared:common:org.jetbrains.compose.runtime:runtime:12.12.12, implicit (because Compose is enabled)
 │    ╰─── org.jetbrains.compose.runtime:runtime:12.12.12
+├─── shared:common:org.jetbrains.compose.components:components-resources:12.12.12, implicit (because Compose is enabled)
+│    ╰─── org.jetbrains.compose.components:components-resources:12.12.12
 ├─── shared:jvm:org.jetbrains.kotlin:kotlin-stdlib:#kotlinVersion, implicit
 │    ╰─── org.jetbrains.kotlin:kotlin-stdlib:#kotlinVersion (*)
-╰─── shared:jvm:org.jetbrains.compose.runtime:runtime:12.12.12, implicit (because Compose is enabled)
-     ╰─── org.jetbrains.compose.runtime:runtime:12.12.12
+├─── shared:jvm:org.jetbrains.compose.runtime:runtime:12.12.12, implicit (because Compose is enabled)
+│    ╰─── org.jetbrains.compose.runtime:runtime:12.12.12
+╰─── shared:jvm:org.jetbrains.compose.components:components-resources:12.12.12, implicit (because Compose is enabled)
+     ╰─── org.jetbrains.compose.components:components-resources:12.12.12
 Module shared
 │ - test
 │ - scope = COMPILE
@@ -80,12 +88,16 @@ Module shared
 │              ╰─── org.apiguardian:apiguardian-api:1.1.2
 ├─── shared:commonTest:org.jetbrains.compose.runtime:runtime:12.12.12, implicit (because Compose is enabled)
 │    ╰─── org.jetbrains.compose.runtime:runtime:12.12.12
+├─── shared:commonTest:org.jetbrains.compose.components:components-resources:12.12.12, implicit (because Compose is enabled)
+│    ╰─── org.jetbrains.compose.components:components-resources:12.12.12
 ├─── shared:jvmTest:org.jetbrains.kotlin:kotlin-stdlib:#kotlinVersion, implicit
 │    ╰─── org.jetbrains.kotlin:kotlin-stdlib:#kotlinVersion (*)
 ├─── shared:jvmTest:org.jetbrains.kotlin:kotlin-test-junit5:#kotlinVersion, implicit (because the test engine is junit-5)
 │    ╰─── org.jetbrains.kotlin:kotlin-test-junit5:#kotlinVersion (*)
-╰─── shared:jvmTest:org.jetbrains.compose.runtime:runtime:12.12.12, implicit (because Compose is enabled)
-     ╰─── org.jetbrains.compose.runtime:runtime:12.12.12
+├─── shared:jvmTest:org.jetbrains.compose.runtime:runtime:12.12.12, implicit (because Compose is enabled)
+│    ╰─── org.jetbrains.compose.runtime:runtime:12.12.12
+╰─── shared:jvmTest:org.jetbrains.compose.components:components-resources:12.12.12, implicit (because Compose is enabled)
+     ╰─── org.jetbrains.compose.components:components-resources:12.12.12
 Module shared
 │ - test
 │ - scope = RUNTIME
@@ -125,9 +137,13 @@ Module shared
 │              ╰─── org.junit.platform:junit-platform-engine:1.10.1 (*)
 ├─── shared:commonTest:org.jetbrains.compose.runtime:runtime:12.12.12, implicit (because Compose is enabled)
 │    ╰─── org.jetbrains.compose.runtime:runtime:12.12.12
+├─── shared:commonTest:org.jetbrains.compose.components:components-resources:12.12.12, implicit (because Compose is enabled)
+│    ╰─── org.jetbrains.compose.components:components-resources:12.12.12
 ├─── shared:jvmTest:org.jetbrains.kotlin:kotlin-stdlib:#kotlinVersion, implicit
 │    ╰─── org.jetbrains.kotlin:kotlin-stdlib:#kotlinVersion (*)
 ├─── shared:jvmTest:org.jetbrains.kotlin:kotlin-test-junit5:#kotlinVersion, implicit (because the test engine is junit-5)
 │    ╰─── org.jetbrains.kotlin:kotlin-test-junit5:#kotlinVersion (*)
-╰─── shared:jvmTest:org.jetbrains.compose.runtime:runtime:12.12.12, implicit (because Compose is enabled)
-     ╰─── org.jetbrains.compose.runtime:runtime:12.12.12
+├─── shared:jvmTest:org.jetbrains.compose.runtime:runtime:12.12.12, implicit (because Compose is enabled)
+│    ╰─── org.jetbrains.compose.runtime:runtime:12.12.12
+╰─── shared:jvmTest:org.jetbrains.compose.components:components-resources:12.12.12, implicit (because Compose is enabled)
+     ╰─── org.jetbrains.compose.components:components-resources:12.12.12

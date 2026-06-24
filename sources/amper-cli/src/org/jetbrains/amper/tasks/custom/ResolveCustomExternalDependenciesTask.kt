@@ -266,7 +266,6 @@ internal class ResolveCustomExternalDependenciesTask(
             override val resourcesPath: Path = Path(".")
             override val composeResourcesPath: Path = Path(".")
             override val sourceAndroidConventionPaths: SourceAndroidConventionPaths? = null
-            override val hasAnyComposeResources: Boolean = false
             override val cinteropPath: Path? get() = null
 
             override val settings: Settings =

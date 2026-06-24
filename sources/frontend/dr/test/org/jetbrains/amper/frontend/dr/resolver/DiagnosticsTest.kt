@@ -64,6 +64,7 @@ class DiagnosticsTest : AbstractDependencyInsightsTest() {
                 if (!assertDependencyError(node, "org.jetbrains.compose.foundation", "foundation")
                     && !assertDependencyError(node, "org.jetbrains.compose.ui", "ui")
                     && !assertDependencyError(node, "org.jetbrains.compose.runtime", "runtime")
+                    && !assertDependencyError(node, "org.jetbrains.compose.components", "components-resources")
                     && !assertDependencyError(node, "org.jetbrains.kotlinx", "kotlinx-serialization-core")
                 ) {
                     node.verifyOwnMessages()
@@ -81,13 +82,13 @@ class DiagnosticsTest : AbstractDependencyInsightsTest() {
         val buildProblems = diagnosticsReporter.problems
 
         /**
-         * This magic number 16 (4*4) appears because we are diagnosing each fragment (4 fragments total),
-         * and each fragment contains 4 incorrect dependencies.
+         * This magic number 20 (4*5) appears because we are diagnosing each fragment (4 fragments total),
+         * and each fragment contains 5 incorrect dependencies.
          *
          * The common fragment contains incorrect dependencies by definition in a module file.
          * More specific fragments contain incorrect dependencies because they were propagated during merge.
          */
-        assertEquals(16, buildProblems.size)
+        assertEquals(20, buildProblems.size)
 
         // Direct dependency on a built-in library,
         // A version of the library is taken from settings:compose:version in file module.yaml
@@ -107,6 +108,11 @@ class DiagnosticsTest : AbstractDependencyInsightsTest() {
         checkBuiltInDependencyBuildProblem(
             buildProblems, 4,
             "org.jetbrains.compose.runtime", "runtime",
+            Path("module.yaml")
+        )
+        checkBuiltInDependencyBuildProblem(
+            buildProblems, 4,
+            "org.jetbrains.compose.components", "components-resources",
             Path("module.yaml")
         )
 
