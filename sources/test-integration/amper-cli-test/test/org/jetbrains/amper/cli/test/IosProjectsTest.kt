@@ -15,10 +15,12 @@ import org.jetbrains.amper.cli.test.utils.xcodeProjectGenSpans
 import org.jetbrains.amper.cli.test.utils.xcodeProjectManagementSpans
 import org.jetbrains.amper.cli.test.utils.xcodebuildSpans
 import org.jetbrains.amper.telemetry.getAttribute
+import org.jetbrains.amper.test.AmperCliResult
 import org.jetbrains.amper.test.Dirs
 import org.jetbrains.amper.test.LocalAmperPublication
 import org.jetbrains.amper.test.MacOnly
 import org.jetbrains.amper.test.spans.FilteredSpans
+import java.nio.file.Path
 import java.util.*
 import kotlin.io.path.copyToRecursively
 import kotlin.io.path.createDirectories
@@ -205,6 +207,21 @@ class IosProjectsTest : AmperCliTestBase() {
             The module has declared platforms: IOS_ARM64 IOS_SIMULATOR_ARM64.
             Please declare the required platform explicitly in the module's file.
         """.trimIndent())
+    }
+
+    @Test
+    fun `manage-xcode IDE task generates Xcode project`() = runSlowTest {
+        suspend fun runManageXcode(projectDir: Path): AmperCliResult = runCli(
+            projectDir = projectDir,
+            "ide-integration", "manage-xcode",
+            assertEmptyStdErr = false,
+        )
+
+        val firstResult = runManageXcode(testProject("ios/compose"))
+        firstResult.readTelemetrySpans().xcodeProjectGenSpans.assertSingle()
+
+        val secondResult = runManageXcode(firstResult.projectDir)
+        secondResult.readTelemetrySpans().xcodeProjectGenSpans.assertNone()
     }
 }
 

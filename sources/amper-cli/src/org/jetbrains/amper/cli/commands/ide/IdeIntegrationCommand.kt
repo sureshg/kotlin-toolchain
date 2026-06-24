@@ -19,6 +19,7 @@ internal class IdeIntegrationCommand : AmperSubcommand(name = "ide-integration")
         subcommands(
             CommonizeNativeDistributionCommand(),
             GenerateKlibsCommand(),
+            ManageXcodeCommand(),
             PrepareComposeResourcesCommand(),
         )
     }
