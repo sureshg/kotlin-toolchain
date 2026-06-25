@@ -7,18 +7,20 @@ package org.jetbrains.amper.cli.test
 import org.jetbrains.amper.cli.test.utils.assertStderrContains
 import org.jetbrains.amper.cli.test.utils.assertStdoutContains
 import org.jetbrains.amper.cli.test.utils.runSlowTest
+import org.jetbrains.amper.frontend.Model
+import org.jetbrains.amper.frontend.aomBuilder.readProjectModel
+import org.jetbrains.amper.frontend.project.AmperProjectContext
+import org.jetbrains.amper.problems.reporting.NoopProblemReporter
+import org.jetbrains.amper.test.AmperCliResult
 import org.jetbrains.amper.test.LinuxOnly
 import org.jetbrains.amper.test.MacOnly
-import kotlin.io.path.absolutePathString
-import kotlin.io.path.deleteExisting
-import kotlin.io.path.deleteRecursively
-import kotlin.io.path.div
+import java.nio.file.Path
+import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
 import kotlin.io.path.isRegularFile
-import kotlin.io.path.walk
+import kotlin.io.path.relativeTo
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class CinteropTest : AmperCliTestBase() {
     @Test
@@ -47,10 +49,26 @@ class CinteropTest : AmperCliTestBase() {
             "ide-integration", "generate-klibs",
         )
 
-        val custom = result.buildDir / "generated/ios-cinterop/common/cinterop/custom"
-        assertTrue(custom.isDirectory())
-        assertTrue(custom.resolve("default/manifest").isRegularFile())
-        assertTrue(custom.resolve("default/linkdata").isDirectory())
+        assertCinteropModel(
+            result = result,
+            expectedRepresentation = """
+                module: ios-cinterop
+                 fragment: apple
+                  - generated/ios-cinterop/common/cinterop/custom: directory
+                 fragment: common
+                  - generated/ios-cinterop/common/cinterop/custom: directory
+                 fragment: ios
+                  - generated/ios-cinterop/common/cinterop/custom: directory
+                 fragment: iosArm64
+                  - generated/ios-cinterop/iosArm64/cinterop/custom@common.klib: regular-file
+                 fragment: iosSimulatorArm64
+                  - generated/ios-cinterop/iosSimulatorArm64/cinterop/custom@common.klib: regular-file
+                 fragment: iosX64
+                  - generated/ios-cinterop/iosX64/cinterop/custom@common.klib: regular-file
+                 fragment: native
+                  - generated/ios-cinterop/common/cinterop/custom: directory
+            """.trimIndent(),
+        )
     }
 
     @Test
@@ -61,13 +79,21 @@ class CinteropTest : AmperCliTestBase() {
             "ide-integration", "generate-klibs",
         )
 
-        val singleKlib = result.buildDir.resolve("generated").walk().joinToString("\n") {
-            it.absolutePathString()
-        }
-        assertEquals(
-            actual = singleKlib,
-            expected = (result.buildDir / "generated/single-platform/macosArm64/cinterop/custom@common.klib")
-                .absolutePathString(),
+        assertCinteropModel(
+            result = result,
+            expectedRepresentation = """
+                module: single-platform
+                 fragment: apple
+                  - generated/single-platform/macosArm64/cinterop/custom@common.klib: regular-file
+                 fragment: common
+                  - generated/single-platform/macosArm64/cinterop/custom@common.klib: regular-file
+                 fragment: macos
+                  - generated/single-platform/macosArm64/cinterop/custom@common.klib: regular-file
+                 fragment: macosArm64
+                  - generated/single-platform/macosArm64/cinterop/custom@common.klib: regular-file
+                 fragment: native
+                  - generated/single-platform/macosArm64/cinterop/custom@common.klib: regular-file
+            """.trimIndent(),
         )
     }
 
@@ -82,14 +108,26 @@ class CinteropTest : AmperCliTestBase() {
         result.assertStdoutContains(
             "Warning: No libraries found for target mingw_x64. This target will be excluded from commonization.",
         )
-        val generated  = result.buildDir / "generated"
-        val klib = generated / "mac-and-win/macosArm64/cinterop/libcurl@common.klib"
-        val commonized = generated / "mac-and-win/common/cinterop/libcurl"
-        assertTrue { klib.isRegularFile() }
-        assertTrue { commonized.isDirectory() }
-        klib.deleteExisting()
-        commonized.deleteRecursively()
-        assertEquals(expected = [], actual = generated.walk().toList(), "No more files are expected")
+        assertCinteropModel(
+            result = result,
+            expectedRepresentation = """
+                module: mac-and-win
+                 fragment: apple
+                  - generated/mac-and-win/macosArm64/cinterop/libcurl@common.klib: regular-file
+                 fragment: common
+                  - generated/mac-and-win/common/cinterop/libcurl: directory
+                 fragment: macos
+                  - generated/mac-and-win/macosArm64/cinterop/libcurl@common.klib: regular-file
+                 fragment: macosArm64
+                  - generated/mac-and-win/macosArm64/cinterop/libcurl@common.klib: regular-file
+                 fragment: mingw
+                  - generated/mac-and-win/mingwX64/cinterop/libcurl@common.klib: missing
+                 fragment: mingwX64
+                  - generated/mac-and-win/mingwX64/cinterop/libcurl@common.klib: missing
+                 fragment: native
+                  - generated/mac-and-win/common/cinterop/libcurl: directory
+            """.trimIndent(),
+        )
     }
 
     @Test
@@ -120,6 +158,41 @@ class CinteropTest : AmperCliTestBase() {
             projectDir = testProject("cinterop/cinterop-plugin"),
             "run", "--platform=macosArm64",
         )
+    }
+
+    private fun assertCinteropModel(
+        result: AmperCliResult,
+        expectedRepresentation: String,
+    ) = assertEquals(
+        actual = buildString {
+            val model = readProjectModel(result.projectDir)
+            for (module in model.modules.sortedBy { it.userReadableName }) {
+                appendLine("module: ${module.userReadableName}")
+                for (fragment in module.fragments.sortedBy { it.name }) {
+                    val paths = fragment.generatedCinteropKlibPaths(result.buildDir)
+                    if (paths.isEmpty()) continue
+                    appendLine(" fragment: ${fragment.name}")
+                    for (path in paths.sorted()) {
+                        append("  - ${path.relativeTo(result.buildDir)}: ")
+                        appendLine(
+                            when {
+                                path.isRegularFile() -> "regular-file"
+                                path.isDirectory() -> "directory"
+                                path.exists() -> "exists"
+                                else -> "missing"
+                            }
+                        )
+                    }
+                }
+            }
+        }.trim(),
+        expected = expectedRepresentation,
+    )
+
+    private fun readProjectModel(root: Path): Model = context(NoopProblemReporter) {
+        val projectContext = AmperProjectContext.create(rootDir = root, buildDir = null)
+            ?: error("Invalid project root: $root")
+        projectContext.readProjectModel(pluginData = emptyList(), mavenPluginXmls = emptyList())
     }
 }
 

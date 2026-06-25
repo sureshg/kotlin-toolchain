@@ -14,11 +14,14 @@ import org.jetbrains.amper.frontend.LeafFragment
 import org.jetbrains.amper.frontend.Notation
 import org.jetbrains.amper.frontend.Platform
 import org.jetbrains.amper.frontend.SourceAndroidConventionPaths
+import org.jetbrains.amper.frontend.allFragmentDependencies
 import org.jetbrains.amper.frontend.contexts.EmptyContexts
 import org.jetbrains.amper.frontend.contexts.PathCtx
 import org.jetbrains.amper.frontend.contexts.PlatformCtx
 import org.jetbrains.amper.frontend.contexts.TestCtx
 import org.jetbrains.amper.frontend.isDescendantOf
+import org.jetbrains.amper.frontend.plugins.GeneratedPathKind
+import org.jetbrains.amper.frontend.refinedFragments
 import org.jetbrains.amper.frontend.schema.Dependency
 import org.jetbrains.amper.frontend.schema.FragmentBase
 import org.jetbrains.amper.frontend.schema.Settings
@@ -31,6 +34,9 @@ import org.jetbrains.amper.frontend.types.generated.*
 import org.jetbrains.amper.problems.reporting.ProblemReporter
 import java.nio.file.Path
 import kotlin.io.path.div
+import kotlin.io.path.isDirectory
+import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.nameWithoutExtension
 
 class DefaultLeafFragment(
     seed: FragmentSeed,
@@ -170,6 +176,57 @@ open class DefaultFragment(
         if (cinteropPath == null) return null
         return generatedFilesRoot(buildOutputRoot) / "cinterop"
     }
+
+    override fun generatedCinteropKlibPaths(buildOutputRoot: Path): List<Path> {
+        val defFilesCache = mutableMapOf<Fragment, List<Path>>()
+        // NOTE: Keep the implementation in sync with the task outputs! (it's tested)
+        val cinteropKlibsDirPath = generatedCinteropKlibsDirPath(buildOutputRoot)
+        return if (this is LeafFragment) {
+            // Use klibs directly: gather all the `.def` files from the refined closure
+            cinteropKlibsDirPath?.let {
+                allFragmentDependencies(
+                    includeSelf = true,
+                    dependencyType = FragmentDependencyType.REFINE,
+                ).flatMap { fragment ->
+                    (fragment as DefaultFragment).defFiles(defFilesCache).map { fragment.name to it }
+                }.map { [name, defFile] ->
+                    cinteropKlibsDirPath / "${defFile.nameWithoutExtension}@$name.klib"
+                }
+            }.orEmpty().toList()
+        } else if (platforms.size == 1) {
+            // bamboo, go to the leaf
+            module.fragments.find { it is LeafFragment && it.isTest == isTest && it.platforms == platforms }
+                ?.generatedCinteropKlibPaths(buildOutputRoot).orEmpty()
+        } else {
+            // intermediate fragment, use commonized: any .def precisely in this fragment get commonized here
+            cinteropKlibsDirPath?.let {
+                defFiles(defFilesCache).map { defFile -> it / defFile.nameWithoutExtension }
+            }.orEmpty() +
+                    // + recursively inherit other commonized libraries from the refined closure
+                    refinedFragments.flatMap { it.generatedCinteropKlibPaths(buildOutputRoot) }
+        }
+    }
+
+    private fun defFiles(cache: MutableMap<in Fragment, List<Path>>): List<Path> = cache.getOrPut(
+        key = this,
+        defaultValue = {
+            buildList {
+                cinteropPath?.takeIf { it.isDirectory() }?.let {
+                    addAll(it.listDirectoryEntries("*.def"))
+                }
+                for (task in module.tasksFromPlugins) {
+                    for ((path, outputMark) in task.outputs) {
+                        if (outputMark == null || outputMark.kind != GeneratedPathKind.CinteropDefFile
+                            || outputMark.associateWith != this@DefaultFragment
+                        ) {
+                            continue
+                        }
+                        add(path.value)
+                    }
+                }
+            }
+        }
+    )
 }
 
 /**

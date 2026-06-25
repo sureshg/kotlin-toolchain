@@ -126,6 +126,18 @@ interface Fragment {
      */
     @UsedInIdePlugin
     fun generatedCinteropKlibsDirPath(buildOutputRoot: Path): Path?
+
+    /**
+     * Concrete paths of the klibs/exploded klibs generated from the cinterop files.
+     * These libraries are needed in the IDE to enable correct code-insight for the native definitions.
+     *
+     * The contents of these paths are populated during the build or using the `ide-integration` command.
+     * Some paths may not exist if the generation failed for that platform.
+     *
+     * All the paths are children of [generatedCinteropKlibsDirPath] of *some* fragment in the same [module].
+     */
+    @UsedInIdePlugin
+    fun generatedCinteropKlibPaths(buildOutputRoot: Path): List<Path>
 }
 
 /**
