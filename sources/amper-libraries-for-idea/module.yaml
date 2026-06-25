@@ -14,6 +14,8 @@ dependencies:
   - //sources/amper-problem-reporting: exported
   - //sources/amper-project-templates: exported
   - //sources/amper-telemetry: exported
+  - //sources/amper-wrapper: exported
+  - //sources/android-integration/amper-android-sdk-detector: exported
   - //sources/core-intellij: exported
   - //sources/core: exported
   - //sources/dependency-resolution: exported

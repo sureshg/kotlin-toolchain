@@ -124,6 +124,31 @@ class AmperProjectStructureTest {
         )
     }
 
+    @Test
+    fun `modules with UsedInIdePlugin annotation should be exported by amper-libraries-for-idea`() = runTestWithMdc {
+        val modules = readAmperProjectModel().modules
+        val ideaLibrariesModule = modules.find { it.userReadableName == "amper-libraries-for-idea" }
+            ?: error("Module 'amper-libraries-for-idea' not found, please update this test if it was renamed")
+
+        val ideaDependenciesByModule = ideaLibrariesModule.localModuleDependencies(includeTestDeps = false)
+            .associate { it.module.userReadableName to it.exported }
+
+        val modulesWithUsedInIdeaAnnotation = modules.filter { it.hasUsedInIdeaAnnotationInKotlinSources() }
+        val missingDependencies = modulesWithUsedInIdeaAnnotation.filter { module ->
+            ideaDependenciesByModule[module.userReadableName] != true
+        }
+        if (missingDependencies.isNotEmpty()) {
+            val missingModulePaths = missingDependencies
+                .map(::modulePathFromProjectRoot)
+                .sorted()
+                .joinToString("\n") { "  - $it: exported" }
+            fail(
+                "The following modules contain `@UsedInIdePlugin` mention in a `.kt` file and must be exported " +
+                        "dependencies of //sources/amper-libraries-for-idea:\n\n$missingModulePaths"
+            )
+        }
+    }
+
     private fun assertTransitiveTemplateUsage(
         consumerMoniker: String,
         templateFileName: String,
@@ -163,6 +188,21 @@ class AmperProjectStructureTest {
         // Using toString() is fine, though.
         return usedTemplates.any { "$it".endsWith(templateFileName) }
     }
+
+    private fun AmperModule.hasUsedInIdeaAnnotationInKotlinSources(): Boolean = fragments
+        .filterNot(Fragment::isTest)
+        .flatMap { it.sourceRoots }
+        .flatMap { it.walk() }
+        .filter { it.name.endsWith(".kt") }
+        .any { it.containsUsedInIdeaAnnotationMention() }
+
+    private fun Path.containsUsedInIdeaAnnotationMention(): Boolean =
+        readLines().any { usedInIdeaAnnotationRegex.containsMatchIn(it) }
+
+    private fun modulePathFromProjectRoot(module: AmperModule): String =
+        "//${module.source.moduleDir.relativeTo(Dirs.amperCheckoutRoot)}"
+
+    private val usedInIdeaAnnotationRegex = Regex("""@(?:\w+:)?(?:[\w.]+\.)?UsedInIdePlugin\b""")
 
     @Test
     fun `Amper-agnostic library modules don't use the word Amper`() = runTestWithMdc {

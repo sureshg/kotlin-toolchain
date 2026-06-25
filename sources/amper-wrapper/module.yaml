@@ -4,8 +4,10 @@ description: Amper wrapper scripts generator.
 
 apply:
   - //sources/common.module-template.yaml
+  - //sources/used-in-idea.module-template.yaml
 
 dependencies:
+  - //sources/core
   - //sources/libraries/system-info
   - //sources/libraries/stdlib-extended
   - $libs.slf4j.api

@@ -4,6 +4,7 @@
 
 package org.jetbrains.amper.wrapper
 
+import org.jetbrains.amper.core.UsedInIdePlugin
 import org.jetbrains.amper.system.info.OsFamily
 import org.jetbrains.amper.system.info.SystemInfo
 import java.nio.file.Path
@@ -12,6 +13,7 @@ import kotlin.io.path.isRegularFile
 import kotlin.io.path.name
 import kotlin.io.path.readText
 
+@UsedInIdePlugin
 data class AmperWrapperData private constructor(
     val version: String,
     val sha256: String,
@@ -23,6 +25,7 @@ data class AmperWrapperData private constructor(
          * The concrete wrapper script is selected based on the host platform.
          * If there is no wrapper there, returns `null`.
          */
+        @UsedInIdePlugin
         fun parseFromProjectRoot(
             projectRoot: Path,
         ): AmperWrapperData? {
