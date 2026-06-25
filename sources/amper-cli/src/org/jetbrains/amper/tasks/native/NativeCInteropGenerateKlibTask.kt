@@ -4,13 +4,13 @@
 
 package org.jetbrains.amper.tasks.native
 
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
 import org.jetbrains.amper.ProcessRunner
 import org.jetbrains.amper.cli.AmperBuildOutputRoot
+import org.jetbrains.amper.cli.UserReadableError
+import org.jetbrains.amper.cli.userReadableError
 import org.jetbrains.amper.compilation.downloadNativeCompiler
 import org.jetbrains.amper.compilation.serializableKotlinSettings
+import org.jetbrains.amper.concurrency.mapConcurrently
 import org.jetbrains.amper.core.AmperUserCacheRoot
 import org.jetbrains.amper.core.extract.cleanDirectory
 import org.jetbrains.amper.engine.BuildTask
@@ -22,6 +22,7 @@ import org.jetbrains.amper.frontend.Fragment
 import org.jetbrains.amper.frontend.Platform
 import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.jdk.provisioning.JdkProvider
+import org.jetbrains.amper.stdlib.collections.distinctBy
 import org.jetbrains.amper.stdlib.io.path.cleanDirectoryExcept
 import org.jetbrains.amper.tasks.EmptyTaskResult
 import org.jetbrains.amper.tasks.TaskResult
@@ -33,6 +34,7 @@ import org.jetbrains.amper.tasks.artifacts.api.Quantifier
 import org.jetbrains.amper.util.BuildType
 import org.slf4j.LoggerFactory
 import java.nio.file.Path
+import kotlin.io.path.absolutePathString
 import kotlin.io.path.isDirectory
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.nameWithoutExtension
@@ -48,10 +50,13 @@ internal class NativeCInteropGenerateKlibTask(
     override val taskName: TaskName,
     private val jdkProvider: JdkProvider,
     private val processRunner: ProcessRunner,
+    private val ignorePlatformFailures: Boolean,
 ) : ArtifactTaskBase(), BuildTask, GenerateKlibsForIdeTask {
     init {
         require(platform.isLeaf) { "Expected a leaf platform, got: $platform" }
     }
+
+    private val leafFragment = module.leafFragments.first { it.platform == platform && !isTest }
 
     private val defFileArtifacts by Selectors.fromMatchingFragments(
         type = CinteropDefFileArtifact::class,
@@ -65,6 +70,7 @@ internal class NativeCInteropGenerateKlibTask(
         buildOutputRoot = buildOutputRoot,
         module = module,
         platform = platform,
+        path = leafFragment.generatedCinteropKlibsDirPath(buildOutputRoot.path)!!,
     )
 
     override suspend fun run(
@@ -88,6 +94,14 @@ internal class NativeCInteropGenerateKlibTask(
             }
         }
 
+        inputDefFiles.distinctBy(
+            selector = { it.defFile.nameWithoutExtension },
+            onDuplicates = { name, entries ->
+                val conflictingPaths = entries.joinToString { it.defFile.absolutePathString() }
+                userReadableError("Got multiple cinterop definitions with the name `$name`: $conflictingPaths")
+            }
+        )
+
         if (inputDefFiles.isEmpty()) {
             logger.debug("No .def files found, bailing out")
             cleanDirectory(outputKlibsDirectoryArtifact.path)
@@ -97,46 +111,56 @@ internal class NativeCInteropGenerateKlibTask(
         val targetLeafFragment = module.leafFragments.single { it.platform == platform && !it.isTest }
         val kotlinCompilerVersion = targetLeafFragment.serializableKotlinSettings().compilerVersion
 
-        coroutineScope {
-            val relevantOutputs = inputDefFiles.map { (defFile, associatedWith) ->
-                async {
-                    incrementalCache.execute(
-                        key = "${taskName.id.value}-${defFile.nameWithoutExtension}",
-                        inputValues = mapOf(
-                            "target" to platform.nameForCompiler,
-                            "kotlinVersion" to kotlinCompilerVersion,
-                        ),
-                        inputFiles = listOf(defFile),
-                    ) {
-                        val cinteropName = defFile.nameWithoutExtension
-                        val outputKlib = outputKlibsDirectoryArtifact.getPathForKlib(
-                            name = cinteropName,
-                            defOriginFragment = associatedWith,
-                        )
-                        cleanDirectory(outputKlib.parent)
+        val results = inputDefFiles.mapConcurrently { (defFile, associatedWith) ->
+            try {
+                incrementalCache.execute(
+                    key = "${taskName.id.value}-${defFile.nameWithoutExtension}",
+                    inputValues = mapOf(
+                        "target" to platform.nameForCompiler,
+                        "kotlinVersion" to kotlinCompilerVersion,
+                    ),
+                    inputFiles = listOf(defFile),
+                ) {
+                    val cinteropName = defFile.nameWithoutExtension
+                    val outputKlib = outputKlibsDirectoryArtifact.getPathForKlib(
+                        name = cinteropName,
+                        defOriginFragment = associatedWith,
+                    )
+                    cleanDirectory(outputKlib.parent)
 
-                        val nativeCompiler =
-                            downloadNativeCompiler(kotlinCompilerVersion, userCacheRoot, jdkProvider)
-                        val args = buildList {
-                            add("-def")
-                            add(defFile.pathString)
-                            add("-target")
-                            add(platform.nameForCompiler)
-                            add("-o")
-                            add(outputKlib.pathString)
-                        }
+                    val nativeCompiler =
+                        downloadNativeCompiler(kotlinCompilerVersion, userCacheRoot, jdkProvider)
+                    val args = buildList {
+                        add("-def")
+                        add(defFile.pathString)
+                        add("-target")
+                        add(platform.nameForCompiler)
+                        add("-o")
+                        add(outputKlib.pathString)
+                    }
 
-                        logger.info("Running cinterop '$cinteropName' for platform '${platform.pretty}'...")
-                        nativeCompiler.cinterop(processRunner, args)
+                    logger.info("Running cinterop '$cinteropName' for platform '${platform.pretty}'...")
+                    nativeCompiler.cinterop(processRunner, args)
 
-                        IncrementalCache.ExecutionResult(listOf(outputKlib))
-                    }.outputFiles.single()
+                    IncrementalCache.ExecutionResult(listOf(outputKlib))
+                }.outputFiles.single().let { Result.success(it) }
+            } catch (e: UserReadableError) {
+                if (ignorePlatformFailures) {
+                    logger.warn(e.message)
+                } else {
+                    logger.error(e.message)
                 }
-            }.awaitAll()
-
-            // Clean any stale output Klibs
-            cleanDirectoryExcept(outputKlibsDirectoryArtifact.path, relevantOutputs)
+                Result.failure(e)
+            }
         }
+
+        if (!ignorePlatformFailures && results.any { it.exceptionOrNull() is UserReadableError }) {
+            userReadableError("cinterop processing failed for ${leafFragment.platform}, see the errors above")
+        }
+
+        // Clean any stale output Klibs
+        val relevantOutputs = results.mapNotNull { it.getOrNull() }
+        cleanDirectoryExcept(outputKlibsDirectoryArtifact.path, relevantOutputs)
 
         return EmptyTaskResult
     }

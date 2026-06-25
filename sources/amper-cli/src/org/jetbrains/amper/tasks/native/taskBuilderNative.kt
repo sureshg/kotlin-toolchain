@@ -7,7 +7,6 @@ package org.jetbrains.amper.tasks.native
 import org.jetbrains.amper.compilation.KotlinCompilationType
 import org.jetbrains.amper.dependency.resolution.ResolutionScope
 import org.jetbrains.amper.frontend.AmperModule
-import org.jetbrains.amper.frontend.LeafFragment
 import org.jetbrains.amper.frontend.Platform
 import org.jetbrains.amper.frontend.fragmentsTargeting
 import org.jetbrains.amper.frontend.isDescendantOf
@@ -50,6 +49,7 @@ fun ProjectTasksBuilder.setupNativeTasks() {
                 taskName = cinteropTaskName,
                 jdkProvider = context.jdkProvider,
                 processRunner = context.processRunner,
+                ignorePlatformFailures = cinteropGenSettings.ignorePlatformFailures,
             )
         )
     }
@@ -58,8 +58,8 @@ fun ProjectTasksBuilder.setupNativeTasks() {
         if (fragment.cinteropPath == null) {
             return@forEach
         }
-        if (fragment is LeafFragment) {
-            // No need to commonize anything for the leaf fragments
+        if (fragment.platforms.size < 2) {
+            // No need to commonize anything for leaf or single-platform fragments
             return@forEach
         }
         tasks.registerTask(

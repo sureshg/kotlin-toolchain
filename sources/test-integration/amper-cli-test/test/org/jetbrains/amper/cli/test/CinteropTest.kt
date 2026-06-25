@@ -4,10 +4,13 @@
 
 package org.jetbrains.amper.cli.test
 
+import org.jetbrains.amper.cli.test.utils.assertStderrContains
 import org.jetbrains.amper.cli.test.utils.assertStdoutContains
 import org.jetbrains.amper.cli.test.utils.runSlowTest
 import org.jetbrains.amper.test.LinuxOnly
 import org.jetbrains.amper.test.MacOnly
+import kotlin.io.path.absolutePathString
+import kotlin.io.path.deleteExisting
 import kotlin.io.path.deleteRecursively
 import kotlin.io.path.div
 import kotlin.io.path.isDirectory
@@ -38,22 +41,67 @@ class CinteropTest : AmperCliTestBase() {
 
     @Test
     @MacOnly
-    fun `commonize common cinterop for ios platforms`() = runSlowTest {
+    fun `ide sync - commonize common cinterop for ios platforms`() = runSlowTest {
         val result = runCli(
             projectDir = testProject("cinterop/ios-cinterop"),
             "ide-integration", "generate-klibs",
         )
 
-        val commonized = result.buildDir / "cinterop/commonized"
-        val custom = commonized / "ios-cinterop/common/(ios_arm64, ios_simulator_arm64, ios_x64)/custom"
+        val custom = result.buildDir / "generated/ios-cinterop/common/cinterop/custom"
         assertTrue(custom.isDirectory())
         assertTrue(custom.resolve("default/manifest").isRegularFile())
         assertTrue(custom.resolve("default/linkdata").isDirectory())
+    }
 
-        custom.deleteRecursively()
+    @Test
+    @MacOnly
+    fun `ide sync - no commonization for a single platform`() = runSlowTest {
+        val result = runCli(
+            projectDir = testProject("cinterop/single-platform"),
+            "ide-integration", "generate-klibs",
+        )
 
-        val otherFiles = commonized.walk().toList()
-        assertEquals([], otherFiles, "No other files expected")
+        val singleKlib = result.buildDir.resolve("generated").walk().joinToString("\n") {
+            it.absolutePathString()
+        }
+        assertEquals(
+            actual = singleKlib,
+            expected = (result.buildDir / "generated/single-platform/macosArm64/cinterop/custom@common.klib")
+                .absolutePathString(),
+        )
+    }
+
+    @Test
+    @MacOnly
+    fun `ide sync - errors are ignored during cinterop klib gen`() = runSlowTest {
+        val result = runCli(
+            projectDir = testProject("cinterop/mac-and-win"),
+            "ide-integration", "generate-klibs",
+            assertEmptyStdErr = false,
+        )
+        result.assertStdoutContains(
+            "Warning: No libraries found for target mingw_x64. This target will be excluded from commonization.",
+        )
+        val generated  = result.buildDir / "generated"
+        val klib = generated / "mac-and-win/macosArm64/cinterop/libcurl@common.klib"
+        val commonized = generated / "mac-and-win/common/cinterop/libcurl"
+        assertTrue { klib.isRegularFile() }
+        assertTrue { commonized.isDirectory() }
+        klib.deleteExisting()
+        commonized.deleteRecursively()
+        assertEquals(expected = [], actual = generated.walk().toList(), "No more files are expected")
+    }
+
+    @Test
+    @MacOnly
+    fun `build - errors are honored during cinterop klib gen`() = runSlowTest {
+        val result = runCli(
+            projectDir = testProject("cinterop/mac-and-win"),
+            "build",
+            assertEmptyStdErr = false,
+            expectedExitCode = 1,
+        )
+        result.assertStderrContains("cinterop processing failed for MINGW_X64, see the errors above")
     }
 
     @Test

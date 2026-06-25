@@ -17,7 +17,6 @@ import org.jetbrains.amper.engine.GenerateKlibsForIdeTask
 import org.jetbrains.amper.engine.TaskGraphExecutionContext
 import org.jetbrains.amper.engine.TaskName
 import org.jetbrains.amper.frontend.Fragment
-import org.jetbrains.amper.frontend.LeafFragment
 import org.jetbrains.amper.frontend.dr.resolver.native.commonizedPlatformsIdentifier
 import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.jdk.provisioning.JdkProvider
@@ -38,11 +37,14 @@ import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.createDirectories
+import kotlin.io.path.createTempDirectory
 import kotlin.io.path.deleteRecursively
 import kotlin.io.path.div
 import kotlin.io.path.extension
 import kotlin.io.path.isDirectory
 import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.moveTo
+import kotlin.io.path.nameWithoutExtension
 
 class CommonizeCInteropKlibsTask(
     buildOutputRoot: AmperBuildOutputRoot,
@@ -55,7 +57,7 @@ class CommonizeCInteropKlibsTask(
     val fragment: Fragment,
 ) : ArtifactTaskBase(), GenerateKlibsForIdeTask {
     init {
-        require(fragment !is LeafFragment) { "Nothing to commonize for a leaf fragment ${fragment.name}" }
+        require(fragment.platforms.size > 1) { "Nothing to commonize for a single-platform fragment ${fragment.name}" }
     }
 
     private val kotlinVersion = fragment.settings.kotlin.version
@@ -75,7 +77,7 @@ class CommonizeCInteropKlibsTask(
     val output by CinteropCommonizedKlibArtifact(
         buildOutputRoot = buildOutputRoot,
         fragment = fragment,
-        conventionPath = buildOutputRoot.path / "cinterop" / "commonized" / fragment.module.userReadableName / fragment.name,
+        path = fragment.generatedCinteropKlibsDirPath(buildOutputRoot.path)!!,
     )
 
     override suspend fun run(
@@ -123,25 +125,17 @@ class CommonizeCInteropKlibsTask(
             }
         }
 
-        val commonizerArgs: MutableList<String> = [
-            "native-klib-commonize",
-            "-distribution-path",
-            compiler.kotlinNativeHome.absolutePathString(),
-            "-output-path",
-            output.path.absolutePathString(),
-            "-input-libraries",
-            klibs.joinToString(";") { it.path.absolutePathString() },
-            "-output-targets",
-            target,
-        ]
-        if (dependencies.isNotEmpty()) {
-            commonizerArgs += "-dependency-libraries"
-            commonizerArgs += dependencies.joinToString(";") { it.absolutePathString() }
-        }
+        val inputLibraries = klibs.joinToString(";") { it.path.absolutePathString() }
+        val dependencyLibraries = dependencies.joinToString(";") { it.absolutePathString() }
 
+        val key = "${taskName.id.value}-$name"
         return incrementalCache.execute(
-            key = "${taskName.id.value}-$name",
-            inputValues = mapOf("commonizerArgs" to commonizerArgs.joinToString()),
+            key = key,
+            inputValues = mapOf(
+                "output" to output.path.absolutePathString(),
+                "inputLibraries" to inputLibraries,
+                "dependencyLibraries" to dependencyLibraries,
+            ),
             inputFiles = buildList {
                 add(compiler.kotlinNativeHome)
                 klibs.mapTo(this) { it.path }
@@ -149,23 +143,51 @@ class CommonizeCInteropKlibsTask(
             }
         ) {
             logger.info("Commonizing '$name' (from ${klibs.size} klibs)...")
-            val result = processRunner.runJava(
-                jdk = compiler.jdk,
-                workingDir = Path("."),
-                mainClass = "org.jetbrains.kotlin.commonizer.cli.CommonizerCLI",
-                classpath = commonizerClasspath,
-                programArgs = commonizerArgs,
-                argsMode = ArgsMode.ArgFile(tempRoot = tempRoot),
-                outputListener = LoggingProcessOutputListener(logger),
-            )
-            if (result.exitCode != 0) {
-                userReadableError("cinterop commonization failed, see the errors above")
+            val tempOutput = createTempDirectory(tempRoot.path, key)
+            try {
+                val commonizerArgs: MutableList<String> = [
+                    "native-klib-commonize",
+                    "-distribution-path",
+                    compiler.kotlinNativeHome.absolutePathString(),
+                    "-output-path",
+                    tempOutput.absolutePathString(),
+                    "-input-libraries",
+                    inputLibraries,
+                    "-output-targets",
+                    target,
+                ]
+                if (dependencies.isNotEmpty()) {
+                    commonizerArgs += "-dependency-libraries"
+                    commonizerArgs += dependencyLibraries
+                }
+
+                val result = processRunner.runJava(
+                    jdk = compiler.jdk,
+                    workingDir = Path("."),
+                    mainClass = "org.jetbrains.kotlin.commonizer.cli.CommonizerCLI",
+                    classpath = commonizerClasspath,
+                    programArgs = commonizerArgs,
+                    argsMode = ArgsMode.ArgFile(tempRoot = tempRoot),
+                    outputListener = LoggingProcessOutputListener(logger),
+                )
+                if (result.exitCode != 0) {
+                    userReadableError("cinterop commonization failed, see the errors above")
+                }
+                val tempResult = tempOutput / target / klibs.first().path.nameWithoutExtension
+                check(tempResult.isDirectory()) {
+                    "Expected $tempResult to exist after commonization"
+                }
+
+                val actualResult = output.path / name
+                actualResult.deleteRecursively()
+
+                // We move the result to avoid these `(linuxArm64; linuxX64)` directory names.
+                // This makes the expected layout plain, avoiding extra nestedness.
+                tempResult.moveTo(actualResult)
+                IncrementalCache.ExecutionResult([actualResult])
+            } finally {
+                tempOutput.deleteRecursively()
             }
-            val actualResult = output.path / target / name
-            check(actualResult.isDirectory()) {
-                "Expected $actualResult to exist after commonization"
-            }
-            IncrementalCache.ExecutionResult([actualResult])
         }.outputFiles.single()
     }
 

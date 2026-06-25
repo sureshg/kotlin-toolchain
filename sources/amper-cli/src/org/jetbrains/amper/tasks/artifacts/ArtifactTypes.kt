@@ -13,9 +13,7 @@ import org.jetbrains.amper.tasks.artifacts.api.Artifact
 import java.io.Serializable
 import java.nio.file.Path
 import kotlin.io.path.div
-import kotlin.io.path.isDirectory
 import kotlin.io.path.listDirectoryEntries
-import kotlin.io.path.name
 import kotlin.io.path.nameWithoutExtension
 
 /**
@@ -110,7 +108,7 @@ open class CinteropDefFileArtifact(
 open class CinteropCommonizedKlibArtifact(
     buildOutputRoot: AmperBuildOutputRoot,
     fragment: Fragment,
-    override val conventionPath: Path? = null,
+    override val path: Path,
 ) : FragmentScopedArtifact(buildOutputRoot, fragment)
 
 /**
@@ -124,7 +122,7 @@ open class CinteropKlibsArtifact(
     buildOutputRoot: AmperBuildOutputRoot,
     module: AmperModule,
     platform: Platform,
-    override val conventionPath: Path? = null,
+    override val path: Path,
 ) : CompilationScopedArtifact(buildOutputRoot, module, platform, false) {
     init {
         require(platform.isLeaf) { "Only leaf platforms are expected here, got $platform" }
@@ -142,17 +140,16 @@ open class CinteropKlibsArtifact(
     fun getPathForKlib(
         name: String,
         defOriginFragment: Fragment,
-    ) = path / defOriginFragment.name / "$name.klib"
+    ) = path / "$name@${defOriginFragment.name}.klib"
 
-    fun allKlibs() = path.listDirectoryEntries().flatMap { path ->
-        val fragmentName = path.name
-        if (!path.isDirectory()) return@flatMap []
-        path.listDirectoryEntries("*.klib").map { klibPath ->
-            Klib(
-                path = klibPath,
-                name = klibPath.nameWithoutExtension,
-                defOriginFragmentName = fragmentName,
-            )
-        }
+    fun allKlibs() = path.listDirectoryEntries("*.klib").mapNotNull { path ->
+        val parts = path.nameWithoutExtension.split('@')
+        if (parts.size != 2) return@mapNotNull null
+        val [name, fragmentName] = parts
+        Klib(
+            path = path,
+            name = name,
+            defOriginFragmentName = fragmentName,
+        )
     }
 }

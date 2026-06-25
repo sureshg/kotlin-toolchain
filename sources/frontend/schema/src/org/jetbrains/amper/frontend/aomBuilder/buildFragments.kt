@@ -165,6 +165,11 @@ open class DefaultFragment(
 
     override fun preparedComposeResourcesConventionPath(buildOutputRoot: Path): Path =
         generatedFilesRoot(buildOutputRoot) / "preparedComposeResources"
+
+    override fun generatedCinteropKlibsDirPath(buildOutputRoot: Path): Path? {
+        if (cinteropPath == null) return null
+        return generatedFilesRoot(buildOutputRoot) / "cinterop"
+    }
 }
 
 /**

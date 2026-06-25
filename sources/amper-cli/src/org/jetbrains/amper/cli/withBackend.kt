@@ -13,6 +13,7 @@ import kotlinx.coroutines.job
 import org.jetbrains.amper.engine.TaskExecutor
 import org.jetbrains.amper.frontend.Model
 import org.jetbrains.amper.tasks.AllRunSettings
+import org.jetbrains.amper.tasks.CinteropGenSettings
 import org.jetbrains.amper.telemetry.spanBuilder
 import org.jetbrains.amper.telemetry.use
 import java.util.concurrent.atomic.AtomicReference
@@ -25,6 +26,7 @@ internal suspend fun <T> withBackend(
     cliContext: CliContext,
     model: Model,
     runSettings: AllRunSettings = AllRunSettings(),
+    cinteropGenSettings: CinteropGenSettings = CinteropGenSettings(),
     taskExecutionMode: TaskExecutor.Mode = TaskExecutor.Mode.FAIL_FAST,
     block: suspend (AmperBackend) -> T,
 ): T {
@@ -48,6 +50,7 @@ internal suspend fun <T> withBackend(
             context = cliContext,
             model = model,
             runSettings = runSettings,
+            cinteropGenSettings = cinteropGenSettings,
             taskExecutionMode = taskExecutionMode,
             backgroundScope = backgroundScope,
         )

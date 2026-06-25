@@ -114,6 +114,18 @@ interface Fragment {
      */
     @UsedInIdePlugin
     fun preparedComposeResourcesConventionPath(buildOutputRoot: Path): Path
+
+    /**
+     * A path to the directory where all the cinterop generated/commonized klibs are for this fragment.
+     *
+     * - If this is a leaf fragment, there are `.klib` archives in the directory for all the `.def` files of the
+     *   *refined closure* of this fragment.
+     * - If this is an intermediate fragment, then there are exploded klibs (directories) for the commonized libraries
+     *   for the `.def` files associated with this fragment.
+     * - If this is a bamboo fragment (non-leaf single platform), then the directory is empty.
+     */
+    @UsedInIdePlugin
+    fun generatedCinteropKlibsDirPath(buildOutputRoot: Path): Path?
 }
 
 /**

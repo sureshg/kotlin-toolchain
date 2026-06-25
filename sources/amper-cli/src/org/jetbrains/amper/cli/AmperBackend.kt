@@ -34,6 +34,7 @@ import org.jetbrains.amper.system.info.Arch
 import org.jetbrains.amper.system.info.OsFamily
 import org.jetbrains.amper.system.info.SystemInfo
 import org.jetbrains.amper.tasks.AllRunSettings
+import org.jetbrains.amper.tasks.CinteropGenSettings
 import org.jetbrains.amper.tasks.ProjectTasksBuilder
 import org.jetbrains.amper.tasks.TaskResult
 import org.jetbrains.amper.tasks.compose.GenerateResClassTask
@@ -63,6 +64,10 @@ class AmperBackend(
      */
     val runSettings: AllRunSettings,
     /**
+     * Settings for the `cinterop` handling subsystem.
+     */
+    val cinteropGenSettings: CinteropGenSettings = CinteropGenSettings(),
+    /**
      * Defines how other tasks are executed if a task fails.
      */
     val taskExecutionMode: TaskExecutor.Mode = TaskExecutor.Mode.FAIL_FAST,
@@ -77,7 +82,12 @@ class AmperBackend(
 
     internal val taskGraph: TaskGraph by lazy {
         spanBuilder("Build task graph").useWithoutCoroutines {
-            ProjectTasksBuilder(context = context, model = model, runSettings = runSettings).build()
+            ProjectTasksBuilder(
+                context = context,
+                model = model,
+                runSettings = runSettings,
+                cinteropGenSettings = cinteropGenSettings,
+            ).build()
         }
     }
 
@@ -736,9 +746,7 @@ class AmperBackend(
             .filterIsInstance<GenerateKlibsForIdeTask>()
             .mapTo(mutableSetOf(), Task::id)
         if (taskIds.isEmpty()) return // silently
-        runTasks(
-            taskIds
-        )
+        runTasks(taskIds)
     }
 
     /**

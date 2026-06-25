@@ -50,6 +50,7 @@ class ProjectTasksBuilder(
     val context: CliContext,
     val model: Model,
     val runSettings: AllRunSettings,
+    val cinteropGenSettings: CinteropGenSettings,
 ) {
     val tasks = TaskGraphBuilder()
 
