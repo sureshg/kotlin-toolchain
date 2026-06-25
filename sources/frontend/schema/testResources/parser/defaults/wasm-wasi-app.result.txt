@@ -131,7 +131,7 @@ Fragments:
         serialization: <default> {
           enabled: <default> false
           format: <default> null
-          version: <default> 1.10.0
+          version: <default> 1.11.0
         }
         suppressWarnings: <default> false
         verbose: <default> false
@@ -316,7 +316,7 @@ Fragments:
         serialization: <default> {
           enabled: <default> false
           format: <default> null
-          version: <default> 1.10.0
+          version: <default> 1.11.0
         }
         suppressWarnings: <default> false
         verbose: <default> false
@@ -499,7 +499,7 @@ Fragments:
         serialization: <default> {
           enabled: <default> false
           format: <default> null
-          version: <default> 1.10.0
+          version: <default> 1.11.0
         }
         suppressWarnings: <default> false
         verbose: <default> false
@@ -685,7 +685,7 @@ Fragments:
         serialization: <default> {
           enabled: <default> false
           format: <default> null
-          version: <default> 1.10.0
+          version: <default> 1.11.0
         }
         suppressWarnings: <default> false
         verbose: <default> false

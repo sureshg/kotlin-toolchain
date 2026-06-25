@@ -512,7 +512,7 @@ The `serialization` attribute is an object with the following properties:
 | Attribute          | Default                | Description                                                                                                                                                                           |
 |--------------------|------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `enabled: boolean` | `false`                | Enable the `@Serializable` annotation processing, and add the core serialization library. When enabled, a built-in catalog for kotlinx.serialization format dependencies is provided. |
-| `version: string`  | `1.10.0`               | The version to use for the core serialization library and the serialization formats.                                                                                                  |
+| `version: string`  | `1.11.0`               | The version to use for the core serialization library and the serialization formats.                                                                                                  |
 | `format: enum`     | `none` (only core lib) | A shortcut for `enabled: true` and adding the given serialization format dependency. For instance, `json` adds the JSON format in addition to enabling serialization.                 |
 
 You can also use a short form and directly specify `serialization: enabled` or `serialization: json`.
