@@ -66,4 +66,18 @@ class ComposeResourcesTest : AmperCliTestBase() {
         assertTrue((sharedDir / "common" / "src" / "compose" / "resources" / "accessors").isDirectory())
         assertTrue((sharedDir / "common" / "src" / "compose" / "resources" / "commonResClass").isDirectory())
     }
+
+    @Test
+    fun `compose resources merging (ios)`() = runSlowTest {
+        val result = runCli(
+            projectDir = testProject("compose-resources-demo"),
+            "task", ":app-ios:prepareComposeResourcesForIosIosArm64"
+        )
+        val mergedDir = result.buildDir / "tasks" / "_app-ios_prepareComposeResourcesForIosIosArm64" / "merged"
+        assertTrue(mergedDir.isDirectory())
+        val generatedResourcesDir = mergedDir / "composeResources" / "com.example.gen"
+        assertTrue(generatedResourcesDir.isDirectory())
+        assertTrue((generatedResourcesDir / "drawable").isDirectory()) // Resources from common
+        assertTrue((generatedResourcesDir / "files").isDirectory()) // Resources from ios
+    }
 }

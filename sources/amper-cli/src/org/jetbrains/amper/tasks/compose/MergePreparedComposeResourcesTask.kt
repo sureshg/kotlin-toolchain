@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.tasks.compose
@@ -35,12 +35,12 @@ class MergePreparedComposeResourcesTask(
     )
 
     override suspend fun run(executionContext: TaskGraphExecutionContext) {
-        val existingPreparedDirs = preparedDirs.filter { it.path.isDirectory() }
+        val existingPreparedDirs = preparedDirs.filter { it.preparedPath.isDirectory() }
         if (existingPreparedDirs.isNotEmpty()) {
             val outputPath = mergedPreparedDir.path / packagingDir
             for (preparedDir in existingPreparedDirs) {
                 BuildPrimitives.copy(
-                    from = preparedDir.path,
+                    from = preparedDir.preparedPath,
                     to = outputPath.createDirectories(),
                 )
             }
