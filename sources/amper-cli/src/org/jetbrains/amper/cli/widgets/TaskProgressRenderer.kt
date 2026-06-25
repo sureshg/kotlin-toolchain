@@ -16,6 +16,7 @@ import com.github.ajalt.mordant.widgets.ProgressBar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -28,8 +29,6 @@ import org.jetbrains.amper.engine.Task
 import org.jetbrains.amper.engine.TaskExecutor
 import org.jetbrains.amper.engine.TaskGraphExecutionListener
 import org.jetbrains.amper.engine.TaskName
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import kotlin.math.min
 import kotlin.time.ComparableTimeMark
 import kotlin.time.Duration
@@ -98,8 +97,8 @@ class TaskProgressRenderer(
         }
     }
 
-    override fun taskGraphExecutionFinished() {
-        animationJob.cancel()
+    override suspend fun taskGraphExecutionFinished() {
+        animationJob.cancelAndJoin()
     }
 
     private fun createTasksProgressWidget(state: ProgressState): Widget = verticalLayout {
@@ -160,7 +159,7 @@ class TaskProgressRenderer(
         }
     }
 
-    override fun taskStarted(task: Task): TaskGraphExecutionListener.TaskExecutionListener {
+    override suspend fun taskStarted(task: Task): TaskGraphExecutionListener.TaskExecutionListener {
         val job = coroutineScope.launch(Dispatchers.IO) {
             val newTaskEntry = TaskEntry(task, startTime = timeSource.markNow(), elapsed = Duration.ZERO)
             delay(200.milliseconds)

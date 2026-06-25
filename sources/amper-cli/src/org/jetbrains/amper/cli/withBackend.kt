@@ -7,7 +7,7 @@ package org.jetbrains.amper.cli
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.job
 import org.jetbrains.amper.engine.TaskExecutor
@@ -51,11 +51,15 @@ internal suspend fun <T> withBackend(
             taskExecutionMode = taskExecutionMode,
             backgroundScope = backgroundScope,
         )
-        spanBuilder("Run command with backend").use {
-            block(backend)
-        }.also {
+        try {
+            spanBuilder("Run command with backend").use {
+                block(backend)
+            }
+        } finally {
             spanBuilder("Await background scope completion").use {
-                cancelAndWaitForScope(backgroundScope)
+                // backgroundScope.cancel() would be sufficient because coroutineScope{} would wait,
+                // but by waiting here we can measure the waiting time with telemetry
+                backgroundScope.coroutineContext.job.cancelAndJoin()
             }
         }
     }
@@ -63,17 +67,3 @@ internal suspend fun <T> withBackend(
 
 private fun CoroutineScope.childScope(name: String): CoroutineScope =
     CoroutineScope(coroutineContext + SupervisorJob(parent = coroutineContext.job) + CoroutineName(name))
-
-private suspend fun cancelAndWaitForScope(scope: CoroutineScope) {
-    val normalTerminationMessage = "terminating scope normally"
-
-    try {
-        val job = scope.coroutineContext.job
-        job.cancel(normalTerminationMessage)
-        job.join()
-    } catch (t: Throwable) {
-        if (t.message != normalTerminationMessage) {
-            throw t
-        }
-    }
-}

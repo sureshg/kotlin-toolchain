@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.engine
@@ -17,7 +17,7 @@ interface TaskGraphExecutionListener {
      *
      * @return a listener implementation to receive further callbacks about the [task]'s execution.
      */
-    fun taskStarted(task: Task): TaskExecutionListener
+    suspend fun taskStarted(task: Task): TaskExecutionListener
 
     /**
      * Called when task graph execution is finished.
@@ -28,7 +28,7 @@ interface TaskGraphExecutionListener {
      *
      * May be called on arbitrary thread.
      */
-    fun taskGraphExecutionFinished() = Unit
+    suspend fun taskGraphExecutionFinished() = Unit
 
     /**
      * Receives callbacks about a started task lifecycle.
@@ -55,6 +55,6 @@ interface TaskGraphExecutionListener {
     }
 
     object Noop : TaskGraphExecutionListener {
-        override fun taskStarted(task: Task) = TaskExecutionListener.Noop
+        override suspend fun taskStarted(task: Task) = TaskExecutionListener.Noop
     }
 }
