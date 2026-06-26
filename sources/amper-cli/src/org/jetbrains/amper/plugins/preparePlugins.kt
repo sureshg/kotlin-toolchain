@@ -1,11 +1,11 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.plugins
 
 import com.android.utils.associateNotNull
-import org.jetbrains.amper.cli.CliContext
+import org.jetbrains.amper.cli.context.ProjectCliContext
 import org.jetbrains.amper.frontend.plugins.parsePluginManifestFromModuleFile
 import org.jetbrains.amper.plugins.schema.model.PluginData
 import org.jetbrains.amper.telemetry.spanBuilder
@@ -16,7 +16,7 @@ import org.jetbrains.amper.telemetry.use
  * All the validation must be done separately.
  */
 suspend fun preparePlugins(
-    context: CliContext,
+    context: ProjectCliContext,
 ): List<PluginData> {
     return spanBuilder("Prepare plugins").use {
         val projectContext = context.projectContext

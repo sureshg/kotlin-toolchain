@@ -21,7 +21,7 @@ import com.jetbrains.cidr.xcode.util.XcodeUserDataHolder
 import fleet.com.intellij.openapi.util.UserDataHolderEx
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.trace.Span
-import org.jetbrains.amper.cli.CliContext
+import org.jetbrains.amper.cli.context.ProjectCliContext
 import org.jetbrains.amper.cli.telemetry.setAmperModule
 import org.jetbrains.amper.cli.userReadableError
 import org.jetbrains.amper.engine.Task
@@ -222,7 +222,7 @@ class ManageXCodeProjectTask(
             this[BuildSettingNames.FRAMEWORK_SEARCH_PATHS] =
                 "$(inherited) $(TARGET_BUILD_DIR)/${IosConventions.FRAMEWORKS_DIR_NAME}"
             // TODO: Move to the XConfig. For now generated a single time and is not managed anymore.
-            this[KOTLIN_CLI_WRAPPER_PATH_CONF] = CliContext.wrapperScriptPath.relativeTo(baseDir).let {
+            this[KOTLIN_CLI_WRAPPER_PATH_CONF] = ProjectCliContext.wrapperScriptPath.relativeTo(baseDir).let {
                 if (it.parent == null) Path(".") / it else it
             }.pathString
 

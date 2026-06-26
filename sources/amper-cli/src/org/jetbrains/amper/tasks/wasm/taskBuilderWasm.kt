@@ -6,8 +6,8 @@ package org.jetbrains.amper.tasks.wasm
 
 import com.github.ajalt.mordant.terminal.Terminal
 import org.jetbrains.amper.ProcessRunner
-import org.jetbrains.amper.cli.AmperBuildOutputRoot
-import org.jetbrains.amper.cli.AmperProjectTempRoot
+import org.jetbrains.amper.cli.context.AmperBuildOutputRoot
+import org.jetbrains.amper.cli.context.AmperProjectTempRoot
 import org.jetbrains.amper.core.AmperUserCacheRoot
 import org.jetbrains.amper.dependency.resolution.ResolutionScope
 import org.jetbrains.amper.engine.TaskName

@@ -10,6 +10,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.job
+import org.jetbrains.amper.cli.context.ProjectCliContext
 import org.jetbrains.amper.engine.TaskExecutor
 import org.jetbrains.amper.frontend.Model
 import org.jetbrains.amper.tasks.AllRunSettings
@@ -23,7 +24,7 @@ import kotlin.contracts.contract
 private val backendInitialized = AtomicReference<Throwable>(null)
 
 internal suspend fun <T> withBackend(
-    cliContext: CliContext,
+    cliContext: ProjectCliContext,
     model: Model,
     runSettings: AllRunSettings = AllRunSettings(),
     cinteropGenSettings: CinteropGenSettings = CinteropGenSettings(),

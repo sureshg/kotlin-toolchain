@@ -8,13 +8,13 @@ import com.github.ajalt.clikt.parameters.groups.OptionGroup
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.path
 
-class ProjectLayoutOptions : OptionGroup("Project layout options") {
+internal class ProjectLayoutOptions : OptionGroup("Project layout options") {
 
     /**
      * The explicit project root directory provided by the user, or null if the root should be discovered.
      */
     val explicitProjectDir by option(
-        "--project-dir",
+        projectDirOptionName,
         help = "The root directory of the project. By default, this is discovered automatically by looking up the " +
                 "file tree starting from the current directory.",
     ).path(mustExist = true, canBeFile = false, canBeDir = true)
@@ -30,4 +30,8 @@ class ProjectLayoutOptions : OptionGroup("Project layout options") {
         envvar = "AMPER_BUILD_DIR",
     )
         .path(mustExist = false, canBeFile = false, canBeDir = true)
+
+    companion object {
+        internal const val projectDirOptionName = "--project-dir"
+    }
 }

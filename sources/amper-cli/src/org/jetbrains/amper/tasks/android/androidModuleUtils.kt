@@ -5,7 +5,7 @@
 package org.jetbrains.amper.tasks.android
 
 import org.jetbrains.amper.android.SYNTHETIC_ROOT_ANDROID_PROJECT_PATH
-import org.jetbrains.amper.cli.AmperProjectRoot
+import org.jetbrains.amper.cli.context.AmperProjectRoot
 import org.jetbrains.amper.frontend.AmperModule
 import kotlin.io.path.invariantSeparatorsPathString
 import kotlin.io.path.relativeTo

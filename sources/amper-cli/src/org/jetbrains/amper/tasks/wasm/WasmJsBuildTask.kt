@@ -5,7 +5,7 @@
 package org.jetbrains.amper.tasks.wasm
 
 import org.jetbrains.amper.BuildPrimitives
-import org.jetbrains.amper.cli.AmperProjectTempRoot
+import org.jetbrains.amper.cli.context.AmperProjectTempRoot
 import org.jetbrains.amper.cli.userReadableError
 import org.jetbrains.amper.core.extract.extractZip
 import org.jetbrains.amper.engine.BuildTask

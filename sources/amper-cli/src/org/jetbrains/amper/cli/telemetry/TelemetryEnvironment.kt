@@ -9,7 +9,7 @@ import io.opentelemetry.sdk.resources.Resource
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.format
 import org.jetbrains.amper.buildinfo.AmperBuild
-import org.jetbrains.amper.cli.AmperBuildLogsRoot
+import org.jetbrains.amper.cli.context.AmperBuildLogsRoot
 import org.jetbrains.amper.core.AmperUserCacheRoot
 import org.jetbrains.amper.telemetry.TelemetrySetup
 import org.jetbrains.amper.util.DateTimeFormatForFilenames

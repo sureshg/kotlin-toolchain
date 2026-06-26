@@ -10,7 +10,7 @@ import com.github.ajalt.clikt.parameters.arguments.multiple
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.unique
-import org.jetbrains.amper.cli.CliContext
+import org.jetbrains.amper.cli.context.ProjectCliContext
 import org.jetbrains.amper.cli.userReadableError
 import org.jetbrains.amper.cli.withBackend
 import org.jetbrains.amper.engine.TaskExecutor
@@ -37,7 +37,7 @@ internal class CheckCommand : AmperModelAwareCommand(name = "check") {
 
     override fun help(context: Context): String = "Run checks in the project"
 
-    override suspend fun run(cliContext: CliContext, model: Model) {
+    override suspend fun run(cliContext: ProjectCliContext, model: Model) {
         if (checkNames.isNotEmpty() && skip.isNotEmpty()) {
             userReadableError("Cannot use both positional check names and --skip at the same time")
         }

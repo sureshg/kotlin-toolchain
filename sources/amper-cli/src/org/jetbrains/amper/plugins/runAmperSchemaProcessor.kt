@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import org.jetbrains.amper.ProcessRunner
-import org.jetbrains.amper.cli.AmperProjectRoot
+import org.jetbrains.amper.cli.context.AmperProjectRoot
 import org.jetbrains.amper.cli.lazyload.ExtraClasspath
 import org.jetbrains.amper.frontend.plugins.PluginManifest
 import org.jetbrains.amper.jdk.provisioning.Jdk

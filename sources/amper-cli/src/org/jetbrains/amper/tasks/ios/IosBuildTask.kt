@@ -9,7 +9,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import org.jetbrains.amper.ProcessRunner
-import org.jetbrains.amper.cli.CliContext
+import org.jetbrains.amper.cli.context.ProjectCliContext
 import org.jetbrains.amper.cli.telemetry.setAmperModule
 import org.jetbrains.amper.cli.userReadableError
 import org.jetbrains.amper.core.AmperUserCacheRoot
@@ -82,7 +82,7 @@ class IosBuildTask(
             this += "-sdk"; this += platform.sdk
             this += "${BuildSettingNames.OBJROOT}=${objRootPath.pathString}"
             this += "${BuildSettingNames.SYMROOT}=${symRootPath.pathString}"
-            this += "KOTLIN_CLI_WRAPPER_PATH=${CliContext.wrapperScriptPath.absolutePathString()}"
+            this += "KOTLIN_CLI_WRAPPER_PATH=${ProjectCliContext.wrapperScriptPath.absolutePathString()}"
             if (!platform.isIosSimulator && !xcodeSettings.hasTeamId && !xcodeSettings.isSigningDisabled) {
                 logger.warn("`DEVELOPMENT_TEAM` build setting is not detected in the Xcode project. " +
                         "Adding `CODE_SIGNING_ALLOWED=NO` to disable signing. " +

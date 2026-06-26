@@ -1,12 +1,12 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.cli.logging
 
 import com.github.ajalt.mordant.terminal.Terminal
-import org.jetbrains.amper.cli.AmperBuildLogsRoot
 import org.jetbrains.amper.cli.AmperVersion
+import org.jetbrains.amper.cli.context.AmperBuildLogsRoot
 import org.tinylog.Level
 import org.tinylog.core.TinylogLoggingProvider
 import org.tinylog.provider.ProviderRegistry

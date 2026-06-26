@@ -5,7 +5,7 @@
 package org.jetbrains.amper.tasks.jvm
 
 import org.jetbrains.amper.BuildPrimitives
-import org.jetbrains.amper.cli.AmperBuildOutputRoot
+import org.jetbrains.amper.cli.context.AmperBuildOutputRoot
 import org.jetbrains.amper.engine.TaskGraphExecutionContext
 import org.jetbrains.amper.frontend.Fragment
 import org.jetbrains.amper.incrementalcache.IncrementalCache

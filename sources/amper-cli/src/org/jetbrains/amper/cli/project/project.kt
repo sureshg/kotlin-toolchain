@@ -7,9 +7,9 @@ package org.jetbrains.amper.cli.project
 import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.api.OpenTelemetry
 import org.jetbrains.amper.buildinfo.AmperBuild
-import org.jetbrains.amper.cli.CliContext
 import org.jetbrains.amper.cli.CliProblemReporter
 import org.jetbrains.amper.cli.UserReadableError
+import org.jetbrains.amper.cli.context.ProjectCliContext
 import org.jetbrains.amper.cli.userReadableError
 import org.jetbrains.amper.frontend.AmperModule
 import org.jetbrains.amper.frontend.Model
@@ -20,47 +20,15 @@ import org.jetbrains.amper.plugins.prepareMavenPlugins
 import org.jetbrains.amper.plugins.preparePlugins
 import org.jetbrains.amper.telemetry.spanBuilder
 import org.jetbrains.amper.telemetry.use
-import java.nio.file.Path
-import kotlin.io.path.Path
-import kotlin.io.path.absolute
 import kotlin.io.path.div
 import kotlin.io.path.pathString
 
 /**
- * Creates the [AmperProjectContext] of the current project based on the given [explicitProjectDir], of finds one
- * by starting at the current directory
- */
-internal suspend fun findProjectContext(explicitProjectDir: Path?, explicitBuildDir: Path?): AmperProjectContext? =
-    spanBuilder("Find Kotlin project context").use {
-        with(CliProblemReporter) {
-            val context = if (explicitProjectDir != null) {
-                AmperProjectContext.create(
-                    rootDir = explicitProjectDir.absolute(),
-                    buildDir = explicitBuildDir?.absolute(),
-                )
-                    ?: userReadableError(
-                        "The given path '$explicitProjectDir' is not a valid Kotlin project root directory. " +
-                                "Make sure you have a project file or a module file at the root of your Kotlin project."
-                    )
-            } else {
-                AmperProjectContext.find(
-                    start = Path(System.getProperty("user.dir")),
-                    buildDir = explicitBuildDir?.absolute(),
-                )
-            }
-            if (wereProblemsReported()) {
-                userReadableError("Aborting because there were errors in the Kotlin project file, please see above.")
-            }
-            context
-        }
-    }
-
-/**
- * Reads the [Model] from the Amper project files in this [CliContext].
+ * Reads the [Model] from the Amper project files in this [ProjectCliContext].
  *
  * @throws UserReadableError if any error (or fatal error) is diagnosed in the model
  */
-internal suspend fun CliContext.preparePluginsAndReadModel(): Model {
+internal suspend fun ProjectCliContext.preparePluginsAndReadModel(): Model {
     val pluginData = spanBuilder("Prepare plugins")
         .use { preparePlugins(context = this@preparePluginsAndReadModel) }
     val mavenPluginsWithXmls = spanBuilder("Prepare Maven plugins").use {

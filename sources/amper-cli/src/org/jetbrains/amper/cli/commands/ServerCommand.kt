@@ -25,8 +25,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.slf4j.MDCContext
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
-import org.jetbrains.amper.cli.CliContext
 import org.jetbrains.amper.cli.UserReadableError
+import org.jetbrains.amper.cli.context.ProjectCliContext
 import org.jetbrains.amper.cli.logging.ServerWriter
 import org.jetbrains.amper.cli.logging.sessionIdKey
 import org.jetbrains.amper.cli.logging.useKey
@@ -76,7 +76,7 @@ internal class ServerCommand : AmperModelAwareCommand(name = "server") {
         "Start a server that accepts tasks and runs them. The server runs on port $defaultPort by default."
 
     @OptIn(ExperimentalUuidApi::class)
-    override suspend fun run(cliContext: CliContext, model: Model) {
+    override suspend fun run(cliContext: ProjectCliContext, model: Model) {
         // Note: with the current approach, the server will not see changes in Amper module files.
         // TODO should we re-parse the model every time /task is called?
         withBackend(cliContext, model = model, runSettings = AllRunSettings(composeHotReloadMode = composeHotReloadMode)) { backend ->

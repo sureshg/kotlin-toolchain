@@ -1,10 +1,10 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.tasks
 
-import org.jetbrains.amper.cli.CliContext
+import org.jetbrains.amper.cli.context.ProjectCliContext
 import org.jetbrains.amper.dependency.resolution.ResolutionScope
 import org.jetbrains.amper.engine.TaskGraph
 import org.jetbrains.amper.engine.TaskGraphBuilder
@@ -47,7 +47,7 @@ data class ModuleDependencySequenceCtx(
 )
 
 class ProjectTasksBuilder(
-    val context: CliContext,
+    val context: ProjectCliContext,
     val model: Model,
     val runSettings: AllRunSettings,
     val cinteropGenSettings: CinteropGenSettings,
@@ -124,7 +124,7 @@ class ProjectTasksBuilder(
          * All interaction between tasks should be around passing typed value in TaskResult inheritor,
          * task properties, or module properties
          */
-        fun CliContext.getTaskOutputPath(taskName: TaskName): TaskOutputRoot =
+        fun ProjectCliContext.getTaskOutputPath(taskName: TaskName): TaskOutputRoot =
             TaskOutputRoot(path = projectContext.getTaskOutputRoot(taskName.id))
     }
 }

@@ -7,7 +7,7 @@ package org.jetbrains.amper.cli.commands
 import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
-import org.jetbrains.amper.cli.CliContext
+import org.jetbrains.amper.cli.context.ProjectCliContext
 import org.jetbrains.amper.cli.withBackend
 import org.jetbrains.amper.frontend.Model
 import org.jetbrains.amper.frontend.TaskId
@@ -22,7 +22,7 @@ internal class TaskCommand : AmperModelAwareCommand(name = "task") {
 
     override val hiddenFromHelp: Boolean = true
 
-    override suspend fun run(cliContext: CliContext, model: Model) {
+    override suspend fun run(cliContext: ProjectCliContext, model: Model) {
         withBackend(cliContext, model) { backend ->
             backend.runTasks(taskNames.map { TaskId(it) }.toSet())
         }

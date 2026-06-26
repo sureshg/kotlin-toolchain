@@ -2,7 +2,7 @@
  * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
-package org.jetbrains.amper.cli
+package org.jetbrains.amper.cli.context
 
 import com.github.ajalt.mordant.terminal.Terminal
 import io.opentelemetry.api.GlobalOpenTelemetry
@@ -10,26 +10,37 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.format
 import org.jetbrains.amper.ProcessRunner
 import org.jetbrains.amper.android.AndroidSdkDetector
+import org.jetbrains.amper.cli.AmperVersion
 import org.jetbrains.amper.core.AmperUserCacheRoot
 import org.jetbrains.amper.frontend.project.AmperProjectContext
 import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.jdk.provisioning.JdkProvider
 import org.jetbrains.amper.util.DateTimeFormatForFilenames
-import org.jetbrains.amper.util.DelicateAmperApi
 import org.jetbrains.amper.util.nowInDefaultTimezone
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.div
-import kotlin.io.path.isDirectory
 import kotlin.jvm.optionals.getOrNull
 
-class CliContext(
-    val commandName: String,
+sealed interface CliContext {
+    val commandName: String
+    val userCacheRoot: AmperUserCacheRoot
+    val terminal: Terminal
+}
+
+class GlobalCliContext(
+    override val commandName: String,
+    override val userCacheRoot: AmperUserCacheRoot,
+    override val terminal: Terminal,
+) : CliContext
+
+class ProjectCliContext(
+    override val commandName: String,
+    override val userCacheRoot: AmperUserCacheRoot,
+    override val terminal: Terminal,
     val projectContext: AmperProjectContext,
-    val userCacheRoot: AmperUserCacheRoot,
-    val terminal: Terminal,
-) {
+) : CliContext {
     val projectRoot: AmperProjectRoot = AmperProjectRoot(projectContext.projectRoot.path)
 
     val buildOutputRoot: AmperBuildOutputRoot by lazy {
@@ -118,85 +129,3 @@ class CliContext(
         }
     }
 }
-
-data class AmperBuildOutputRoot(val path: Path) {
-    init {
-        require(path.isDirectory()) {
-            "Build output root is not a directory: $path"
-        }
-        require(path.isAbsolute) {
-            "Build output root is not an absolute path: $path"
-        }
-    }
-}
-
-data class AmperProjectLogsRoot(val path: Path) {
-    init {
-        require(path.isDirectory()) {
-            "Logs root is not a directory: $path"
-        }
-        require(path.isAbsolute) {
-            "Logs root is not an absolute path: $path"
-        }
-    }
-}
-
-data class AmperBuildLogsRoot(val path: Path) {
-    init {
-        require(path.isDirectory()) {
-            "Build logs root is not a directory: $path"
-        }
-        require(path.isAbsolute) {
-            "Build logs root is not an absolute path: $path"
-        }
-    }
-
-    val telemetryPath = path / "telemetry"
-}
-
-data class AmperProjectTempRoot(val path: Path) {
-    init {
-        require(path.isDirectory()) {
-            "Temp root is not a directory: $path"
-        }
-        require(path.isAbsolute) {
-            "Temp root is not an absolute path: $path"
-        }
-    }
-}
-
-data class AmperProjectRoot(val path: Path) {
-    init {
-        require(path.isDirectory()) {
-            "Project root is not a directory: $path"
-        }
-        require(path.isAbsolute) {
-            "Project root is not an absolute path: $path"
-        }
-    }
-}
-
-data class AndroidHomeRoot(val path: Path) {
-    init {
-        require(path.isDirectory()) {
-            "Android home is not a directory: $path"
-        }
-        require(path.isAbsolute) {
-            "Android home is not an absolute path: $path"
-        }
-    }
-}
-
-/**
- * An incremental cache shared between projects using the same Amper version.
- *
- * **Important:** using this incremental cache introduces a lot of directories in the Amper cache, especially when
- * developing Amper locally. Make sure you only use it when it is impossible to use the project-specific incremental
- * cache.
- */
-@DelicateAmperApi
-internal fun AmperUserCacheRoot.sharedIncrementalCache(): IncrementalCache = IncrementalCache(
-    stateRoot = path / "incremental.state" / AmperVersion.codeIdentifier,
-    codeVersion = AmperVersion.codeIdentifier,
-    openTelemetry = GlobalOpenTelemetry.get(),
-)

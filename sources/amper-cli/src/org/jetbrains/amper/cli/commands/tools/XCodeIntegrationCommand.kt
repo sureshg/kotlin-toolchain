@@ -6,8 +6,8 @@ package org.jetbrains.amper.cli.commands.tools
 
 import kotlinx.serialization.json.Json
 import org.jetbrains.amper.BuildPrimitives
-import org.jetbrains.amper.cli.CliContext
 import org.jetbrains.amper.cli.commands.AmperProjectAwareCommand
+import org.jetbrains.amper.cli.context.ProjectCliContext
 import org.jetbrains.amper.cli.project.preparePluginsAndReadModel
 import org.jetbrains.amper.cli.userReadableError
 import org.jetbrains.amper.cli.withBackend
@@ -30,7 +30,7 @@ internal class XCodeIntegrationCommand : AmperProjectAwareCommand(name = "xcode-
     override val hiddenFromHelp: Boolean
         get() = true
 
-    override suspend fun run(cliContext: CliContext) {
+    override suspend fun run(cliContext: ProjectCliContext) {
         validateGeneralXcodeEnvironment()
 
         // Info passed down from the super Amper process if it's the case

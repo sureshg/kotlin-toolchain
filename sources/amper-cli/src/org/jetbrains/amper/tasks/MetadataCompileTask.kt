@@ -7,7 +7,7 @@ package org.jetbrains.amper.tasks
 import kotlinx.serialization.json.Json
 import org.jetbrains.amper.CliReportingMavenResolver
 import org.jetbrains.amper.ProcessRunner
-import org.jetbrains.amper.cli.AmperProjectTempRoot
+import org.jetbrains.amper.cli.context.AmperProjectTempRoot
 import org.jetbrains.amper.cli.logging.infoNoConsole
 import org.jetbrains.amper.cli.telemetry.setAmperModule
 import org.jetbrains.amper.cli.userReadableError
@@ -41,7 +41,6 @@ import org.jetbrains.amper.frontend.dr.resolver.flow.toPlatform
 import org.jetbrains.amper.frontend.dr.resolver.flow.toResolutionPlatform
 import org.jetbrains.amper.frontend.dr.resolver.native.KonanDistribution
 import org.jetbrains.amper.frontend.dr.resolver.native.commonizedKlibs
-import org.jetbrains.amper.frontend.dr.resolver.native.compilerPlatforms
 import org.jetbrains.amper.frontend.dr.resolver.native.stdlibDir
 import org.jetbrains.amper.frontend.friends
 import org.jetbrains.amper.frontend.mavenResolveRepositories

@@ -7,7 +7,7 @@ package org.jetbrains.amper.tasks.native
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import org.jetbrains.amper.ProcessRunner
-import org.jetbrains.amper.cli.AmperProjectTempRoot
+import org.jetbrains.amper.cli.context.AmperProjectTempRoot
 import org.jetbrains.amper.cli.userReadableError
 import org.jetbrains.amper.compilation.KotlinArtifactsDownloader
 import org.jetbrains.amper.compilation.downloadNativeCompiler

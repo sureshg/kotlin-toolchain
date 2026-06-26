@@ -6,9 +6,9 @@ package org.jetbrains.amper.resolver
 
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.amper.CliReportingMavenResolver
-import org.jetbrains.amper.cli.AmperBuildOutputRoot
 import org.jetbrains.amper.cli.AmperVersion
 import org.jetbrains.amper.cli.UserReadableError
+import org.jetbrains.amper.cli.context.AmperBuildOutputRoot
 import org.jetbrains.amper.core.AmperUserCacheRoot
 import org.jetbrains.amper.dependency.resolution.MavenRepository
 import org.jetbrains.amper.dependency.resolution.ResolutionPlatform

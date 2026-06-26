@@ -4,7 +4,7 @@
 
 package org.jetbrains.amper.tasks.compose
 
-import org.jetbrains.amper.cli.AmperBuildOutputRoot
+import org.jetbrains.amper.cli.context.AmperBuildOutputRoot
 import org.jetbrains.amper.frontend.AmperModule
 import org.jetbrains.amper.frontend.Fragment
 import org.jetbrains.amper.frontend.Platform

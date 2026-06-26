@@ -11,7 +11,7 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.clikt.parameters.types.path
-import org.jetbrains.amper.cli.CliContext
+import org.jetbrains.amper.cli.context.ProjectCliContext
 import org.jetbrains.amper.cli.options.UserJvmArgsOption
 import org.jetbrains.amper.cli.options.buildTypeOption
 import org.jetbrains.amper.cli.options.leafPlatformOption
@@ -82,7 +82,7 @@ internal class RunCommand : AmperModelAwareCommand(name = "run") {
 
     override fun helpEpilog(context: Context): String = "Use `--` to separate the application's arguments from the Kotlin CLI options"
 
-    override suspend fun run(cliContext: CliContext, model: Model) {
+    override suspend fun run(cliContext: ProjectCliContext, model: Model) {
         withBackend(
             cliContext,
             model = model,

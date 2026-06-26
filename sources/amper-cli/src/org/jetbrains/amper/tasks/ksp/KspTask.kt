@@ -6,8 +6,8 @@ package org.jetbrains.amper.tasks.ksp
 
 import org.jetbrains.amper.CliReportingMavenResolver
 import org.jetbrains.amper.ProcessRunner
-import org.jetbrains.amper.cli.AmperBuildOutputRoot
-import org.jetbrains.amper.cli.AmperProjectTempRoot
+import org.jetbrains.amper.cli.context.AmperBuildOutputRoot
+import org.jetbrains.amper.cli.context.AmperProjectTempRoot
 import org.jetbrains.amper.compilation.kotlinModuleName
 import org.jetbrains.amper.compilation.serializableCompilationSettings
 import org.jetbrains.amper.compilation.singleLeafFragment

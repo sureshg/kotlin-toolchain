@@ -7,7 +7,7 @@ package org.jetbrains.amper.tasks.native
 import com.github.ajalt.mordant.terminal.Terminal
 import kotlinx.serialization.json.Json
 import org.jetbrains.amper.ProcessRunner
-import org.jetbrains.amper.cli.AmperProjectTempRoot
+import org.jetbrains.amper.cli.context.AmperProjectTempRoot
 import org.jetbrains.amper.cli.logging.infoNoConsole
 import org.jetbrains.amper.cli.terminal.printCompilationSuccess
 import org.jetbrains.amper.compilation.KotlinArtifactsDownloader

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.cli.commands
@@ -9,7 +9,7 @@ import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.unique
 import com.github.ajalt.clikt.parameters.types.enum
-import org.jetbrains.amper.cli.CliContext
+import org.jetbrains.amper.cli.context.ProjectCliContext
 import org.jetbrains.amper.cli.options.buildTypeOption
 import org.jetbrains.amper.cli.options.leafPlatformOption
 import org.jetbrains.amper.cli.withBackend
@@ -44,7 +44,7 @@ internal class PackageCommand : AmperModelAwareCommand(name = "package") {
 
     override fun help(context: Context): String = "Package the project artifacts for distribution"
 
-    override suspend fun run(cliContext: CliContext, model: Model) {
+    override suspend fun run(cliContext: ProjectCliContext, model: Model) {
         withBackend(cliContext, model) { backend ->
             backend.`package`(
                 platforms = platforms.takeIf { it.isNotEmpty() },

@@ -6,6 +6,7 @@ package org.jetbrains.amper.cli
 
 import kotlinx.coroutines.CoroutineScope
 import org.jetbrains.amper.buildinfo.AmperBuild
+import org.jetbrains.amper.cli.context.ProjectCliContext
 import org.jetbrains.amper.cli.options.UserJvmArgsOption
 import org.jetbrains.amper.cli.widgets.TaskProgressRenderer
 import org.jetbrains.amper.engine.BuildTask
@@ -53,7 +54,7 @@ import org.slf4j.LoggerFactory
 import java.nio.file.Path
 
 class AmperBackend(
-    val context: CliContext,
+    val context: ProjectCliContext,
     /**
      * The Amper project model.
      */

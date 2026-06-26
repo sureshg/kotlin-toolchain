@@ -10,7 +10,7 @@ import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
 import io.opentelemetry.api.GlobalOpenTelemetry
 import org.jetbrains.amper.cli.commands.AmperSubcommand
-import org.jetbrains.amper.cli.sharedIncrementalCache
+import org.jetbrains.amper.cli.context.sharedIncrementalCache
 import org.jetbrains.amper.cli.userReadableError
 import org.jetbrains.amper.intellij.CommandLineUtils
 import org.jetbrains.amper.jdk.provisioning.JdkProvider

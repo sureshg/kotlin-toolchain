@@ -10,9 +10,9 @@ import kotlinx.serialization.json.Json
 import org.apache.maven.artifact.versioning.ComparableVersion
 import org.jetbrains.amper.BuildPrimitives
 import org.jetbrains.amper.ProcessRunner
-import org.jetbrains.amper.cli.AmperBuildOutputRoot
-import org.jetbrains.amper.cli.AmperProjectRoot
-import org.jetbrains.amper.cli.AmperProjectTempRoot
+import org.jetbrains.amper.cli.context.AmperBuildOutputRoot
+import org.jetbrains.amper.cli.context.AmperProjectRoot
+import org.jetbrains.amper.cli.context.AmperProjectTempRoot
 import org.jetbrains.amper.cli.logging.infoNoConsole
 import org.jetbrains.amper.cli.logging.withoutConsoleLogging
 import org.jetbrains.amper.cli.telemetry.setAmperModule

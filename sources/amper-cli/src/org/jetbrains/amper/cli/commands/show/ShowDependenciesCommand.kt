@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.cli.commands.show
@@ -11,8 +11,8 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.unique
 import com.github.ajalt.clikt.parameters.types.choice
 import io.opentelemetry.api.GlobalOpenTelemetry
-import org.jetbrains.amper.cli.CliContext
 import org.jetbrains.amper.cli.commands.AmperModelAwareCommand
+import org.jetbrains.amper.cli.context.ProjectCliContext
 import org.jetbrains.amper.cli.options.AllModulesOptionName
 import org.jetbrains.amper.cli.options.ModuleFilter
 import org.jetbrains.amper.cli.options.PlatformGroup
@@ -90,7 +90,7 @@ internal class ShowDependenciesCommand: AmperModelAwareCommand(name = "dependenc
 
     override fun help(context: com.github.ajalt.clikt.core.Context): String = "Print the resolved dependencies graph of the module"
 
-    override suspend fun run(cliContext: CliContext, model: Model) {
+    override suspend fun run(cliContext: ProjectCliContext, model: Model) {
         val selectedModules = moduleFilter.selectModules(projectModules = model.modules)
         selectedModules.forEach { selectedModule ->
             printModuleDependencies(
@@ -102,7 +102,7 @@ internal class ShowDependenciesCommand: AmperModelAwareCommand(name = "dependenc
         }
     }
 
-    private suspend fun printModuleDependencies(module: AmperModule, cliContext: CliContext, failOnUnsupportedPlatforms: Boolean) {
+    private suspend fun printModuleDependencies(module: AmperModule, cliContext: ProjectCliContext, failOnUnsupportedPlatforms: Boolean) {
         val platformSetsToResolveFor = if (platformGroups.isEmpty()) {
             module.fragments.map { it.platforms }.distinct()
         } else {
@@ -126,7 +126,7 @@ internal class ShowDependenciesCommand: AmperModelAwareCommand(name = "dependenc
 
     private suspend fun AmperModule.resolveDependencies(
         platformSetsToResolveFor: List<Set<Platform>>,
-        cliContext: CliContext
+        cliContext: ProjectCliContext
     ): List<DependencyNode> {
         val resolutionPlatformSetsToResolveFor = platformSetsToResolveFor.map { it.mapNotNull { it.toResolutionPlatform() }.toSet() }
 

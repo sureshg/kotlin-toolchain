@@ -13,9 +13,9 @@ import com.github.ajalt.clikt.parameters.types.enum
 import com.github.ajalt.mordant.markdown.Markdown
 import com.github.ajalt.mordant.rendering.BorderType
 import com.github.ajalt.mordant.table.table
-import org.jetbrains.amper.cli.CliContext
 import org.jetbrains.amper.cli.QualifiedName
 import org.jetbrains.amper.cli.commands.AmperModelAwareCommand
+import org.jetbrains.amper.cli.context.ProjectCliContext
 import org.jetbrains.amper.cli.filterByPluginId
 import org.jetbrains.amper.cli.options.ModuleFilter
 import org.jetbrains.amper.cli.options.selectModules
@@ -54,7 +54,7 @@ internal class ShowCustomCommandsCommand : AmperModelAwareCommand(name = "comman
 
     override fun help(context: Context): String = "Print all available custom commands in the project"
 
-    override suspend fun run(cliContext: CliContext, model: Model) {
+    override suspend fun run(cliContext: ProjectCliContext, model: Model) {
         val selectedModules = (modules ?: ModuleFilter.All).selectModules(model.modules)
 
         val allCommands = selectedModules.flatMap { it.customCommandsFromPlugins }

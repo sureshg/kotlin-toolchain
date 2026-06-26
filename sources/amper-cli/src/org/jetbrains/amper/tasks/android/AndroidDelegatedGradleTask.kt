@@ -8,8 +8,8 @@ import org.jetbrains.amper.android.AndroidBuildRequest
 import org.jetbrains.amper.android.AndroidModuleData
 import org.jetbrains.amper.android.ResolvedDependency
 import org.jetbrains.amper.android.runAndroidBuild
-import org.jetbrains.amper.cli.AmperBuildLogsRoot
-import org.jetbrains.amper.cli.AmperProjectRoot
+import org.jetbrains.amper.cli.context.AmperBuildLogsRoot
+import org.jetbrains.amper.cli.context.AmperProjectRoot
 import org.jetbrains.amper.engine.Task
 import org.jetbrains.amper.engine.TaskGraphExecutionContext
 import org.jetbrains.amper.engine.TaskName

@@ -4,8 +4,8 @@
 
 package org.jetbrains.amper.tasks.android
 
-import org.jetbrains.amper.cli.AmperBuildLogsRoot
-import org.jetbrains.amper.cli.AmperProjectRoot
+import org.jetbrains.amper.cli.context.AmperBuildLogsRoot
+import org.jetbrains.amper.cli.context.AmperProjectRoot
 import org.jetbrains.amper.engine.TaskName
 import org.jetbrains.amper.frontend.AmperModule
 import org.jetbrains.amper.frontend.Fragment

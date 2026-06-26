@@ -23,9 +23,10 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.jetbrains.amper.cli.AmperBuildLogsRoot
-import org.jetbrains.amper.cli.UserReadableError
 import org.jetbrains.amper.cli.commands.AmperSubcommand
+import org.jetbrains.amper.cli.context.AmperBuildLogsRoot
+import org.jetbrains.amper.cli.context.AmperProjectLogsRoot
+import org.jetbrains.amper.cli.context.ProjectCliContext
 import org.jetbrains.amper.cli.userReadableError
 import org.jetbrains.amper.core.downloader.Downloader
 import org.jetbrains.amper.core.extract.ExtractOptions
@@ -119,7 +120,11 @@ internal class JaegerToolCommand : AmperSubcommand(name = "jaeger") {
     }
 
     private suspend fun importTraces() = coroutineScope {
-        val traceFiles = findTraceFiles()
+        val cliContext = findCliContext()
+        if (cliContext !is ProjectCliContext) {
+            return@coroutineScope
+        }
+        val traceFiles = cliContext.projectLogsRoot.findOpenTelemetryTraceFiles()
         if (traceFiles.isEmpty()) {
             terminal.println("No trace files found, do nothing")
             return@coroutineScope
@@ -133,30 +138,21 @@ internal class JaegerToolCommand : AmperSubcommand(name = "jaeger") {
         }
     }
 
-    private suspend fun findTraceFiles(): List<Path> = coroutineScope {
-        val logsRootDir = try {
-            createCliProjectContext(
-                explicitProjectDir = null, // not customizable in this command, this is just best-effort
-                explicitBuildDir = null, // not customizable in this command, this is just best-effort
-            ).projectLogsRoot.path
-        } catch (_: UserReadableError) {
-            return@coroutineScope emptyList()
+    private fun AmperProjectLogsRoot.findOpenTelemetryTraceFiles(): List<Path> {
+        if (!path.exists()) {
+            return []
         }
-
-        if (logsRootDir.exists()) {
-            buildList {
-                for (folder in logsRootDir.listDirectoryEntries()) {
-                    val telemetryFolder = AmperBuildLogsRoot(folder).telemetryPath
-                    if (telemetryFolder.exists()) {
-                        addAll(telemetryFolder
+        return buildList {
+            for (folder in path.listDirectoryEntries()) {
+                val telemetryFolder = AmperBuildLogsRoot(folder).telemetryPath
+                if (telemetryFolder.exists()) {
+                    addAll(
+                        telemetryFolder
                             .listDirectoryEntries()
                             .filter { it.isRegularFile() && it.name.endsWith(".jsonl") }
-                        )
-                    }
+                    )
                 }
             }
-        } else {
-            emptyList()
         }
     }
 

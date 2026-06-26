@@ -7,7 +7,7 @@
 package org.jetbrains.amper.backend.test
 
 import com.github.ajalt.mordant.terminal.Terminal
-import org.jetbrains.amper.cli.CliContext
+import org.jetbrains.amper.cli.context.ProjectCliContext
 import org.jetbrains.amper.core.AmperUserCacheRoot
 import org.jetbrains.amper.frontend.project.AmperProjectContext
 import org.jetbrains.amper.problems.reporting.CollectingProblemReporter
@@ -50,7 +50,7 @@ abstract class AmperIntegrationTestBase {
     protected fun setupTestProject(
         testProjectPath: Path,
         copyToTemp: Boolean,
-    ): CliContext {
+    ): ProjectCliContext {
         require(testProjectPath.exists()) { "Test project is missing at $testProjectPath" }
 
         val projectRoot = if (copyToTemp) testProjectPath.copyToTempRoot() else testProjectPath
@@ -64,7 +64,7 @@ abstract class AmperIntegrationTestBase {
         if (problemReporter.problems.isNotEmpty()) {
             fail("Error in the test project's project.yaml:\n${problemReporter.problems.joinToString("\n")}")
         }
-        return CliContext(
+        return ProjectCliContext(
             commandName = "integration-test-base",
             projectContext = projectContext,
             userCacheRoot = userCacheRoot,

@@ -7,8 +7,8 @@ package org.jetbrains.amper.cli.commands
 import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
+import org.jetbrains.amper.cli.context.ProjectCliContext
 import org.jetbrains.amper.cli.options.ProjectLayoutOptions
-import org.jetbrains.amper.cli.project.findProjectContext
 import org.jetbrains.amper.cli.userReadableError
 import org.jetbrains.amper.cli.widgets.withIndeterminateProgress
 import kotlin.io.path.deleteRecursively
@@ -23,14 +23,14 @@ internal class CleanCommand : AmperSubcommand(name = "clean") {
     override fun help(context: Context): String = "Remove the project's build output and caches"
 
     override suspend fun run() {
-        val projectContext = findProjectContext(
-            explicitProjectDir = layoutOptions.explicitProjectDir,
-            explicitBuildDir = layoutOptions.explicitBuildDir,
-        ) ?: userReadableError("No Kotlin project found, nothing to clean")
+        val cliContext = findCliContext(layoutOptions)
+        if (cliContext !is ProjectCliContext) {
+            userReadableError("No Kotlin project found, nothing to clean")
+        }
 
-        if (projectContext.projectBuildDir.exists()) {
+        if (cliContext.buildOutputRoot.path.exists()) {
             terminal.withIndeterminateProgress("Deleting project build output and caches…") {
-                projectContext.projectBuildDir.deleteRecursively()
+                cliContext.buildOutputRoot.path.deleteRecursively()
             }
         }
         printSuccessfulCommandConclusion("Clean successful")

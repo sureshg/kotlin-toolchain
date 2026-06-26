@@ -5,8 +5,8 @@
 package org.jetbrains.amper.cli.commands.ide
 
 import com.github.ajalt.clikt.core.Context
-import org.jetbrains.amper.cli.CliContext
 import org.jetbrains.amper.cli.commands.AmperProjectAwareCommand
+import org.jetbrains.amper.cli.context.ProjectCliContext
 import org.jetbrains.amper.cli.project.preparePluginsAndReadModel
 import org.jetbrains.amper.cli.withBackend
 import org.jetbrains.amper.tasks.ios.ManageXCodeProjectTask
@@ -18,7 +18,7 @@ internal class ManageXcodeCommand : AmperProjectAwareCommand("manage-xcode") {
     override fun help(context: Context): String =
         "Generates or checks already present Xcode projects for all `ios/app` modules"
 
-    override suspend fun run(cliContext: CliContext) {
+    override suspend fun run(cliContext: ProjectCliContext) {
         withBackend(cliContext, model = cliContext.preparePluginsAndReadModel()) { backend ->
             val xcodeTasks = backend.taskGraph.tasks
                 .filterIsInstance<ManageXCodeProjectTask>()

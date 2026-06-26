@@ -6,7 +6,7 @@ package org.jetbrains.amper.processes
 
 import com.intellij.execution.CommandLineWrapperUtil
 import org.jetbrains.amper.ProcessRunner
-import org.jetbrains.amper.cli.AmperProjectTempRoot
+import org.jetbrains.amper.cli.context.AmperProjectTempRoot
 import org.jetbrains.amper.jdk.provisioning.Jdk
 import org.jetbrains.amper.telemetry.setListAttribute
 import org.jetbrains.amper.telemetry.setMapAttribute

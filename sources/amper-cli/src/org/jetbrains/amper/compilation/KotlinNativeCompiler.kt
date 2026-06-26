@@ -6,7 +6,7 @@ package org.jetbrains.amper.compilation
 
 import io.opentelemetry.api.trace.Span
 import org.jetbrains.amper.ProcessRunner
-import org.jetbrains.amper.cli.AmperProjectTempRoot
+import org.jetbrains.amper.cli.context.AmperProjectTempRoot
 import org.jetbrains.amper.cli.telemetry.setAmperModule
 import org.jetbrains.amper.cli.telemetry.setProcessResultAttributes
 import org.jetbrains.amper.cli.userReadableError

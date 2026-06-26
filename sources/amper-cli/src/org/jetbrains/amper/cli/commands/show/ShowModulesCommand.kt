@@ -14,8 +14,8 @@ import com.github.ajalt.clikt.parameters.types.enum
 import com.github.ajalt.mordant.markdown.Markdown
 import com.github.ajalt.mordant.rendering.BorderType
 import com.github.ajalt.mordant.table.table
-import org.jetbrains.amper.cli.CliContext
 import org.jetbrains.amper.cli.commands.AmperModelAwareCommand
+import org.jetbrains.amper.cli.context.ProjectCliContext
 import org.jetbrains.amper.frontend.AmperModule
 import org.jetbrains.amper.frontend.Model
 
@@ -69,7 +69,7 @@ internal class ShowModulesCommand : AmperModelAwareCommand(name = "modules") {
 
     override fun help(context: Context): String = "List all modules in the project"
 
-    override suspend fun run(cliContext: CliContext, model: Model) {
+    override suspend fun run(cliContext: ProjectCliContext, model: Model) {
         val modules = model.modules.sortedBy { it.userReadableName }
         when (format) {
             ModulesListFormat.Plain -> printPlainModulesList(modules)

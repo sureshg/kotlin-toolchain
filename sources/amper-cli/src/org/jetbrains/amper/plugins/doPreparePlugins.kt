@@ -7,8 +7,8 @@ package org.jetbrains.amper.plugins
 import com.github.ajalt.mordant.terminal.Terminal
 import kotlinx.coroutines.coroutineScope
 import org.jetbrains.amper.ProcessRunner
-import org.jetbrains.amper.cli.AmperProjectRoot
 import org.jetbrains.amper.cli.CliProblemReporter
+import org.jetbrains.amper.cli.context.AmperProjectRoot
 import org.jetbrains.amper.cli.logging.infoNoConsole
 import org.jetbrains.amper.cli.userReadableError
 import org.jetbrains.amper.cli.widgets.withIndeterminateProgress

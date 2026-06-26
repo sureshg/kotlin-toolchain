@@ -5,8 +5,8 @@
 package org.jetbrains.amper.cli.commands.ide
 
 import com.github.ajalt.clikt.core.Context
-import org.jetbrains.amper.cli.CliContext
 import org.jetbrains.amper.cli.commands.AmperProjectAwareCommand
+import org.jetbrains.amper.cli.context.ProjectCliContext
 import org.jetbrains.amper.cli.project.preparePluginsAndReadModel
 import org.jetbrains.amper.cli.withBackend
 import org.jetbrains.amper.tasks.native.CommonizeNativeDistributionTask
@@ -18,7 +18,7 @@ internal class CommonizeNativeDistributionCommand : AmperProjectAwareCommand("co
     override fun help(context: Context): String =
         "Commonizes Kotlin/Native distribution to the subset of platforms present in the project"
 
-    override suspend fun run(cliContext: CliContext) {
+    override suspend fun run(cliContext: ProjectCliContext) {
         withBackend(cliContext, model = cliContext.preparePluginsAndReadModel()) { backend ->
             val commonizeTask = CommonizeNativeDistributionTask.TASK_NAME
             backend.runTask(commonizeTask.id)

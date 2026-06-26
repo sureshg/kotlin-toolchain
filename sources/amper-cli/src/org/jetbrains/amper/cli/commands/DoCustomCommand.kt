@@ -9,7 +9,7 @@ import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.unique
-import org.jetbrains.amper.cli.CliContext
+import org.jetbrains.amper.cli.context.ProjectCliContext
 import org.jetbrains.amper.cli.withBackend
 import org.jetbrains.amper.engine.TaskExecutor
 import org.jetbrains.amper.frontend.Model
@@ -31,7 +31,7 @@ internal class DoCustomCommand : AmperModelAwareCommand(name = "do") {
 
     override fun help(context: Context): String = "Run a custom command"
 
-    override suspend fun run(cliContext: CliContext, model: Model) {
+    override suspend fun run(cliContext: ProjectCliContext, model: Model) {
         withBackend(
             cliContext = cliContext,
             model = model,

@@ -5,7 +5,7 @@
 package org.jetbrains.amper.compilation
 
 import org.apache.maven.artifact.versioning.ComparableVersion
-import org.jetbrains.amper.cli.AmperProjectTempRoot
+import org.jetbrains.amper.cli.context.AmperProjectTempRoot
 import org.jetbrains.amper.dependency.resolution.ResolutionPlatform
 import org.jetbrains.amper.engine.BuildTask
 import org.jetbrains.amper.frontend.AmperModule

@@ -5,8 +5,8 @@
 package org.jetbrains.amper.cli.commands.ide
 
 import com.github.ajalt.clikt.core.Context
-import org.jetbrains.amper.cli.CliContext
 import org.jetbrains.amper.cli.commands.AmperProjectAwareCommand
+import org.jetbrains.amper.cli.context.ProjectCliContext
 import org.jetbrains.amper.cli.project.preparePluginsAndReadModel
 import org.jetbrains.amper.cli.withBackend
 import org.jetbrains.amper.tasks.CinteropGenSettings
@@ -21,7 +21,7 @@ import org.jetbrains.amper.tasks.CinteropGenSettings
  * @see org.jetbrains.amper.tasks.native.CommonizeCInteropKlibsTask
  */
 internal class GenerateKlibsCommand : AmperProjectAwareCommand(name = "generate-klibs") {
-    override suspend fun run(cliContext: CliContext) {
+    override suspend fun run(cliContext: ProjectCliContext) {
         withBackend(
             cliContext = cliContext,
             cinteropGenSettings = CinteropGenSettings(

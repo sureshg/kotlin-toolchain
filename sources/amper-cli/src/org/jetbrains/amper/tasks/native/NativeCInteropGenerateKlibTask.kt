@@ -5,8 +5,8 @@
 package org.jetbrains.amper.tasks.native
 
 import org.jetbrains.amper.ProcessRunner
-import org.jetbrains.amper.cli.AmperBuildOutputRoot
 import org.jetbrains.amper.cli.UserReadableError
+import org.jetbrains.amper.cli.context.AmperBuildOutputRoot
 import org.jetbrains.amper.cli.userReadableError
 import org.jetbrains.amper.compilation.downloadNativeCompiler
 import org.jetbrains.amper.compilation.serializableKotlinSettings

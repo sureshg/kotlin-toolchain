@@ -5,53 +5,35 @@
 package org.jetbrains.amper.cli.commands
 
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
-import org.jetbrains.amper.buildinfo.AmperBuild
-import org.jetbrains.amper.cli.AmperProjectRoot
-import org.jetbrains.amper.cli.CliContext
-import org.jetbrains.amper.cli.logging.LoggingInitializer
+import org.jetbrains.amper.cli.context.GlobalCliContext
+import org.jetbrains.amper.cli.context.ProjectCliContext
 import org.jetbrains.amper.cli.options.ProjectLayoutOptions
-import org.jetbrains.amper.cli.telemetry.TelemetryEnvironment
-import org.jetbrains.amper.telemetry.spanBuilder
-import org.jetbrains.amper.telemetry.use
-import org.jetbrains.amper.wrapper.AmperWrapperData
+import org.jetbrains.amper.cli.userReadableError
 
 /**
  * An [AmperSubcommand] that can only be run in an Amper project.
+ *
+ * This parent command automatically finds a project and setups up project-local logging and telemetry.
+ * It automatically fails if it's not run in the context of a project.
  */
 internal abstract class AmperProjectAwareCommand(name: String) : AmperSubcommand(name) {
 
     protected val layoutOptions by ProjectLayoutOptions()
 
     final override suspend fun run() {
-        val cliContext = createCliProjectContext(
-            explicitProjectDir = layoutOptions.explicitProjectDir,
-            explicitBuildDir = layoutOptions.explicitBuildDir,
-        )
-
-        spanBuilder("Switch telemetry to project-local build directory").use {
-            TelemetryEnvironment.setLogsRootDirectory(cliContext.currentLogsRoot)
-        }
-
-        spanBuilder("Setup file logging and monitoring").use {
-            LoggingInitializer.setupFileLogging(cliContext.currentLogsRoot)
-        }
-
-        checkWrapperVersionConsistency(cliContext.projectRoot)
-
-        run(cliContext)
-    }
-
-    private fun checkWrapperVersionConsistency(projectRoot: AmperProjectRoot) {
-        val projectWrapperVersion = AmperWrapperData.parseFromProjectRoot(projectRoot.path)?.version ?: return
-
-        if (projectWrapperVersion != AmperBuild.mavenVersion) {
-            logger.warn(
-                "Running Kotlin CLI version (${AmperBuild.mavenVersion}) is different from " +
-                        "the project wrapper version (${projectWrapperVersion}). " +
-                        "NOTE: If you are using the global wrapper, make sure you run it inside the project directory."
+        when (val cliContext = findCliContext(layoutOptions)) {
+            is ProjectCliContext -> {
+                setProjectSpecificState(cliContext)
+                run(cliContext)
+            }
+            is GlobalCliContext -> userReadableError(
+                "No Kotlin project found in the current directory or above. " +
+                        "Make sure you have a project file or a module file at the root of your project, or specify " +
+                        "`${ProjectLayoutOptions.projectDirOptionName}` explicitly to run apps from a project " +
+                        "located elsewhere."
             )
         }
     }
 
-    abstract suspend fun run(cliContext: CliContext)
+    abstract suspend fun run(cliContext: ProjectCliContext)
 }

@@ -9,8 +9,8 @@ import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.mordant.rendering.TextAlign
 import com.github.ajalt.mordant.rendering.Whitespace
 import com.github.ajalt.mordant.terminal.info
-import org.jetbrains.amper.cli.CliContext
 import org.jetbrains.amper.cli.commands.AmperModelAwareCommand
+import org.jetbrains.amper.cli.context.ProjectCliContext
 import org.jetbrains.amper.cli.options.AllModulesOptionName
 import org.jetbrains.amper.cli.options.moduleFilter
 import org.jetbrains.amper.cli.options.selectModules
@@ -35,7 +35,7 @@ internal class ShowSettingsCommand : AmperModelAwareCommand(name = "settings") {
 
     override fun help(context: Context): String = "Print the effective settings of each module"
 
-    override suspend fun run(cliContext: CliContext, model: Model) {
+    override suspend fun run(cliContext: ProjectCliContext, model: Model) {
         val isMultimodule = model.modules.size
         moduleFilter.selectModules(model.modules).forEach { module ->
             if (isMultimodule > 1) {

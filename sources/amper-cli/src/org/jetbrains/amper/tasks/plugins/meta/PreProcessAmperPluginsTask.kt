@@ -5,7 +5,7 @@
 package org.jetbrains.amper.tasks.plugins.meta
 
 import org.jetbrains.amper.ProcessRunner
-import org.jetbrains.amper.cli.AmperProjectRoot
+import org.jetbrains.amper.cli.context.AmperProjectRoot
 import org.jetbrains.amper.engine.Task
 import org.jetbrains.amper.engine.TaskGraphExecutionContext
 import org.jetbrains.amper.engine.TaskName
