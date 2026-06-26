@@ -428,9 +428,10 @@ data class ActivationOS(
 internal fun Dependency.expandTemplates(project: Project): Dependency = copy(
     groupId = groupId.expandTemplate(project),
     artifactId = artifactId.expandTemplate(project),
-    version = version?.expandTemplate(project)?.resolveSingleVersion(),
-    type = type?.expandTemplate(project),
-    scope = scope?.expandTemplate(project),
+    version = version?.expandTemplate(project)?.takeIf{ it.isNotBlank() }?.resolveSingleVersion(),
+    type = type?.expandTemplate(project)?.takeIf{ it.isNotBlank() },
+    classifier = classifier?.expandTemplate(project)?.takeIf{ it.isNotBlank() },
+    scope = scope?.expandTemplate(project)?.takeIf{ it.isNotBlank() },
 )
 
 internal fun Project.expandTemplates(): Project = copy(
@@ -455,7 +456,7 @@ internal fun String.expandTemplate(project: Project): String {
     val builtInPrefix = "project.".takeIf { key.startsWith(it) }
         ?: "pom.".takeIf { key.startsWith(it) }
 
-    val value = if (builtInPrefix != null) {
+    val builtInPropertyValue = if (builtInPrefix != null) {
         when (key.removePrefix(builtInPrefix)) {
             "groupId" -> project.groupId ?: project.parent?.groupId
             "artifactId" -> project.artifactId ?: project.parent?.artifactId
@@ -464,14 +465,15 @@ internal fun String.expandTemplate(project: Project): String {
             "parent.groupId" -> project.parent?.groupId
             "parent.artifactId" -> project.parent?.artifactId
             "parent.version" -> project.parent?.version
-            else -> project.properties?.properties?.get(key)
+            else -> null
         }
-    } else {
-        project.properties?.properties?.get(key)
-    }
+    } else null
 
-    if (value == null) {
-        return this
+    val value = if (builtInPropertyValue != null) {
+        builtInPropertyValue
+    } else {
+        if (project.properties?.properties?.containsKey(key) != true) return this
+        project.properties.properties.get(key) ?: "" // null value works as well
     }
 
     val expandedValue = substring(0, keyStarts) + value.expandTemplate(project) + substring(keyEnds + 1, this.length)

@@ -2621,6 +2621,35 @@ class BuildGraphTest : BaseDRTest() {
         assertEquals(setOf(ResolutionPlatform.JVM, ResolutionPlatform.ANDROID), message.supportedPlatforms)
     }
 
+    /**
+     * This test checks that a property with an empty value declared in pom.xml
+     * is not ignored and is successfully used for substitutions.
+     *
+     * In particular,
+     * org.apache.arrow:arrow-dataset:19.0.0 declares the following dependency in pom.xml:
+     * <dependency>
+     *   <groupId>org.apache.arrow</groupId>
+     *   <artifactId>arrow-vector</artifactId>
+     *   <classifier>${arrow.vector.classifier}</classifier>
+     *   <scope>compile</scope>
+     * </dependency>
+     * 
+     * The property 'arrow.vector.classifier' is declared in parent pom 'org.apache.arrow:arrow-java-root:19.0.0':
+     * <arrow.vector.classifier></arrow.vector.classifier>
+     *
+     * This way the dependency classifier is empty (equivalent to the unspecified classifier)
+     */
+    @Test
+    fun `org_jetbrains_kotlinx dataframe 1_0_0-Beta5`(testInfo: TestInfo) = runDrTest {
+        val root = doTestByFile(
+            testInfo,
+            scope = ResolutionScope.RUNTIME,
+            repositories = listOf(REDIRECTOR_MAVEN_CENTRAL),
+        )
+
+        downloadAndAssertFiles(testInfo, root)
+    }
+
     private fun assertEquals(@Language("text") expected: String, root: DependencyNode) =
         assertEquals(expected, root.prettyPrint().trimEnd())
 }
