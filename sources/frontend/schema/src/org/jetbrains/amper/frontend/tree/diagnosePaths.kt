@@ -34,3 +34,21 @@ internal fun diagnoseProjectRootRelativePath(
     }
     return isValid
 }
+
+context(_: ProblemReporter)
+internal fun diagnoseRawPath(
+    pathValue: YamlValue.Scalar,
+): Boolean {
+    var isValid = true
+    BackslashRegex.findAll(pathValue.textValue).forEach { match ->
+        isValid = false
+        reportBundleError(
+            pathValue.asPreciseTrace(match.range).asBuildProblemSource(),
+            diagnosticId = TreeDiagnosticId.InvalidPathBackslash,
+            messageKey = "validation.types.invalid.path.backslash",
+        )
+    }
+    return isValid
+}
+
+private val BackslashRegex = """\\""".toRegex()

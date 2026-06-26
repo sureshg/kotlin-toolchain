@@ -5,3 +5,5 @@ product:
 dependencies:
   - //<![Error] `.` and `..` are not permitted in `//`-paths!>.<!>/submodule
   - //<![Error] `.` and `..` are not permitted in `//`-paths!>..<!>/outside
+  - //foo<![Error] Backslash `\` is not permitted in the path value, use forward slashes `/` instead!>\<!>bar
+  - ..<![Error] Backslash `\` is not permitted in the path value, use forward slashes `/` instead!>\<!>foo<![Error] Backslash `\` is not permitted in the path value, use forward slashes `/` instead!>\<!>bar

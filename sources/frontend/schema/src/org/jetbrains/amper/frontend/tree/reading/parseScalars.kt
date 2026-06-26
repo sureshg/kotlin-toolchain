@@ -8,6 +8,7 @@ import org.jetbrains.amper.frontend.contexts.Contexts
 import org.jetbrains.amper.frontend.tree.TreeDiagnosticId
 import org.jetbrains.amper.frontend.tree.TreeNode
 import org.jetbrains.amper.frontend.tree.diagnoseProjectRootRelativePath
+import org.jetbrains.amper.frontend.tree.diagnoseRawPath
 import org.jetbrains.amper.frontend.types.SchemaType
 import org.jetbrains.amper.frontend.types.render
 import org.jetbrains.amper.problems.reporting.BuildProblemType
@@ -53,6 +54,9 @@ internal fun parseScalar(scalar: YamlValue.Scalar, type: SchemaType.ScalarType):
 
 context(_: Contexts, config: ParsingConfig, _: ProblemReporter)
 private fun parsePath(scalar: YamlValue.Scalar): TreeNode {
+    if (!diagnoseRawPath(scalar)) {
+        return errorNode(scalar, SchemaType.PathType)
+    }
     var path = try {
         val textValue = scalar.textValue
         if (textValue.startsWith("//")) {

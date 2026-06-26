@@ -284,6 +284,8 @@ interact in multiplatform modules.
 
 ### Path notation
 
+Forward slash `/` is used as a path component separator on every platform. Backslashes `\` are not to be used.
+
 To refer to a file or directory in the project, use `//`-prefixed paths, for example `//libs/utils` or `//LICENSE.txt`.
 In this notation paths are resolved from the project root directory,
 where the `project.yaml` (or the single `module.yaml`) is located. 
