@@ -27,7 +27,9 @@ import kotlin.io.path.exists
 import kotlin.io.path.extension
 import kotlin.io.path.name
 import kotlin.io.path.readBytes
+import kotlin.io.path.readText
 import kotlin.io.path.walk
+import kotlin.io.path.writeText
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertContains
@@ -261,6 +263,38 @@ class AndroidExampleProjectsTest : AmperCliTestBase() {
             configureAndroidHome = true,
         )
         result.assertStdoutContains("2 tests successful")
+    }
+
+    @Test
+    fun `Android resources are regenerated on changes`() = runSlowTest {
+        val taskName = ":simple:buildAndroidDebug"
+        val result = runCli(
+            projectDir = testProject("android/simple"),
+            "task", taskName,
+            configureAndroidHome = true,
+        )
+
+        val stringsFile = result.projectDir / "res" / "values" / "strings.xml"
+        stringsFile.writeText(stringsFile.readText().replace("custom_string", "new_string"))
+
+        // Should fail because source usage is not renamed
+        runCli(
+            projectDir = result.projectDir,
+            "task", taskName,
+            configureAndroidHome = true,
+            expectedExitCode = 1,
+            assertEmptyStdErr = false,
+        )
+
+        val sourceFile = result.projectDir / "src" / "com" / "jetbrains" / "sample" / "app" / "MainActivity.kt"
+        sourceFile.writeText(sourceFile.readText().replace("custom_string", "new_string"))
+
+        // Should succeed
+        runCli(
+            projectDir = result.projectDir,
+            "task", taskName,
+            configureAndroidHome = true,
+        )
     }
 
 

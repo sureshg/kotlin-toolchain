@@ -26,7 +26,7 @@ class AndroidPrepareTask(
     buildType: BuildType,
     incrementalCache: IncrementalCache,
     androidSdkPath: Path,
-    fragments: List<Fragment>,
+    private val fragments: List<Fragment>,
     projectRoot: AmperProjectRoot,
     taskOutputRoot: TaskOutputRoot,
     buildLogsRoot: AmperBuildLogsRoot,
@@ -45,6 +45,9 @@ class AndroidPrepareTask(
 ) {
     override val phase: AndroidBuildRequest.Phase
         get() = AndroidBuildRequest.Phase.Prepare
+
+    override val additionalInputFiles: List<Path>
+        get() = fragments.mapNotNull { it.sourceAndroidConventionPaths?.resourcesPath }.distinct()
 
     override fun outputFilterPredicate(path: Path): Boolean = path.extension == "jar"
     override fun result(artifacts: List<Path>): TaskResult = Result(compileClasspath = artifacts)

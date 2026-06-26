@@ -41,14 +41,19 @@ abstract class LastPhaseAndroidDelegatedGradleTask(
 ) {
 
     override val additionalInputFiles: List<Path> = if (buildType == BuildType.Release) {
-        fragments
-            .flatMap {
-                buildList {
-                    module.source.moduleDir.let { moduleDir ->
-                        add((moduleDir / it.settings.android.signing.propertiesFile).toAbsolutePath())
-                        add(moduleDir / "proguard-rules.pro")
-                    }
+        buildList {
+            fragments.forEach { fragment ->
+                fragment.sourceAndroidConventionPaths?.let { paths ->
+                    add(paths.assetsPath)
+                    add(paths.jniLibsPath)
+                    add(paths.manifestPath)
+                    add(paths.resourcesPath)
+                }
+                module.source.moduleDir.let { moduleDir ->
+                    add((moduleDir / fragment.settings.android.signing.propertiesFile).toAbsolutePath())
+                    add(moduleDir / "proguard-rules.pro")
                 }
             }
+        }.distinct()
     } else emptyList()
 }
