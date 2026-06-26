@@ -7,6 +7,7 @@ package org.jetbrains.amper.frontend.tree.reading
 import org.jetbrains.amper.frontend.contexts.Contexts
 import org.jetbrains.amper.frontend.tree.TreeDiagnosticId
 import org.jetbrains.amper.frontend.tree.TreeNode
+import org.jetbrains.amper.frontend.tree.diagnoseProjectRootRelativePath
 import org.jetbrains.amper.frontend.types.SchemaType
 import org.jetbrains.amper.frontend.types.render
 import org.jetbrains.amper.problems.reporting.BuildProblemType
@@ -50,14 +51,17 @@ internal fun parseScalar(scalar: YamlValue.Scalar, type: SchemaType.ScalarType):
     is SchemaType.PathType -> parsePath(scalar)
 }
 
-
 context(_: Contexts, config: ParsingConfig, _: ProblemReporter)
 private fun parsePath(scalar: YamlValue.Scalar): TreeNode {
     var path = try {
         val textValue = scalar.textValue
         if (textValue.startsWith("//")) {
             // Path relative to the project root
-            config.rootPath / Path(textValue.removePrefix("//"))
+            val path = Path(textValue.removePrefix("//"))
+            if (!diagnoseProjectRootRelativePath(scalar, path, initialOffset = 2)) {
+                return errorNode(scalar, SchemaType.PathType)
+            }
+            config.rootPath / path
         } else Path(textValue)
     } catch (e: InvalidPathException) {
         reportParsing(scalar, TreeDiagnosticId.InvalidPath, "validation.types.invalid.path", e.message)

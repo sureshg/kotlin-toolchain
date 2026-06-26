@@ -1,0 +1,7 @@
+product:
+  type: jvm/app
+  platforms: [ jvm ]
+
+dependencies:
+  - //<![Error] `.` and `..` are not permitted in `//`-paths!>.<!>/submodule
+  - //<![Error] `.` and `..` are not permitted in `//`-paths!>..<!>/outside

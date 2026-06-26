@@ -17,6 +17,7 @@ enum class TreeDiagnosticId : DiagnosticId {
     ExpectedSingleKeyValuePair,
     DeprecatedProperty,
     InvalidPath,
+    InvalidProjectRootRelativePath,
     MappingKeyIsMissing,
     MappingShouldHaveSingleKeyValue,
     MissingValue,
