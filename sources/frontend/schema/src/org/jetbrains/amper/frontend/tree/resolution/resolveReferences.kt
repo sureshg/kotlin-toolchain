@@ -32,6 +32,7 @@ import org.jetbrains.amper.frontend.tree.traceableValue
 import org.jetbrains.amper.frontend.types.SchemaObjectDeclaration
 import org.jetbrains.amper.frontend.types.SchemaType
 import org.jetbrains.amper.frontend.types.render
+import org.jetbrains.amper.problems.reporting.BuildProblemType
 import org.jetbrains.amper.problems.reporting.FileBuildProblemSource
 import org.jetbrains.amper.problems.reporting.MultipleLocationsBuildProblemSource
 import org.jetbrains.amper.problems.reporting.ProblemReporter
@@ -203,7 +204,8 @@ private class ReferenceResolutionSession(
                         diagnosticId = TreeDiagnosticId.ReferenceHasUnexpectedType,
                         messageKey = "validation.reference.unexpected.type",
                         renderTypeOf(value),
-                        referenceNode.expectedType.render(includeSyntax = false)
+                        referenceNode.expectedType.render(includeSyntax = false),
+                        problemType = BuildProblemType.TypeMismatch,
                     )
                     ErrorNode(referenceNode)
                 }
@@ -222,7 +224,8 @@ private class ReferenceResolutionSession(
                 diagnosticId = TreeDiagnosticId.ReferenceHasUnexpectedType,
                 messageKey = "validation.reference.unexpected.type",
                 result.type.render(includeSyntax = false),
-                referenceNode.expectedType.render(includeSyntax = false)
+                referenceNode.expectedType.render(includeSyntax = false),
+                problemType = BuildProblemType.TypeMismatch,
             )
             ErrorNode(referenceNode)
         }
@@ -256,6 +259,7 @@ private class ReferenceResolutionSession(
                                     diagnosticId = TreeDiagnosticId.ReferenceCannotBeUsedInStringInterpolation,
                                     messageKey = "validation.reference.unexpected.type.interpolation",
                                     result.type.render(includeSyntax = false),
+                                    problemType = BuildProblemType.TypeMismatch,
                                 )
                                 null
                             }
@@ -278,6 +282,7 @@ private class ReferenceResolutionSession(
                                     diagnosticId = TreeDiagnosticId.ReferenceCannotBeUsedInStringInterpolation,
                                     messageKey = "validation.reference.unexpected.type.interpolation",
                                     renderTypeOf(result.value),
+                                    problemType = BuildProblemType.TypeMismatch,
                                 )
                                 null
                             }
@@ -357,6 +362,7 @@ private class ReferenceResolutionSession(
                             diagnosticId = TreeDiagnosticId.InvalidPath,
                             messageKey = "validation.types.invalid.path",
                             e.message,
+                            problemType = BuildProblemType.TypeMismatch,
                         )
                         ErrorNode(interpolationNode.expectedType, trace, interpolationNode.contexts)
                     }
@@ -398,6 +404,7 @@ private class ReferenceResolutionSession(
                 diagnosticId = TreeDiagnosticId.ReferenceResolutionRootNotFound,
                 "validation.reference.resolution.root.not.found",
                 firstElement,
+                problemType = BuildProblemType.UnresolvedReference,
             )
             return null
         }
@@ -425,6 +432,7 @@ private class ReferenceResolutionSession(
                 source = lastResolvedEdge.text.asBuildProblemSource(),
                 diagnosticId = TreeDiagnosticId.NonReferenceableElement,
                 messageKey = "validation.reference.resolution.not.referencable", lastResolvedEdge.text,
+                problemType = BuildProblemType.Generic,
             )
             return null
         }
@@ -455,6 +463,7 @@ private class ReferenceResolutionSession(
                     diagnosticId = TreeDiagnosticId.UnresolvedReference,
                     messageKey = "validation.reference.resolution.not.found",
                     refPart, where,
+                    problemType = BuildProblemType.UnresolvedReference,
                 )
             }
         }
@@ -475,6 +484,7 @@ private class ReferenceResolutionSession(
                 diagnosticId = TreeDiagnosticId.ReferenceSegmentIsNotMapping,
                 messageKey = "validation.reference.resolution.not.a.mapping",
                 refPart, renderTypeOf(value),
+                problemType = BuildProblemType.UnresolvedReference,
             )
             null
         }
@@ -492,6 +502,7 @@ private class ReferenceResolutionSession(
                     diagnosticId = TreeDiagnosticId.ReferenceMemberAccessOnNullable,
                     messageKey = "validation.reference.resolution.nullable.access",
                     type.render(includeSyntax = false),
+                    problemType = BuildProblemType.TypeMismatch,
                 )
                 null
             }
@@ -502,6 +513,7 @@ private class ReferenceResolutionSession(
                         diagnosticId = TreeDiagnosticId.UnresolvedReference,
                         messageKey = "validation.reference.resolution.not.found.type",
                         refPart, type.render(includeSyntax = false),
+                        problemType = BuildProblemType.UnresolvedReference,
                     )
                 }  // else - GOOD PATH
             }
@@ -513,6 +525,7 @@ private class ReferenceResolutionSession(
                 diagnosticId = TreeDiagnosticId.ReferenceSegmentIsNotMapping,
                 messageKey = "validation.reference.resolution.not.an.object",
                 refPart, type.render(includeSyntax = false),
+                problemType = BuildProblemType.UnresolvedReference,
             )
             null
         }
