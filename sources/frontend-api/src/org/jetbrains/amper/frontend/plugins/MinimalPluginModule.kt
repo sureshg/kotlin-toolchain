@@ -9,6 +9,7 @@ import org.jetbrains.amper.frontend.api.SchemaNode
 import org.jetbrains.amper.frontend.api.StringSemantics
 import org.jetbrains.amper.frontend.schema.ModuleProduct
 import org.jetbrains.amper.frontend.types.SchemaType
+import org.jetbrains.amper.plugins.schema.model.PluginData
 
 /**
  * Needed by the `preparePlugins` stage to read the plugin information from the local plugin module, before the full
@@ -23,7 +24,7 @@ class MinimalPluginModule : SchemaNode() {
 }
 
 class MinimalPluginDeclarationSchema : SchemaNode() {
-    val id by nullableValue<String>()
+    val id by nullableValue<PluginData.Id>()
     @DeprecatedSchema("plugin.description.should.be.top.level", isError = false)
     @Deprecated("Use the description from the plugin's module instead")
     val description by nullableValue<String>()

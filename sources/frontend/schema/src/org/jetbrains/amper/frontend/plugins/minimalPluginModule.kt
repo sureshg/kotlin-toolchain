@@ -16,10 +16,11 @@ import org.jetbrains.amper.frontend.tree.reading.UnknownPropertiesParsingMode
 import org.jetbrains.amper.frontend.tree.reading.readTree
 import org.jetbrains.amper.frontend.types.SchemaTypingContext
 import org.jetbrains.amper.frontend.types.generated.*
+import org.jetbrains.amper.plugins.schema.model.PluginData
 import org.jetbrains.amper.problems.reporting.NoopProblemReporter
 
 data class PluginManifest(
-    val id: String,
+    val id: PluginData.Id,
     val description: String?,
     val settingsClass: String?,
 )
@@ -50,7 +51,7 @@ fun parsePluginManifestFromModuleFile(
 
         @Suppress("DEPRECATION") // we fall back to the deprecated description for a transition period
         return PluginManifest(
-            id = moduleHeader.pluginInfo.id ?: moduleFile.parent.name,
+            id = moduleHeader.pluginInfo.id ?: PluginData.Id(moduleFile.parent.name),
             description = moduleHeader.description ?: moduleHeader.pluginInfo.description,
             settingsClass = moduleHeader.pluginInfo.settingsClass
         )

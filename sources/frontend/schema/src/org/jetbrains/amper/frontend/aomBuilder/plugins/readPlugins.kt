@@ -23,7 +23,7 @@ internal fun readPlugins(
     modules: List<ModuleBuildCtx>,
     pluginData: List<PluginData>,
 ): List<AmperPluginImpl> {
-    val seenPluginIds = hashMapOf<String, MutableList<Traceable>>()
+    val seenPluginIds = hashMapOf<PluginData.Id, MutableList<Traceable>>()
     val pluginReaders = projectContext.enabledLocalAmperPluginModuleFiles.mapNotNull mapPlugins@{ pluginModuleFile ->
         val pluginModule = modules.find { it.moduleFile == pluginModuleFile }
             ?: return@mapPlugins null
@@ -50,7 +50,7 @@ internal fun readPlugins(
             seenPluginIds[pluginId.value] = mutableListOf(pluginId)
         }
 
-        val pluginData = pluginData.find { it.id.value == pluginId.value }
+        val pluginData = pluginData.find { it.id == pluginId.value }
             ?: return@mapPlugins null
 
         AmperPluginImpl(
@@ -66,7 +66,7 @@ internal fun readPlugins(
         if (traceableIds.size < 2) continue
         val source = MultipleLocationsBuildProblemSource(
             sources = traceableIds.map { it.asBuildProblemSource() as FileBuildProblemSource },
-            groupingMessage = SchemaBundle.message("plugin.id.duplicate.grouping", id)
+            groupingMessage = SchemaBundle.message("plugin.id.duplicate.grouping", id.value)
         )
         problemReporter.reportBundleError(
             source = source,

@@ -29,7 +29,7 @@ suspend fun preparePlugins(
                     )
                 }
             } ?: return@associateNotNull null
-            if (!seenPluginIds.add(pluginManifest.id)) {
+            if (!seenPluginIds.add(pluginManifest.id.value)) {
                 // Skip the plugin with a duplicate id
                 return@associateNotNull null
             }

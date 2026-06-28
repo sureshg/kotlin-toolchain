@@ -9,6 +9,7 @@ import org.jetbrains.amper.frontend.api.SchemaDoc
 import org.jetbrains.amper.frontend.api.SchemaNode
 import org.jetbrains.amper.frontend.api.StringSemantics
 import org.jetbrains.amper.frontend.types.SchemaType.StringType.Semantics
+import org.jetbrains.amper.plugins.schema.model.PluginData
 
 /**
  * This schema is used in `module.yaml` files with project type `jvm/amper-plugin`.
@@ -17,7 +18,7 @@ import org.jetbrains.amper.frontend.types.SchemaType.StringType.Semantics
 class PluginDeclarationSchema : SchemaNode() {
     @SchemaDoc("Plugin id that is going to be used to refer to the plugin in the configuration files. " +
             "Module name is used by default.")
-    val id by value<String>() // Defaults to the module name, is set on the tree level later.
+    val id by value<PluginData.Id>() // Defaults to the module name, is set on the tree level later.
 
     @DeprecatedSchema("plugin.description.should.be.top.level", isError = false)
     @Deprecated("Use the plugin module's description instead.")

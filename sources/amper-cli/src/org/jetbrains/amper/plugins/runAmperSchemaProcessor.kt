@@ -83,7 +83,7 @@ suspend fun runAmperSchemaProcessor(
         }
         PluginDataWithDiagnostics(
             pluginData = PluginData(
-                id = PluginData.Id(plugin.id),
+                id = plugin.id,
                 pluginSettingsSearchResult = result.pluginSettingsSearchResult,
                 description = plugin.description,
                 source = PluginData.Source.Local(pluginRootDir),

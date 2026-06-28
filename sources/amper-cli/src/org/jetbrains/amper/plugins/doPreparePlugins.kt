@@ -36,7 +36,7 @@ internal suspend fun doPreparePlugins(
         ),
         inputFiles = plugins.keys.toList(),
     ) {
-        logger.infoNoConsole("Processing local plugin schema for [${plugins.values.joinToString { it.id }}]...")
+        logger.infoNoConsole("Processing local plugin schema for [${plugins.values.joinToString { it.id.value }}]...")
 
         terminal.withIndeterminateProgress(
             message = terminal.theme.muted("Pre-processing local plugins (will be cached)"),
