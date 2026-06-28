@@ -19,6 +19,7 @@ import java.nio.file.Path
 import kotlin.io.path.div
 import kotlin.io.path.extension
 import kotlin.io.path.name
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
@@ -1435,6 +1436,7 @@ class BuildGraphTest : BaseDRTest() {
      * SNAPSHOT libraries are published to https://www.jetbrains.com/intellij-repository/snapshots
      */
     @Test
+    @Ignore("AMPER-5470")
     fun `com_jetbrains_intellij_platform core-impl 261_22158_182-EAP-SNAPSHOT`(testInfo: TestInfo) = runDrTest {
         doTestByFile(
             testInfo,

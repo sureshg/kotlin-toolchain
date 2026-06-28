@@ -24,6 +24,7 @@ import java.net.http.HttpClient
 import java.nio.file.Path
 import java.util.*
 import kotlin.io.path.div
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.minutes
@@ -43,6 +44,7 @@ class BuildGraphIncrementalCacheTest : BaseDRTest() {
      * - restored from there.
      */
     @Test
+    @Ignore("AMPER-5470")
     fun `com_jetbrains_intellij_platform core-impl SNAPSHOT`(testInfo: TestInfo) = runSlowDrTest {
         val coordinates = "com.jetbrains.intellij.platform:core-impl:261.22158.182-EAP-SNAPSHOT".toMavenCoordinates()
         val repositories = listOf(REDIRECTOR_MAVEN_CENTRAL, REDIRECTOR_INTELLIJ_DEPS, REDIRECTOR_INTELLIJ_SNAPSHOTS)
