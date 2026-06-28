@@ -20,6 +20,8 @@ import kotlin.reflect.KAnnotatedElement
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.full.findAnnotation
+import kotlin.reflect.full.primaryConstructor
+import kotlin.reflect.full.withNullability
 
 /**
  * Instrumentation-time mirror for [org.jetbrains.amper.frontend.tree.TypeDescriptor] hierarchy.
@@ -75,12 +77,14 @@ internal sealed interface ParsedTypeDescriptor {
  */
 internal sealed interface WrappingInfoDescriptor {
     val isTraceableWrapped: Boolean
+    val valueClassWrapper: ValueClassWrapperInfo?
 
     /**
      * Companion for [SchemaType], except for lists or maps.
      */
     data class Plain(
         override val isTraceableWrapped: Boolean = false,
+        override val valueClassWrapper: ValueClassWrapperInfo? = null,
     ) : WrappingInfoDescriptor
 
     /**
@@ -89,6 +93,7 @@ internal sealed interface WrappingInfoDescriptor {
     data class List(
         val elementInfo: WrappingInfoDescriptor?,
         override val isTraceableWrapped: Boolean = false,
+        override val valueClassWrapper: ValueClassWrapperInfo? = null,
     ) : WrappingInfoDescriptor
 
     /**
@@ -98,9 +103,15 @@ internal sealed interface WrappingInfoDescriptor {
         val keyInfo: WrappingInfoDescriptor?,
         val valueInfo: WrappingInfoDescriptor?,
         override val isTraceableWrapped: Boolean = false,
+        override val valueClassWrapper: ValueClassWrapperInfo? = null,
     ) : WrappingInfoDescriptor
 }
 
+/** @see WrappingInfoDescriptor */
+data class ValueClassWrapperInfo(
+    val wrapperClass: KClass<*>,
+    val valueType: KType,
+)
 
 /**
  * A parsed schema type, containing various useful information pieces about the type.
@@ -142,7 +153,7 @@ internal fun schemaTypeExpression(
     // TODO: Use pre-created type instances where possible, like `SchemaType.Boolean` or `SchemaType.StringNullable`
     TraceableValue::class -> {
         check(!type.isMarkedNullable) {
-            "$annotated: TraceableValue itself can't be marked as nullable. Mark the underlying type as nullable instead!"
+            "$annotated: `TraceableValue<T>?` is not supported, use `TraceableValue<T?>` instead"
         }
         schemaTypeExpression(checkNotNull(type.arguments[0].type)).let {
             it.copy(
@@ -304,6 +315,32 @@ internal fun schemaTypeExpression(
                         descriptor = ParsedTypeDescriptor.Object(parsed.declarationName),
                     )
                 }
+            }
+        }
+        classifier.isValue -> {
+            val underlyingType = checkNotNull(classifier.primaryConstructor).parameters.single().type
+            check(underlyingType.classifier != TraceableValue::class) {
+                "$annotated: `value class Foo(val value: TraceableValue<Bar>); Foo` is not supported, " +
+                        "use `value class Foo(val value: Bar); TraceableValue<Foo>` instead"
+            }
+            check(!underlyingType.isMarkedNullable) {
+                "$annotated: `value class Foo(val value: Bar?); Foo` is not supported, " +
+                        "use `value class Foo(val value: Bar); Foo?` instead"
+            }
+            schemaTypeExpression(
+                type = underlyingType
+                    // Pass the correct nullability
+                    .withNullability(nullable = type.isMarkedNullable),
+            ).let {
+                val valueClassWrapperInfo = ValueClassWrapperInfo(
+                    wrapperClass = classifier,
+                    valueType = underlyingType,
+                )
+                it.copy(
+                    instantiationInfo = it.instantiationInfo?.copy(
+                        valueClassWrapper = valueClassWrapperInfo,
+                    ) ?: WrappingInfoDescriptor.Plain(valueClassWrapper = valueClassWrapperInfo),
+                )
             }
         }
         else -> error("Unsupported class: $classifier")

@@ -19,6 +19,7 @@ sealed interface SchemaValueWrappingInfo {
      *
      * Examples:
      * - wrap into `TraceableValue`
+     * - wrap into a value class
      */
     val wrapValue: WrapValueFunction?
 

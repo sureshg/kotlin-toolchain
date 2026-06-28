@@ -7,6 +7,7 @@ import com.squareup.kotlinpoet.AnnotationSpec
 import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.MemberName
+import com.squareup.kotlinpoet.asTypeName
 import org.jetbrains.amper.frontend.api.SchemaNode
 import org.jetbrains.amper.frontend.api.SchemaValueDelegate
 import org.jetbrains.amper.frontend.api.TraceableValue
@@ -102,23 +103,30 @@ internal fun <T : SchemaNode> KProperty1<T, *>.schemaDelegate(receiver: T): Sche
 
 internal fun WrappingInfoDescriptor.copy(
     isTraceableWrapped: Boolean = this.isTraceableWrapped,
+    valueClassWrapper: ValueClassWrapperInfo? = this.valueClassWrapper,
 ) = when (this) {
     is WrappingInfoDescriptor.List -> copy(
         isTraceableWrapped = isTraceableWrapped,
+        valueClassWrapper = valueClassWrapper,
     )
     is WrappingInfoDescriptor.Map -> copy(
         isTraceableWrapped = isTraceableWrapped,
+        valueClassWrapper = valueClassWrapper,
     )
     is WrappingInfoDescriptor.Plain -> copy(
         isTraceableWrapped = isTraceableWrapped,
+        valueClassWrapper = valueClassWrapper,
     )
 }
 
-private fun WrappingInfoDescriptor.toWrapValueCodeBlock(): CodeBlock {
-    if (!isTraceableWrapped) {
-        return CodeBlock.of("null")
-    }
-    return CodeBlock.of("Any?::%M", MemberName("org.jetbrains.amper.frontend.api", "asTraceable"))
+private fun WrappingInfoDescriptor.toWrapValueCodeBlock(): CodeBlock = if (isTraceableWrapped) {
+    valueClassWrapper?.let {
+        CodeBlock.of("{ v, t -> v?.let { %T(it as %T) }?.%M(t) }", it.wrapperClass, it.valueType.asTypeName(), AsTraceableMemberName)
+    } ?: CodeBlock.of("Any?::%M", AsTraceableMemberName)
+} else {
+    valueClassWrapper?.let {
+        CodeBlock.of("{ v, _ -> v?.let { %T(it as %T) } }", it.wrapperClass, it.valueType.asTypeName())
+    } ?: CodeBlock.of("null")
 }
 
 internal fun WrappingInfoDescriptor?.toCodeBlock(): CodeBlock = when (this) {
@@ -142,3 +150,5 @@ internal fun WrappingInfoDescriptor?.toCodeBlock(): CodeBlock = when (this) {
         toWrapValueCodeBlock(),
     )
 }
+
+private val AsTraceableMemberName = MemberName("org.jetbrains.amper.frontend.api", "asTraceable")
