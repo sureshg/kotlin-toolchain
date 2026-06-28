@@ -58,6 +58,7 @@ interface SchemaObjectDeclaration : SchemaTypeDeclaration {
     data class Property(
         val name: String,
         val type: SchemaType,
+        val wrappingInfo: SchemaValueWrappingInfo? = null,
         val documentation: String? = null,
         /**
          * Names that users might try when looking for this property.

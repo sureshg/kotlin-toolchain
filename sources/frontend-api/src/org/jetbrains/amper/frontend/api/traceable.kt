@@ -6,7 +6,6 @@ package org.jetbrains.amper.frontend.api
 
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
-import com.intellij.util.asSafely
 import org.jetbrains.amper.core.UsedInIdePlugin
 import org.jetbrains.amper.frontend.VersionCatalog
 import org.jetbrains.amper.frontend.tree.TreeNode
@@ -237,32 +236,32 @@ interface Traceable {
 /**
  * A value that can persist its trace.
  */
-open class TraceableValue<T>(val value: T, override val trace: Trace) : Traceable {
+class TraceableValue<T>(
+    val value: T,
+    override val trace: Trace,
+) : Traceable {
     override fun toString() = value.toString()
+    // TODO: Take trace into account as well?
     override fun hashCode() = value.hashCode()
-    override fun equals(other: Any?) = this === other || other?.asSafely<TraceableValue<*>>()?.value == value
+    override fun equals(other: Any?) = this === other || other is TraceableValue<*> && other.value == value
 }
-
-open class TraceableString(value: String, trace: Trace) : TraceableValue<String>(value, trace)
 
 /**
  * Marker type to find which derived value is the version in DR diagnostics.
  */
-class TraceableVersion(value: String, trace: Trace) : TraceableString(value, trace)
-
-class TraceablePath(value: Path, trace: Trace) : TraceableValue<Path>(value, trace)
-
-/**
- * When the enum value isn't wrapped into the schema value (e.g., in a collection or in AOM),
- * it's impossible to determine the trace of that enum.
- *
- * This wrapper allows persisting a trace in such scenarios.
- */
-class TraceableEnum<T : Enum<*>>(value: T, trace: Trace) : TraceableValue<T>(value, trace) {
-
-    override fun toString(): String = value.toString()
+// TODO: Move closer to DR code where its used
+class TraceableVersion(
+    val value: String,
+    override val trace: Trace,
+) : Traceable {
+    override fun toString() = value
+    override fun hashCode() = value.hashCode()
+    override fun equals(other: Any?) = this === other || other is TraceableVersion && other.value == value
 }
 
-fun <T : Enum<*>> T.asTraceable(trace: Trace) = TraceableEnum(this, trace)
-fun Path.asTraceable(trace: Trace) = TraceablePath(this, trace)
-fun String.asTraceable(trace: Trace) = TraceableString(this, trace)
+typealias TraceableString = TraceableValue<String>
+typealias TraceablePath = TraceableValue<Path>
+// TODO: Deprecate this in favor of plain TraceableValue, as `TraceableEnum` doesn't enforce type bounds
+typealias TraceableEnum<T> = TraceableValue<T>
+
+fun <T> T.asTraceable(trace: Trace) = TraceableValue(this, trace)

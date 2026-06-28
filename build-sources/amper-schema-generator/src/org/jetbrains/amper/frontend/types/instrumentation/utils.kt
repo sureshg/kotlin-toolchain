@@ -6,9 +6,11 @@ package org.jetbrains.amper.frontend.types.instrumentation
 import com.squareup.kotlinpoet.AnnotationSpec
 import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FileSpec
+import com.squareup.kotlinpoet.MemberName
 import org.jetbrains.amper.frontend.api.SchemaNode
 import org.jetbrains.amper.frontend.api.SchemaValueDelegate
 import org.jetbrains.amper.frontend.api.TraceableValue
+import org.jetbrains.amper.frontend.types.SchemaValueWrappingInfo
 import java.io.File
 import java.nio.file.Path
 import kotlin.contracts.contract
@@ -97,3 +99,46 @@ internal fun <T : SchemaNode> KProperty1<T, *>.schemaDelegate(receiver: T): Sche
     apply { isAccessible = true }.getDelegate(receiver)?.let {
         it as SchemaValueDelegate<*>
     } ?: error("Property $this should have a schema delegate")
+
+internal fun WrappingInfoDescriptor.copy(
+    isTraceableWrapped: Boolean = this.isTraceableWrapped,
+) = when (this) {
+    is WrappingInfoDescriptor.List -> copy(
+        isTraceableWrapped = isTraceableWrapped,
+    )
+    is WrappingInfoDescriptor.Map -> copy(
+        isTraceableWrapped = isTraceableWrapped,
+    )
+    is WrappingInfoDescriptor.Plain -> copy(
+        isTraceableWrapped = isTraceableWrapped,
+    )
+}
+
+private fun WrappingInfoDescriptor.toWrapValueCodeBlock(): CodeBlock {
+    if (!isTraceableWrapped) {
+        return CodeBlock.of("null")
+    }
+    return CodeBlock.of("Any?::%M", MemberName("org.jetbrains.amper.frontend.api", "asTraceable"))
+}
+
+internal fun WrappingInfoDescriptor?.toCodeBlock(): CodeBlock = when (this) {
+    null -> CodeBlock.of("null")
+    is WrappingInfoDescriptor.List -> CodeBlock.of(
+        "%T(elementInfo = %L, wrapValue = %L)",
+        SchemaValueWrappingInfo.List::class,
+        elementInfo.toCodeBlock(),
+        toWrapValueCodeBlock(),
+    )
+    is WrappingInfoDescriptor.Map -> CodeBlock.of(
+        "%T(keyInfo = %L, valueInfo = %L, wrapValue = %L)",
+        SchemaValueWrappingInfo.Map::class,
+        keyInfo.toCodeBlock(),
+        valueInfo.toCodeBlock(),
+        toWrapValueCodeBlock(),
+    )
+    is WrappingInfoDescriptor.Plain -> CodeBlock.of(
+        "%T(wrapValue = %L)",
+        SchemaValueWrappingInfo.Plain::class,
+        toWrapValueCodeBlock(),
+    )
+}

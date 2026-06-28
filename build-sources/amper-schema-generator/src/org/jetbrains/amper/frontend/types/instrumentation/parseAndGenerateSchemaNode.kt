@@ -85,6 +85,7 @@ internal fun <T : SchemaNode> parseAndGenerateSchemaNode(clazz: KClass<T>): Pars
                 declarationParameters += parsedType.declarationArguments
 
                 add("type = %L,\n", parsedType.schemaTypeCreationExpression)
+                add("wrappingInfo = %L,\n", parsedType.instantiationInfo.toCodeBlock())
                 prop.findAnnotation<SchemaDoc>()?.let {
                     add("documentation = %S,\n", it.doc)
                 }

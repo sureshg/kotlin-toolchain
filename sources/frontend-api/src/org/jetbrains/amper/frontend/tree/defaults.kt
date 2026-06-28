@@ -7,13 +7,12 @@ package org.jetbrains.amper.frontend.tree
 import org.jetbrains.amper.frontend.api.Default
 import org.jetbrains.amper.frontend.api.DefaultTrace
 import org.jetbrains.amper.frontend.api.Trace
-import org.jetbrains.amper.frontend.api.TraceableEnum
 import org.jetbrains.amper.frontend.api.TraceableString
+import org.jetbrains.amper.frontend.api.TraceableValue
 import org.jetbrains.amper.frontend.contexts.DefaultContext
 import org.jetbrains.amper.frontend.types.SchemaObjectDeclaration
 import org.jetbrains.amper.frontend.types.SchemaType
 import org.jetbrains.amper.stdlib.collections.associateByNotNull
-import java.io.File
 import java.nio.file.Path
 
 /**
@@ -48,16 +47,18 @@ internal fun Default.toTreeValue(type: SchemaType, trace: Trace): RefinedTreeNod
 fun Default.Static.toTreeValue(type: SchemaType, trace: Trace): RefinedTreeNode {
     // TODO: Clean the `when` up here, because not all the values are possible now that the schema is generated.
     //  or even better - get rid of the untyped `Any` in the `Static.value` at all.
-    val value = value
+
+    // TODO: Remove this `unwrapTraceable` call when defaults are reworked
+    val value = value.unwrapTraceable()
     return if (value == null) {
-        check(type.isMarkedNullable) { "Null default is specified for non-nullable $type" }
+        check(type.isMarkedNullable) {
+            "Null default is specified for non-nullable $type"
+        }
         NullLiteralNode(trace, TypeLevelDefaultContexts)
     } else when (type) {
         is SchemaType.BooleanType -> BooleanNode(value as Boolean, trace, TypeLevelDefaultContexts)
         is SchemaType.EnumType -> EnumNode(
             when (value) {
-                // TODO: Remove this `TraceableEnum` check when defaults are reworked
-                is TraceableEnum<*> -> value.value.name
                 is Enum<*> -> value.name
                 is String -> value
                 else -> error("Invalid enum default: $value")
@@ -68,15 +69,11 @@ fun Default.Static.toTreeValue(type: SchemaType, trace: Trace): RefinedTreeNode 
         is SchemaType.PathType -> PathNode(
             when (value) {
                 is Path -> value
-                // TODO: These `File` values come from the Maven compat layer. Try to move the conversion up a level
-                is File -> value.toPath()
                 else -> error("Invalid path default: $value")
             }, trace, TypeLevelDefaultContexts,
         )
         is SchemaType.StringType -> StringNode(
-            // TODO: Remove this `TraceableString` check when defaults are reworked
-            if (value is TraceableString) value.value else value as String,
-            type.semantics, trace, TypeLevelDefaultContexts,
+            value as String, type.semantics, trace, TypeLevelDefaultContexts,
         )
         is SchemaType.ListType -> {
             check(value is List<*>)
@@ -99,5 +96,7 @@ fun Default.Static.toTreeValue(type: SchemaType, trace: Trace): RefinedTreeNode 
         SchemaType.UndefinedType -> error("Defaults for UndefinedType are unexpected.")
     }
 }
+
+private fun Any?.unwrapTraceable(): Any? = if (this is TraceableValue<*>) value else this
 
 private val TypeLevelDefaultContexts = listOf(DefaultContext.TypeLevel)

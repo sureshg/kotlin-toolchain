@@ -18,8 +18,7 @@ import org.jetbrains.amper.frontend.tree.PathNode
 import org.jetbrains.amper.frontend.tree.ReferenceNode
 import org.jetbrains.amper.frontend.tree.StringNode
 import org.jetbrains.amper.frontend.tree.enumConstantIfAvailable
-import org.jetbrains.amper.frontend.types.SchemaType
-import java.nio.file.Path
+import org.jetbrains.amper.frontend.types.SchemaValueWrappingInfo
 import kotlin.properties.PropertyDelegateProvider
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
@@ -161,7 +160,7 @@ class SchemaValueDelegate<T>(
 ) : Traceable, ReadOnlyProperty<SchemaNode, T> {
     @Suppress("UNCHECKED_CAST") // asValue() reads the SchemaType which knows the runtime type.
     val value: T by lazy {
-        keyValue.value.asValue(keyValue.propertyDeclaration.type) as T
+        keyValue.value.asValue(keyValue.propertyDeclaration.wrappingInfo) as T
     }
 
     override fun getValue(thisRef: SchemaNode, property: KProperty<*>) = value
@@ -184,9 +183,7 @@ class SchemaValueDelegate<T>(
         }
 }
 
-fun SchemaValueDelegate<String>.asTraceableValue() = TraceableString(value, trace)
-
-fun SchemaValueDelegate<Path>.asTraceableValue() = TraceablePath(value, trace)
+fun <T> SchemaValueDelegate<T>.asTraceableValue() = TraceableValue(value, trace)
 
 /**
  * Whether this was explicitly set in config files.
@@ -200,33 +197,29 @@ val Traceable.isExplicitlySet: Boolean
 val Traceable.isSetInTemplate: Boolean
     get() = trace.isFromTemplate
 
-/**
- * @param expectedType is required to correctly create traceable wrappers where requested
- */
-private fun CompleteTreeNode.asValue(expectedType: SchemaType): Any? = when (this) {
+private fun CompleteTreeNode.asValue(wrapping: SchemaValueWrappingInfo?): Any? = when (this) {
     is BooleanNode -> value
     is IntNode -> value
-    is EnumNode -> enumConstantIfAvailable?.wrapTraceable(expectedType as SchemaType.EnumType, trace)
+    is StringNode -> value
+    is PathNode -> value
+    is EnumNode -> enumConstantIfAvailable
         // Objects of user-defined types have no internal runtime types,
         // so they are all instantiated as `ExtensionSchemaNode`, which has no properties,
         // thus user-defined enums are not reachable for instantiation.
         ?: error("Not reached: enum with no runtime type can't be instantiated")
-    is StringNode -> value.wrapTraceable(expectedType as SchemaType.StringType, trace)
-    is PathNode -> value.wrapTraceable(expectedType as SchemaType.PathType, trace)
-    is CompleteListNode -> children.map { it.asValue((expectedType as SchemaType.ListType).elementType) }
+    is CompleteListNode -> children.map { it.asValue((wrapping as SchemaValueWrappingInfo.List?)?.elementInfo) }
     is CompleteMapNode ->  children.associate {
-        expectedType as SchemaType.MapType
-        it.key.wrapTraceable(expectedType.keyType, it.keyTrace) to it.value.asValue(expectedType.valueType)
+        wrapping as SchemaValueWrappingInfo.Map?
+        it.key.wrap(wrapping?.keyInfo, it.keyTrace) to it.value.asValue(wrapping?.valueInfo)
     }
     is CompleteObjectNode -> instance
     is NullLiteralNode -> null
+}.wrap(wrapping, trace)
+
+private fun <T> T.wrap(
+    info: SchemaValueWrappingInfo?,
+    trace: Trace,
+): Any? = when (val wrapValue = info?.wrapValue) {
+    null -> this
+    else -> wrapValue(this, trace)
 }
-
-private fun Enum<*>.wrapTraceable(type: SchemaType.EnumType, trace: Trace) =
-    if (type.isTraceableWrapped) asTraceable(trace) else this
-
-private fun Path.wrapTraceable(type: SchemaType.PathType, trace: Trace) =
-    if (type.isTraceableWrapped) asTraceable(trace) else this
-
-private fun String.wrapTraceable(type: SchemaType.StringType, trace: Trace) =
-    if (type.isTraceableWrapped) asTraceable(trace) else this

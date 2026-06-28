@@ -50,7 +50,7 @@ fun parsePluginManifestFromModuleFile(
 
         @Suppress("DEPRECATION") // we fall back to the deprecated description for a transition period
         return PluginManifest(
-            id = moduleHeader.pluginInfo.id?.value ?: moduleFile.parent.name,
+            id = moduleHeader.pluginInfo.id ?: moduleFile.parent.name,
             description = moduleHeader.description ?: moduleHeader.pluginInfo.description,
             settingsClass = moduleHeader.pluginInfo.settingsClass
         )

@@ -20,7 +20,6 @@ import org.jetbrains.amper.frontend.reportBundleError
 import org.jetbrains.amper.frontend.schema.DefaultVersions
 import org.jetbrains.amper.frontend.schema.Settings
 import org.jetbrains.amper.frontend.types.generated.*
-import org.jetbrains.amper.problems.reporting.NonIdealDiagnostic
 import org.jetbrains.amper.problems.reporting.ProblemReporter
 import org.jetbrains.amper.system.info.SystemInfo
 
@@ -42,11 +41,10 @@ internal fun Settings.builtInCatalog(): VersionCatalog = BuiltInCatalog(
 )
 
 context(problemReporter: ProblemReporter)
-@OptIn(NonIdealDiagnostic::class)
 private fun SchemaValueDelegate<String>.asTraceableVersion(fallbackVersion: String): TraceableVersion {
     // we validate the version only for emptiness because maven artifacts allow any string as a version
     //  that's why we cannot provide a precise validation for non-empty strings
-    return if (!value.isEmpty()) {
+    return if (value.isNotEmpty()) {
         TraceableVersion(value, trace)
     } else {
         problemReporter.reportBundleError(

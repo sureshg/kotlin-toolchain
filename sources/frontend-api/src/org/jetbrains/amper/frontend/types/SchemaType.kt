@@ -37,7 +37,6 @@ sealed interface SchemaType {
 
     data class StringType(
         override val isMarkedNullable: Boolean = false,
-        val isTraceableWrapped: Boolean = false,
         val knownValues: Set<String>? = null,
         val semantics: Semantics? = null,
     ) : ScalarType, StringInterpolatableType {
@@ -68,12 +67,10 @@ sealed interface SchemaType {
 
     data class PathType(
         override val isMarkedNullable: Boolean = false,
-        val isTraceableWrapped: Boolean = false,
     ) : ScalarType, StringInterpolatableType
 
     data class EnumType(
         override val declaration: SchemaEnumDeclaration,
-        val isTraceableWrapped: Boolean = false,
         override val isMarkedNullable: Boolean = false,
     ) : ScalarType, TypeWithDeclaration
 

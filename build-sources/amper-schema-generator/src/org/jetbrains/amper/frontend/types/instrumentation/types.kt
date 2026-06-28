@@ -12,9 +12,7 @@ import org.jetbrains.amper.frontend.api.KnownIntValues
 import org.jetbrains.amper.frontend.api.KnownStringValues
 import org.jetbrains.amper.frontend.api.SchemaNode
 import org.jetbrains.amper.frontend.api.StringSemantics
-import org.jetbrains.amper.frontend.api.TraceableEnum
-import org.jetbrains.amper.frontend.api.TraceablePath
-import org.jetbrains.amper.frontend.api.TraceableString
+import org.jetbrains.amper.frontend.api.TraceableValue
 import org.jetbrains.amper.frontend.types.SchemaType
 import org.jetbrains.amper.frontend.types.SchemaTypeDeclaration
 import java.nio.file.Path
@@ -73,9 +71,41 @@ internal sealed interface ParsedTypeDescriptor {
 }
 
 /**
+ * Instrumentation-time mirror for [org.jetbrains.amper.frontend.types.SchemaValueWrappingInfo] hierarchy.
+ */
+internal sealed interface WrappingInfoDescriptor {
+    val isTraceableWrapped: Boolean
+
+    /**
+     * Companion for [SchemaType], except for lists or maps.
+     */
+    data class Plain(
+        override val isTraceableWrapped: Boolean = false,
+    ) : WrappingInfoDescriptor
+
+    /**
+     * Companion for [SchemaType.ListType]
+     */
+    data class List(
+        val elementInfo: WrappingInfoDescriptor?,
+        override val isTraceableWrapped: Boolean = false,
+    ) : WrappingInfoDescriptor
+
+    /**
+     * Companion for [SchemaType.MapType]
+     */
+    data class Map(
+        val keyInfo: WrappingInfoDescriptor?,
+        val valueInfo: WrappingInfoDescriptor?,
+        override val isTraceableWrapped: Boolean = false,
+    ) : WrappingInfoDescriptor
+}
+
+
+/**
  * A parsed schema type, containing various useful information pieces about the type.
  */
-internal class ParsedType(
+internal data class ParsedType(
     /**
      * An expression that creates a required [SchemaType] instance.
      */
@@ -91,6 +121,10 @@ internal class ParsedType(
      * @see ParsedDeclaration.SchemaNode.declarationParameters
      */
     val declarationArguments: List<ParsedDeclaration.SchemaNode.Parameter> = emptyList(),
+    /**
+     * For [org.jetbrains.amper.frontend.types.SchemaObjectDeclaration.Property.wrappingInfo].
+     */
+    val instantiationInfo: WrappingInfoDescriptor? = null,
 )
 
 /**
@@ -106,6 +140,18 @@ internal fun schemaTypeExpression(
     annotated: KAnnotatedElement? = null,
 ): ParsedType = when (val classifier = type.classifier) {
     // TODO: Use pre-created type instances where possible, like `SchemaType.Boolean` or `SchemaType.StringNullable`
+    TraceableValue::class -> {
+        check(!type.isMarkedNullable) {
+            "$annotated: TraceableValue itself can't be marked as nullable. Mark the underlying type as nullable instead!"
+        }
+        schemaTypeExpression(checkNotNull(type.arguments[0].type)).let {
+            it.copy(
+                instantiationInfo = it.instantiationInfo?.copy(
+                    isTraceableWrapped = true,
+                ) ?: WrappingInfoDescriptor.Plain(isTraceableWrapped = true),
+            )
+        }
+    }
     Int::class -> {
         val knownValues = annotated?.findAnnotation<KnownIntValues>()?.values
         val expression = CodeBlock.builder().apply {
@@ -126,14 +172,11 @@ internal fun schemaTypeExpression(
         schemaTypeCreationExpression = CodeBlock.of("%T(%L)", SchemaType.BooleanType::class, type.isMarkedNullable),
         descriptor = ParsedTypeDescriptor.Boolean,
     )
-    String::class, TraceableString::class -> {
+    String::class -> {
         val knownValues = annotated?.findAnnotation<KnownStringValues>()?.values
         val semantics = annotated?.findAnnotation<StringSemantics>()?.value
         val expression = CodeBlock.builder().apply {
             add("%T(%L", SchemaType.StringType::class, type.isMarkedNullable)
-            if (classifier == TraceableString::class) {
-                add(", true")
-            }
             if (knownValues != null) {
                 add(", knownValues = setOf(")
                 knownValues.forEach { add("%S, ", it) }
@@ -144,14 +187,13 @@ internal fun schemaTypeExpression(
             }
             add(")")
         }.build()
-        ParsedType(schemaTypeCreationExpression = expression, descriptor = ParsedTypeDescriptor.String)
+        ParsedType(
+            schemaTypeCreationExpression = expression,
+            descriptor = ParsedTypeDescriptor.String,
+        )
     }
     Path::class -> ParsedType(
         schemaTypeCreationExpression = CodeBlock.of("%T(%L)", SchemaType.PathType::class, type.isMarkedNullable),
-        descriptor = ParsedTypeDescriptor.Path,
-    )
-    TraceablePath::class -> ParsedType(
-        schemaTypeCreationExpression = CodeBlock.of("%T(%L, true)", SchemaType.PathType::class, type.isMarkedNullable),
         descriptor = ParsedTypeDescriptor.Path,
     )
     Map::class -> {
@@ -168,6 +210,10 @@ internal fun schemaTypeExpression(
             schemaTypeCreationExpression = expression,
             descriptor = ParsedTypeDescriptor.Map(valueType.descriptor),
             declarationArguments = valueType.declarationArguments,
+            instantiationInfo = WrappingInfoDescriptor.Map(
+                keyInfo = keyType.instantiationInfo,
+                valueInfo = valueType.instantiationInfo,
+            )
         )
     }
     List::class -> {
@@ -182,20 +228,9 @@ internal fun schemaTypeExpression(
             ),
             descriptor = ParsedTypeDescriptor.List(elementType.descriptor),
             declarationArguments = elementType.declarationArguments,
-        )
-    }
-    TraceableEnum::class -> {
-        val enumClass = checkNotNull(type.arguments[0].type).classifier as KClass<*>
-        check(enumClass.isSubclassOf<Enum<*>>())
-        val parsed = generator.ensureEnumParsed(enumClass)
-        ParsedType(
-            schemaTypeCreationExpression = CodeBlock.of(
-                "%T(%L, true, %L)",
-                SchemaType.EnumType::class,
-                declarationAccessExpression(parsed),
-                type.isMarkedNullable
-            ),
-            descriptor = ParsedTypeDescriptor.Enum(enumClass.asClassName(), parsed.declarationName),
+            instantiationInfo = WrappingInfoDescriptor.List(
+                elementInfo = elementType.instantiationInfo,
+            )
         )
     }
     is KClass<*> -> when {
@@ -203,7 +238,7 @@ internal fun schemaTypeExpression(
             val parsed = generator.ensureEnumParsed(classifier)
             ParsedType(
                 schemaTypeCreationExpression = CodeBlock.of(
-                    "%T(%L, false, %L)",
+                    "%T(%L, %L)",
                     SchemaType.EnumType::class,
                     declarationAccessExpression(parsed),
                     type.isMarkedNullable
