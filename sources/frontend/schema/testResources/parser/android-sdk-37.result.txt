@@ -1,7 +1,6 @@
 Fragments:
   main
     External dependencies:
-      MavenDependency(coordinates=org.jetbrains.kotlin:kotlin-parcelize-runtime:2.3.21, trace=TransformedValueTrace(description=because Android Parcelize is enabled, sourceValue=SchemaValue(property = org.jetbrains.amper.frontend.schema.ParcelizeSettings.enabled, value = true), definitionTrace=DefaultTrace, precedingValue=null), compile=true, runtime=true, exported=false)
       MavenDependency(coordinates=org.jetbrains.kotlin:kotlin-stdlib-jdk7:2.3.21, trace=DefaultTrace, compile=true, runtime=true, exported=false)
       MavenDependency(coordinates=org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.3.21, trace=DefaultTrace, compile=true, runtime=true, exported=false)
       MavenDependency(coordinates=org.jetbrains.kotlin:kotlin-stdlib:2.3.21, trace=DefaultTrace, compile=true, runtime=true, exported=false)
@@ -10,21 +9,14 @@ Fragments:
     Fragment dependencies:
     Settings: {
       android: {
-        applicationId: <default> com.jetbrains.sample.app
-        namespace: com.jetbrains.sample.app
-        parcelize: {
-          additionalAnnotations: [
-            - com.example.MyParcelize
-          ]
-          enabled: true
-        }
+        applicationId: <default> org.example.namespace
+        compileSdk: 37
         targetSdk: <default> 37
       }
     }
 
   test
     External dependencies:
-      MavenDependency(coordinates=org.jetbrains.kotlin:kotlin-parcelize-runtime:2.3.21, trace=TransformedValueTrace(description=because Android Parcelize is enabled, sourceValue=SchemaValue(property = org.jetbrains.amper.frontend.schema.ParcelizeSettings.enabled, value = true), definitionTrace=DefaultTrace, precedingValue=null), compile=true, runtime=true, exported=false)
       MavenDependency(coordinates=org.jetbrains.kotlin:kotlin-stdlib-jdk7:2.3.21, trace=DefaultTrace, compile=true, runtime=true, exported=false)
       MavenDependency(coordinates=org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.3.21, trace=DefaultTrace, compile=true, runtime=true, exported=false)
       MavenDependency(coordinates=org.jetbrains.kotlin:kotlin-stdlib:2.3.21, trace=DefaultTrace, compile=true, runtime=true, exported=false)
@@ -35,14 +27,8 @@ Fragments:
       main (FRIEND)
     Settings: {
       android: {
-        applicationId: <default> com.jetbrains.sample.app
-        namespace: com.jetbrains.sample.app
-        parcelize: {
-          additionalAnnotations: [
-            - com.example.MyParcelize
-          ]
-          enabled: true
-        }
+        applicationId: <default> org.example.namespace
+        compileSdk: 37
         targetSdk: <default> 37
       }
     }

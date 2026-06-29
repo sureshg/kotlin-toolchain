@@ -160,6 +160,11 @@ internal class ParserKtTest : FrontendTestCaseBase(Path("testResources") / "pars
     }
 
     @Test
+    fun `check android sdk version 37 is accepted`() {
+        aomTest("android-sdk-37")
+    }
+
+    @Test
     fun `android namespace set`() {
         aomTest("android-namespace-setting")
     }

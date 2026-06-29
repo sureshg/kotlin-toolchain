@@ -1,0 +1,7 @@
+product = "android/app"
+
+settings {
+  android {
+    compileSdk = 37
+  }
+}

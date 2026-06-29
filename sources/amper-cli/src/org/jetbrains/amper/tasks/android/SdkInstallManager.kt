@@ -37,6 +37,8 @@ import kotlin.io.path.createParentDirectories
 import kotlin.io.path.div
 import kotlin.io.path.exists
 import kotlin.io.path.inputStream
+import kotlin.io.path.isDirectory
+import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.name
 import kotlin.io.path.outputStream
 import kotlin.io.path.walk
@@ -69,25 +71,41 @@ class SdkInstallManager(private val userCacheRoot: AmperUserCacheRoot, private v
 
     suspend fun installPackage(packagePath: String): RepoPackage =
         FileMutexGroup.Default.withDoubleLock(androidSdkPath / "$packagePath.lock") {
-            val localFileSystemPackagePath = packagePath
-                .split(";")
-                .fold(androidSdkPath) { path, component -> path.resolve(component) }
-
-            if (localFileSystemPackagePath.exists()) {
-                val packageManifest = localFileSystemPackagePath / "package.xml"
-                if (packageManifest.exists()) {
-                    packageManifest.readRepository().localPackage
-                } else {
-                    packagePath.emptyLocalPackage()
-                }
-            } else {
-                installPackage(packagePath, localFileSystemPackagePath)
-            }
+            // An already-installed package may be stored under the exact requested path, or under a
+            // minor-versioned variant of it (see [selectBestMatchingPackagePath]).
+            findInstalledPackage(packagePath) ?: installPackageFromRemote(packagePath)
         }
 
-    private suspend fun installPackage(packagePath: String, localPackagePath: Path): RepoPackage {
-        val pkg =
-            packages().remotePackage.firstOrNull { it.path == packagePath } ?: error("Package $packagePath not found")
+    private fun findInstalledPackage(packagePath: String): RepoPackage? {
+        val installedPackagePath = resolveInstalledPackagePath(packagePath) ?: return null
+        val packageManifest = installedPackagePath.toLocalPath() / "package.xml"
+        return if (packageManifest.exists()) {
+            packageManifest.readRepository().localPackage
+        } else {
+            installedPackagePath.emptyLocalPackage()
+        }
+    }
+
+    /**
+     * Returns the package path of an already-installed package matching [packagePath] (exactly or as
+     * a minor-versioned variant), or null if no matching package is installed.
+     */
+    private fun resolveInstalledPackagePath(packagePath: String): String? {
+        val parentPrefix = packagePath.split(";").dropLast(1)
+        val parentDir = parentPrefix.fold(androidSdkPath) { dir, component -> dir.resolve(component) }
+        if (!parentDir.exists()) return null
+        val installedPackagePaths = parentDir.listDirectoryEntries()
+            .filter { it.isDirectory() }
+            .map { (parentPrefix + it.name).joinToString(";") }
+        return selectBestMatchingPackagePath(packagePath, installedPackagePaths)
+    }
+
+    private suspend fun installPackageFromRemote(packagePath: String): RepoPackage {
+        val remotePackages = packages().remotePackage
+        val resolvedPackagePath = selectBestMatchingPackagePath(packagePath, remotePackages.map { it.path })
+            ?: error("Package $packagePath not found")
+        val pkg = remotePackages.first { it.path == resolvedPackagePath }
+        val localPackagePath = resolvedPackagePath.toLocalPath()
         val url = androidRepositoryUrlBuilder.appendPathSegments(pkg.archive.complete.url).build()
         val path = Downloader.downloadFileToCacheLocation(url.toString(), userCacheRoot)
         val cachePath = extractFileToCacheLocation(path, userCacheRoot, ExtractOptions.STRIP_ROOT)
@@ -95,6 +113,9 @@ class SdkInstallManager(private val userCacheRoot: AmperUserCacheRoot, private v
         cachePath.copyToRecursively(localPackagePath, followLinks = true)
         return writePackageXml(pkg, localPackagePath)
     }
+
+    private fun String.toLocalPath(): Path =
+        split(";").fold(androidSdkPath) { dir, component -> dir.resolve(component) }
 
     suspend fun installSystemImage(packagePath: String): RepoPackage =
         FileMutexGroup.Default.withDoubleLock(androidSdkPath / "$packagePath.lock") {
@@ -202,4 +223,25 @@ class SdkInstallManager(private val userCacheRoot: AmperUserCacheRoot, private v
     }
 
     private val logger = LoggerFactory.getLogger(javaClass)
+}
+
+/**
+ * Selects from [available] the package path that best matches [requested].
+ *
+ * An exact match is preferred. Otherwise, a minor-versioned variant of [requested] is accepted
+ * (e.g. `platforms;android-37.0` for the requested `platforms;android-37`), picking the highest
+ * available minor version. This is required because recent Android platforms are published only
+ * under a minor-versioned name - there is no plain `platforms;android-37` in the SDK repository.
+ *
+ * Unrelated variants such as extension levels (e.g. `...-ext19`) or codenames are never matched.
+ */
+internal fun selectBestMatchingPackagePath(requested: String, available: Collection<String>): String? {
+    if (requested in available) return requested
+    val minorVersionRegex = Regex("${Regex.escape(requested)}\\.(\\d+)")
+    return available
+        .mapNotNull { candidate ->
+            minorVersionRegex.matchEntire(candidate)?.let { match -> candidate to match.groupValues[1].toInt() }
+        }
+        .maxByOrNull { it.second }
+        ?.first
 }

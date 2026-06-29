@@ -94,6 +94,8 @@ enum class AndroidVersion(
     VERSION_35(35),
     @SchemaDoc("Android 16, Baklava")
     VERSION_36(36),
+    @SchemaDoc("Android 17, Cinnamon Bun")
+    VERSION_37(37),
     ;
 
     override val schemaValue = versionNumber.toString()
@@ -121,7 +123,7 @@ class AndroidSettings : SchemaNode() {
     @Misnomers("compileApiLevel")
     @SchemaDoc("The API level to compile the code. The code can use only the Android APIs up to that API level. " +
             "[Read more](https://developer.android.com/reference/tools/gradle-api/com/android/build/api/dsl/CommonExtension#compileSdk())")
-    val compileSdk by value(AndroidVersion.VERSION_36)
+    val compileSdk by value(AndroidVersion.VERSION_37)
 
     @CanBeReferenced // by applicationId
     @Misnomers("packageName")

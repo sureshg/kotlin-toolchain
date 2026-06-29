@@ -15,7 +15,7 @@ Fragments:
         parcelize: {
           enabled: true
         }
-        targetSdk: <default> 36
+        targetSdk: <default> 37
       }
     }
 
@@ -37,7 +37,7 @@ Fragments:
         parcelize: {
           enabled: true
         }
-        targetSdk: <default> 36
+        targetSdk: <default> 37
       }
     }
 
