@@ -25,7 +25,6 @@ import kotlin.io.path.Path
 import kotlin.io.path.div
 import kotlin.io.path.exists
 import kotlin.io.path.getLastModifiedTime
-import kotlin.io.path.inputStream
 import kotlin.io.path.isRegularFile
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.name
@@ -34,7 +33,6 @@ import kotlin.io.path.readBytes
 import kotlin.io.path.readText
 import kotlin.io.path.walk
 import kotlin.io.path.writeText
-import kotlin.ranges.rangeTo
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -345,6 +343,27 @@ class AmperBuildTest : AmperCliTestBase() {
            |    │ ⌃⌃⌃⌃⌃⌃⌃
            |    ╰─
         """.trimMargin())
+    }
+
+    @Test
+    fun `kotlin warnings are replayed from incremental cache`() = runSlowTest {
+        val projectContext = testProject("kotlin-diagnostics-warnings")
+        val filePath = Path("src/main.kt").pathString
+        val firstWarning = """
+           |    ╭─ WARNING: Unused return value of 'foo'.
+           |    │ → $filePath:9:5 (kotlin-diagnostics-warnings)
+           |    │
+           |  9 │     foo()
+           |    │     ⌃⌃⌃
+           |    ╰─
+        """.trimMargin()
+
+        val firstRun = runCli(projectDir = projectContext, "build")
+        firstRun.assertStdoutContains(firstWarning)
+
+        val secondRun = runCli(projectDir = projectContext, "build")
+        secondRun.readTelemetrySpans().kotlinJvmCompilationSpans.assertNone()
+        secondRun.assertStdoutContains(firstWarning)
     }
 
     // AMPER-5259

@@ -19,13 +19,17 @@ import org.jetbrains.amper.cli.telemetry.setAmperModule
 import org.jetbrains.amper.cli.telemetry.setFragments
 import org.jetbrains.amper.cli.terminal.printCompilationSuccess
 import org.jetbrains.amper.cli.userReadableError
+import org.jetbrains.amper.compilation.CollectingCompilerBuildProblemProcessor
+import org.jetbrains.amper.compilation.CombiningCompilerBuildProblemProcessor
 import org.jetbrains.amper.compilation.CombiningKotlinLogger
 import org.jetbrains.amper.compilation.CompilationUserSettings
+import org.jetbrains.amper.compilation.CompilerBuildProblem
 import org.jetbrains.amper.compilation.ErrorsCollectorKotlinLogger
 import org.jetbrains.amper.compilation.JavaUserSettings
 import org.jetbrains.amper.compilation.KotlinArtifactsDownloader
-import org.jetbrains.amper.compilation.TerminalCompilerMessageRenderer
+import org.jetbrains.amper.compilation.TerminalCompilerBuildProblemProcessor
 import org.jetbrains.amper.compilation.TerminalPrintingKotlinLogger
+import org.jetbrains.amper.compilation.asBuildToolsCompilerMessageRenderer
 import org.jetbrains.amper.compilation.asKotlinLogger
 import org.jetbrains.amper.compilation.bta.makeClasspathEntrySnapshot
 import org.jetbrains.amper.compilation.downloadCompilerPlugins
@@ -96,6 +100,15 @@ import kotlin.io.path.name
 import kotlin.io.path.pathString
 import kotlin.io.path.walk
 
+/**
+ * Incremental-cache output key used to persist compiler messages produced during JVM compilation.
+ *
+ * This allows replaying them in case of a cache hit.
+ *
+ * @see JvmCompileTask.replayCachedCompilerBuildProblems
+ */
+private const val JVM_COMPILER_BUILD_PROBLEMS_OUTPUT_KEY = "jvmCompilerBuildProblems"
+
 @OptIn(ExperimentalBuildToolsApi::class)
 internal class JvmCompileTask(
     override val module: AmperModule,
@@ -114,7 +127,7 @@ internal class JvmCompileTask(
     override val platform: Platform = Platform.JVM,
     private val processRunner: ProcessRunner,
     private val terminal: Terminal,
-): ArtifactTaskBase(), BuildTask {
+) : ArtifactTaskBase(), BuildTask {
 
     init {
         require(platform == Platform.JVM || platform == Platform.ANDROID) {
@@ -245,10 +258,11 @@ internal class JvmCompileTask(
                 }
 
             val outputPaths = mutableListOf<Path>()
+            val allCompilerProblems = mutableListOf<CompilerBuildProblem>()
 
             if (nonEmptySourceDirs.isNotEmpty()) {
                 logger.infoNoConsole("Compiling module '${module.userReadableName}' for platform '${platform.pretty}'...")
-                compileSources(
+                val compilerProblems = compileSources(
                     jdk = jdk,
                     sourceDirectories = nonEmptySourceDirs,
                     additionalSources = additionalSources,
@@ -259,6 +273,7 @@ internal class JvmCompileTask(
                     javaAnnotationProcessorsGeneratedDir = javaAnnotationProcessorsGeneratedDir,
                     tempRoot = tempRoot,
                 )
+                allCompilerProblems.addAll(compilerProblems)
                 if (compiledJvmArtifact.kotlinCompilerOutputRoot.exists()) {
                     outputPaths.add(compiledJvmArtifact.kotlinCompilerOutputRoot.toAbsolutePath())
                 }
@@ -291,7 +306,15 @@ internal class JvmCompileTask(
                 BuildPrimitives.copy(from = resource, to = dest, overwrite = overwrite)
             }
 
-            return@execute IncrementalCache.ExecutionResult(outputPaths)
+            return@execute IncrementalCache.ExecutionResult(
+                outputFiles = outputPaths,
+                outputValues = mapOf(
+                    JVM_COMPILER_BUILD_PROBLEMS_OUTPUT_KEY to Json.encodeToString(allCompilerProblems),
+                ),
+            )
+        }
+        if (result.loadedFromCache) {
+            replayCachedCompilerBuildProblems(result)
         }
 
         return Result(
@@ -318,7 +341,7 @@ internal class JvmCompileTask(
         javaAnnotationProcessorClasspath: List<Path>,
         tempRoot: AmperProjectTempRoot,
         javaAnnotationProcessorsGeneratedDir: Path,
-    ) {
+    ): List<CompilerBuildProblem> {
         for (friendPath in friendPaths) {
             require(classpath.contains(friendPath)) {
                 "The classpath must contain all friend paths, but '$friendPath' is not in '${classpath.joinToString(File.pathSeparator)}'"
@@ -328,13 +351,14 @@ internal class JvmCompileTask(
         val sourcesFiles = sourceDirectories.flatMap { it.walk() }
         val kotlinFilesToCompile = sourcesFiles.filter { it.extension == "kt" }
         val javaFilesToCompile = sourcesFiles.filter { it.extension == "java" }
+        val allCompilerProblems = mutableListOf<CompilerBuildProblem>()
 
         if (kotlinFilesToCompile.isNotEmpty()) {
             // Enable multi-platform support only if targeting other than JVM platforms
             // or having a common and JVM fragments (like src and src@jvm directories)
             val isMultiplatform = (module.leafPlatforms - Platform.JVM).isNotEmpty() || sourceDirectories.size > 1
 
-            compileKotlinSources(
+            val collectedMessages = compileKotlinSources(
                 userSettings = userSettings,
                 isMultiplatform = isMultiplatform,
                 classpath = classpath,
@@ -343,6 +367,7 @@ internal class JvmCompileTask(
                 additionalSourceRoots = additionalSources,
                 friendPaths = friendPaths,
             )
+            allCompilerProblems.addAll(collectedMessages)
         }
 
         if (javaFilesToCompile.isNotEmpty()) {
@@ -356,6 +381,7 @@ internal class JvmCompileTask(
                 tempRoot = tempRoot,
             )
         }
+        return allCompilerProblems
     }
 
     private suspend fun compileKotlinSources(
@@ -366,7 +392,7 @@ internal class JvmCompileTask(
         sourceFiles: List<Path>,
         additionalSourceRoots: List<SourceRoot>,
         friendPaths: List<Path>,
-    ) {
+    ): List<CompilerBuildProblem> {
         logger.debug("Compiling Kotlin/JVM sources for module '${module.userReadableName}'...")
 
         val kotlinToolchains = KotlinToolchains.loadMaybeCachedImpl(
@@ -410,6 +436,8 @@ internal class JvmCompileTask(
             friendPaths = friendPaths,
         )
 
+        val collectingMessageProcessor = CollectingCompilerBuildProblemProcessor()
+
         val kotlinCompilationResult = spanBuilder("kotlin-compilation")
             .setAmperModule(module)
             .setFragments(fragments)
@@ -417,7 +445,6 @@ internal class JvmCompileTask(
             .setListAttribute("compiler-args", compilerArgs)
             .setAttribute("compiler-version", userSettings.kotlin.compilerVersion)
             .use {
-                // TODO capture compiler errors/warnings in incremental result
                 // TODO maybe share the build session with the whole Amper build (across all JVM compile tasks)?
                 kotlinToolchains.createBuildSession().use { session ->
                     val jvmToolchain = kotlinToolchains.getToolchain<JvmPlatformToolchain>()
@@ -432,7 +459,17 @@ internal class JvmCompileTask(
                     ) {
                         compilerArguments.applyArgumentStrings(compilerArgs)
                         if (isCompilerMessageRendererAPIAvailable) {
-                            this[COMPILER_MESSAGE_RENDERER] = TerminalCompilerMessageRenderer(terminal, projectRoot.path, module)
+                            val terminalCompilerMessageProcessor = TerminalCompilerBuildProblemProcessor(
+                                terminal = terminal,
+                                projectRoot = projectRoot.path,
+                                module = module,
+                            )
+                            this[COMPILER_MESSAGE_RENDERER] = CombiningCompilerBuildProblemProcessor(
+                                processors = [
+                                    terminalCompilerMessageProcessor,
+                                    collectingMessageProcessor,
+                                ],
+                            ).asBuildToolsCompilerMessageRenderer()
                         }
                         if (userSettings.kotlin.compileIncrementally) {
                             this[INCREMENTAL_COMPILATION] = snapshotBasedIcConfiguration(
@@ -458,6 +495,22 @@ internal class JvmCompileTask(
         if (kotlinCompilationResult != CompilationResult.COMPILATION_SUCCESS) {
             userReadableError("Kotlin compilation failed with ${errorsCollector.errors.size} errors (see above)")
         }
+
+        return collectingMessageProcessor.messages
+    }
+
+    private fun replayCachedCompilerBuildProblems(result: IncrementalCache.ExecutionResult) {
+        val serializedProblems = result.outputValues[JVM_COMPILER_BUILD_PROBLEMS_OUTPUT_KEY] ?: return
+        val problems = try {
+            Json.decodeFromString<List<CompilerBuildProblem>>(serializedProblems)
+        } catch (e: Exception) {
+            logger.warn("Failed to deserialize cached Kotlin compiler warnings for task '${taskName.id.value}'", e)
+            return
+        }
+        if (problems.isEmpty()) return
+
+        val terminalProcessor = TerminalCompilerBuildProblemProcessor(terminal, projectRoot.path, module)
+        problems.forEach(terminalProcessor::process)
     }
 
     /**
