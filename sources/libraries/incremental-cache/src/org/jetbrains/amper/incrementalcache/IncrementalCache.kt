@@ -124,7 +124,11 @@ class IncrementalCache(
                     DynamicInputsTracker.getCurrentTracker()?.addFrom(cachedState.state.dynamicInputs)
 
                     span.addResult(existingResult, cachedState.state.dynamicInputs)
-                    return@withLock IncrementalExecutionResult(existingResult, emptyList())
+                    return@withLock IncrementalExecutionResult(
+                        executionResult = existingResult,
+                        changes = [],
+                        loadedFromCache = true,
+                    )
                 } else {
                     span.setAttribute("status", "requires-building")
                     span.setAttribute("forceRecalculation", "$forceRecalculation")
@@ -161,11 +165,15 @@ class IncrementalCache(
                 }
                 val outputFilesChanges = oldOutputFilesState compare newOutputFilesState
 
-                val dynamicInputsChanges = cachedState?.state?.dynamicInputs?.changes() ?: emptyList()
+                val dynamicInputsChanges = cachedState?.state?.dynamicInputs?.changes() ?: []
 
                 val changes = outputFilesChanges + dynamicInputsChanges
 
-                return@withLock IncrementalExecutionResult(result, changes).also {
+                return@withLock IncrementalExecutionResult(
+                    executionResult = result,
+                    changes = changes,
+                    loadedFromCache = false,
+                ).also {
                     logger.debug("[inc] '$key' changes: {}", changes.joinToString { "'${it.path}' ${it.type}" })
                 }
             }
@@ -350,6 +358,10 @@ class IncrementalCache(
     data class IncrementalExecutionResult(
         private val executionResult: ExecutionResult,
         val changes: List<Change>,
+        /**
+         * `true` if the result was loaded from the cache, `false` if execution was performed.
+         */
+        val loadedFromCache: Boolean,
     ): ExecutionResult(
         executionResult.outputFiles,
         executionResult.outputValues,

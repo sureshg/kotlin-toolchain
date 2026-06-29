@@ -173,6 +173,7 @@ class IncrementalCacheTest {
                 IncrementalCache.ExecutionResult(listOf(output))
             }
             assertEquals(listOf(output), result1.outputFiles)
+            assertFalse(result1.loadedFromCache)
             assertEquals("1", output.readText())
 
             // up to date
@@ -182,6 +183,7 @@ class IncrementalCacheTest {
                 IncrementalCache.ExecutionResult(listOf(output))
             }
             assertEquals(listOf(output), result2.outputFiles)
+            assertTrue(result2.loadedFromCache)
             assertEquals("1", output.readText())
 
             output.deleteExisting()
@@ -193,6 +195,7 @@ class IncrementalCacheTest {
                 IncrementalCache.ExecutionResult(listOf(output))
             }
             assertEquals(listOf(output), result3.outputFiles)
+            assertFalse(result3.loadedFromCache)
             assertEquals("3", output.readText())
         }
         assertEquals(2, executionsCount.get())
