@@ -11,6 +11,8 @@ import org.jetbrains.amper.tasks.ProjectTasksBuilder
 import org.jetbrains.amper.tasks.ProjectTasksBuilder.Companion.getTaskOutputPath
 import org.jetbrains.amper.tasks.TaskNameFactory
 import org.jetbrains.amper.tasks.getTaskName
+import org.jetbrains.amper.tasks.web.NpmInstallTask
+import org.jetbrains.amper.tasks.web.WebTaskType
 
 fun ProjectTasksBuilder.setupWasmJsTasks() {
     setupWasmTasks(
@@ -18,6 +20,27 @@ fun ProjectTasksBuilder.setupWasmJsTasks() {
         ::WasmJsCompileKlibTask,
         ::WasmJsLinkTask,
     )
+
+    allModules()
+        .alsoPlatforms(Platform.WASM_JS)
+        .alsoTests()
+        .withEach {
+            val npmInstallTaskName = WebTaskType.NpmInstall.getTaskName(module, platform, isTest)
+            tasks.registerTask(
+                task = NpmInstallTask(
+                    module = module,
+                    platform = platform,
+                    taskOutputPath = context.getTaskOutputPath(npmInstallTaskName),
+                    taskName = npmInstallTaskName,
+                    processRunner = context.processRunner,
+                    userCacheRoot = context.userCacheRoot,
+                    incrementalCache = context.incrementalCache,
+                ),
+                dependsOn = [
+                    CommonTaskType.Dependencies.getTaskName(module, platform, isTest),
+                ],
+            )
+        }
 
     allModules()
         .alsoPlatforms(Platform.WASM_JS)
@@ -31,6 +54,8 @@ fun ProjectTasksBuilder.setupWasmJsTasks() {
 
             val linkAppTaskName = LinkTaskType.getTaskName(module, platform, isTest, buildType)
 
+            val npmInstallTask = WebTaskType.NpmInstall.getTaskName(module, platform, isTest)
+
             val buildAppTaskName = WasmJsTaskType.BuildWasmJsApp.getTaskName(module, platform, isTest, buildType)
             tasks.registerTask(
                 task = WasmJsBuildTask(
@@ -40,8 +65,13 @@ fun ProjectTasksBuilder.setupWasmJsTasks() {
                     taskOutputPath = context.getTaskOutputPath(buildAppTaskName),
                     taskName = buildAppTaskName,
                     tempRoot = context.projectTempRoot,
+                    incrementalCache = context.incrementalCache,
                 ),
-                dependsOn = listOf(linkAppTaskName, resolveDependenciesTaskName)
+                dependsOn = [
+                    linkAppTaskName,
+                    resolveDependenciesTaskName,
+                    npmInstallTask
+                ]
             )
 
             val runTaskName = WasmJsTaskType.RunWasmJsApp.getTaskName(module, platform, isTest = false, buildType)
@@ -53,7 +83,7 @@ fun ProjectTasksBuilder.setupWasmJsTasks() {
                     module = module,
                     runSettings = runSettings,
                 ),
-                dependsOn = listOf(buildAppTaskName)
+                dependsOn = [buildAppTaskName]
             )
         }
 }

@@ -9,6 +9,7 @@ import org.junit.jupiter.api.AssertionFailureBuilder
 import org.opentest4j.FileInfo
 import java.nio.file.Path
 import kotlin.io.path.absolutePathString
+import kotlin.io.path.exists
 import kotlin.io.path.fileSize
 import kotlin.io.path.readBytes
 import kotlin.io.path.relativeTo
@@ -39,5 +40,11 @@ internal fun assertFileContentEquals(expected: Path, actual: Path) {
             .expected(FileInfo(expected.absolutePathString(), expected.readBytes()))
             .actual(FileInfo(actual.absolutePathString(), actual.readBytes()))
             .buildAndThrow()
+    }
+}
+
+internal fun assertFileExists(path: Path) {
+    assertTrue("File $path does not exist") {
+        path.exists()
     }
 }
