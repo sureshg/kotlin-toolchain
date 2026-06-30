@@ -76,6 +76,7 @@ import org.jetbrains.amper.util.BuildType
 import org.jetbrains.kotlin.buildtools.api.BaseCompilationOperation.Companion.COMPILER_MESSAGE_RENDERER
 import org.jetbrains.kotlin.buildtools.api.BaseIncrementalCompilationConfiguration.Companion.TRACK_CONFIGURATION_INPUTS
 import org.jetbrains.kotlin.buildtools.api.CompilationResult
+import org.jetbrains.kotlin.buildtools.api.CompilerArgumentsParseException
 import org.jetbrains.kotlin.buildtools.api.ExperimentalBuildToolsApi
 import org.jetbrains.kotlin.buildtools.api.KotlinLogger
 import org.jetbrains.kotlin.buildtools.api.KotlinToolchains
@@ -457,7 +458,13 @@ internal class JvmCompileTask(
                         sources = sourceFiles,
                         destinationDirectory = compiledJvmArtifact.kotlinCompilerOutputRoot,
                     ) {
-                        compilerArguments.applyArgumentStrings(compilerArgs)
+                        try {
+                            compilerArguments.applyArgumentStrings(compilerArgs)
+                        } catch (e: CompilerArgumentsParseException) {
+                            // The Build Tools API crashes in case of invalid compiler arguments instead of letting the
+                            // compiler report the error, so we catch this exception to provide a nice user error.
+                            userReadableError("Invalid compiler arguments: ${e.message}", cause = e)
+                        }
                         if (isCompilerMessageRendererAPIAvailable) {
                             val terminalCompilerMessageProcessor = TerminalCompilerBuildProblemProcessor(
                                 terminal = terminal,
