@@ -5,6 +5,7 @@
 package org.jetbrains.amper.cli.test
 
 import org.jetbrains.amper.processes.ProcessInput
+import org.jetbrains.amper.processes.ProcessOutputListener
 import org.jetbrains.amper.processes.ProcessResult
 import org.jetbrains.amper.processes.runProcessAndCaptureOutput
 import org.jetbrains.amper.test.AmperCliResult
@@ -15,7 +16,6 @@ import org.jetbrains.amper.test.LocalAmperPublication
 import org.jetbrains.amper.test.TempDirExtension
 import org.jetbrains.amper.test.android.AndroidTools
 import org.jetbrains.amper.test.processes.TestReporterProcessOutputListener
-import org.jetbrains.amper.wrapper.AmperWrapperData
 import org.junit.jupiter.api.extension.RegisterExtension
 import java.nio.file.Path
 import java.util.*
@@ -91,6 +91,7 @@ abstract class AmperCliTestBase : AmperCliWithWrapperTestBase() {
         assertEmptyStdErr: Boolean = true,
         modifyProjectBeforeRun: (projectDir: Path) -> Unit = {},
         stdin: ProcessInput = ProcessInput.Empty,
+        outputListener: ProcessOutputListener = TestReporterProcessOutputListener("amper", testReporter),
         amperJvmArgs: List<String> = emptyList(),
         amperJavaHomeMode: JavaHomeMode = JavaHomeMode.ForceUnset,
         configureAndroidHome: Boolean = false,
@@ -137,6 +138,7 @@ abstract class AmperCliTestBase : AmperCliWithWrapperTestBase() {
             amperJvmArgs = amperJvmArgs,
             amperJavaHomeMode = amperJavaHomeMode,
             customAmperScriptPath = kotlinWrapperPath,
+            outputListener = outputListener,
         )
 
         testReporter.publishEntry("Kotlin CLI[${result.pid}] arguments", args.joinToString(" "))
@@ -171,12 +173,14 @@ abstract class AmperCliTestBase : AmperCliWithWrapperTestBase() {
          * Call the local wrapper present in the project root.
          */
         Local,
+
         /**
          * Call a global wrapper (which is not in the project), and rely on version detection to use
          * the version of the wrapper that's in the project.
          * This is the normal behavior of the global wrapper.
          */
         Global,
+
         /**
          * Call a global wrapper (which is not in the project) in a special mode that makes it use its
          * own embedded version instead of detecting the version from the project-local wrapper.

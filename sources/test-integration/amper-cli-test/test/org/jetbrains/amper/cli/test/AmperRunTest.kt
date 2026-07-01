@@ -4,9 +4,12 @@
 
 package org.jetbrains.amper.cli.test
 
+import kotlinx.coroutines.launch
+import org.jetbrains.amper.cli.test.utils.assertFileContentEquals
 import org.jetbrains.amper.cli.test.utils.assertLogStartsWith
 import org.jetbrains.amper.cli.test.utils.assertStderrContains
 import org.jetbrains.amper.cli.test.utils.assertStdoutContains
+import org.jetbrains.amper.cli.test.utils.getTaskOutputPath
 import org.jetbrains.amper.cli.test.utils.readTelemetrySpans
 import org.jetbrains.amper.cli.test.utils.runSlowTest
 import org.jetbrains.amper.processes.ProcessInput
@@ -16,10 +19,17 @@ import org.jetbrains.amper.system.info.SystemInfo
 import org.jetbrains.amper.test.LinuxOnly
 import org.jetbrains.amper.test.MacOnly
 import org.jetbrains.amper.test.WindowsOnly
+import org.jetbrains.amper.test.processes.LineAwaitingProcessOutputListener
+import org.jetbrains.amper.test.processes.TestReporterProcessOutputListener
 import org.jetbrains.amper.test.spans.kotlinJvmCompilationSpans
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assumptions.assumeFalse
 import org.junit.jupiter.api.Disabled
 import org.slf4j.event.Level
+import java.net.URI
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertTrue
@@ -429,15 +439,55 @@ ARG2: <${argumentsWithSpecialChars[2]}>"""
     fun `run wasm-js application on wasm-js`() = runSlowTest {
         val projectRoot = testProject("wasm-js-app")
 
+        val regex = Regex("""Responding at http://127\.0\.0\.1:(\d+)""")
+
         val result = runCli(
             projectDir = projectRoot,
-            "run",
-            "--port=0",
-            amperJvmArgs = listOf("-Damper.web.run.wait=false"),
+            "build",
         )
 
-        val expectedOutput = "Responding at http://127.0.0.1:"
-        result.assertStdoutContains(expectedOutput)
+        val lineWaitingListener = LineAwaitingProcessOutputListener { line ->
+            regex.find(line) != null
+        }
+
+        val job = launch {
+            runCli(
+                projectDir = projectRoot,
+                "run",
+                "--port=0",
+                outputListener = TestReporterProcessOutputListener("amper", testReporter)
+                        + lineWaitingListener,
+            )
+        }
+
+        try {
+            val matchedLine = lineWaitingListener.awaitLine()
+
+            val port = regex.find(matchedLine)!!.groupValues[1].toInt()
+
+            val mainFileName = "wasm-js-app.wasm"
+
+            val client = HttpClient.newHttpClient()
+            val requestWasm = HttpRequest.newBuilder()
+                .uri(URI.create("http://127.0.0.1:$port/$mainFileName"))
+                .GET()
+                .build()
+
+            val wasmFileFromServer = projectRoot.resolve(mainFileName)
+            val response = client.send(
+                requestWasm,
+                HttpResponse.BodyHandlers.ofFile(wasmFileFromServer)
+            )
+            assertEquals(200, response.statusCode())
+            assertFileContentEquals(
+                result
+                    .getTaskOutputPath(":wasm-js-app:buildWasmJsAppWasmJsDebug")
+                    .resolve(mainFileName),
+                wasmFileFromServer,
+            )
+        } finally {
+            job.cancel()
+        }
     }
 
     @Test

@@ -11,6 +11,7 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import kotlinx.serialization.json.Json
 import org.jetbrains.amper.processes.ProcessInput
+import org.jetbrains.amper.processes.ProcessOutputListener
 import org.jetbrains.amper.processes.ProcessResult
 import org.jetbrains.amper.processes.runProcessAndCaptureOutput
 import org.jetbrains.amper.system.info.OsFamily
@@ -115,6 +116,7 @@ abstract class AmperCliWithWrapperTestBase {
         amperJavaHomeMode: JavaHomeMode = JavaHomeMode.ForceUnset,
         customAmperScriptPath: Path? = null,
         stdin: ProcessInput = ProcessInput.Empty,
+        outputListener: ProcessOutputListener = TestReporterProcessOutputListener("amper", testReporter)
     ): AmperCliResult {
         check(workingDir.exists()) { "Cannot run Kotlin CLI: the specified working directory $workingDir does not exist." }
         check(workingDir.isDirectory()) { "Cannot run Kotlin CLI: the specified working directory $workingDir is not a directory." }
@@ -173,7 +175,7 @@ abstract class AmperCliWithWrapperTestBase {
                     putAll(environment)
                 },
                 input = stdin,
-                outputListener = TestReporterProcessOutputListener("amper", testReporter),
+                outputListener = outputListener,
             )
         }
 
