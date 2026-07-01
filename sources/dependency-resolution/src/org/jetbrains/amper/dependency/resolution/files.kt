@@ -590,7 +590,7 @@ open class DependencyFileImpl(
                 resolveSafeOrNull { tempFileChannel.writeFrom(externalRepositoryPath) }
                     ?.let {
                         // Move a file to the target location on successful copying
-                        storeToTargetLocation(temp, expectedHash, cache, null, diagnosticsReporter) {
+                        storeToTargetLocation(temp, expectedHash, null, diagnosticsReporter) {
                             expectedHash.takeIf { it.algorithm.name == "sha1" }?.hash
                                 ?: computeHash(externalRepositoryPath, getSha1Algorithm()).hash
                         }
@@ -741,7 +741,7 @@ open class DependencyFileImpl(
                 val result = checkHash(hasher, expectedHash, diagnosticsReporter)
                 if (result == VerificationResult.PASSED) {
                     // Hash verification passed. Exit the loop and proceed to the store.
-                    return storeToTargetLocation(temp, hasher, cache, repository, diagnosticsReporter) { sha1Hasher.hash }
+                    return storeToTargetLocation(temp, hasher, repository, diagnosticsReporter) { sha1Hasher.hash }
                 } else {
                     // Hash verification failed. Truncate and retry if there are remaining attempts.
                     channel.truncate(0)
@@ -751,7 +751,7 @@ open class DependencyFileImpl(
                 }
             } else {
                 // No expected hash, so no verification. Consider it successful.
-                return storeToTargetLocation(temp, hasher, cache, repository, diagnosticsReporter) { sha1Hasher.hash }
+                return storeToTargetLocation(temp, hasher, repository, diagnosticsReporter) { sha1Hasher.hash }
             }
         }
         return null // All 3 attempts failed
@@ -761,7 +761,6 @@ open class DependencyFileImpl(
     private suspend fun storeToTargetLocation(
         temp: Path,
         actualHash: Hash?,
-        cache: Cache,
         repository: MavenRepository?,
         diagnosticsReporter: DiagnosticReporter,
         sha1: suspend () -> String,
@@ -773,7 +772,7 @@ open class DependencyFileImpl(
             temp.moveTo(target)
         } catch (_: FileAlreadyExistsException) {
             logger.debug("### {} already exists", target)
-            if (actualHash == null || shouldOverwrite(cache, actualHash, computeHash(target, actualHash.algorithm))) {
+            if (actualHash == null || shouldOverwrite(actualHash, computeHash(target, actualHash.algorithm))) {
                 try {
                     logger.debug("### {} will be replaced with new one", target)
                     withRetry(retryOnException = { it is AccessDeniedException }) {
@@ -822,7 +821,6 @@ open class DependencyFileImpl(
     }
 
     protected open suspend fun shouldOverwrite(
-        cache: Cache,
         expectedHash: Hash,
         actualHash: Hash,
     ): Boolean = checkHash(actualHash, expectedHash) > VerificationResult.PASSED
@@ -931,7 +929,7 @@ open class DependencyFileImpl(
      * uses them for verification.
      * This way, the checksum file is presented in local storage only in case metadata contains invalid data or is completely missing.
      */
-    internal suspend fun getExpectedHash(algorithm: HashAlgorithm, searchInMetadata: Boolean = true): String? =
+    suspend fun getExpectedHash(algorithm: HashAlgorithm, searchInMetadata: Boolean = true): String? =
         LocalStorageHashSource.getExpectedHash(this, algorithm, searchInMetadata)
 
     /**
@@ -1000,12 +998,7 @@ open class DependencyFileImpl(
 
         val client = cache.computeIfAbsent(httpClientKey) { HttpClientProvider.getHttpClient() }
 
-        val name = getNamePart(repository, nameWithoutExtension, extension, progress, cache, spanBuilderSource, diagnosticsReporter)
-        val url = repository.url.trimEnd('/') +
-                "/${dependency.group.replace('.', '/')}" +
-                "/${dependency.module}" +
-                "/${dependency.version.orUnspecified()}" +
-                "/$name"
+        val url = getUrl(repository, progress, cache, spanBuilderSource, diagnosticsReporter)
 
         fun getContentLengthHeaderValue(response: HttpResponse<InputStream>): Long? = response.headers()
             .firstValueAsLong(HttpHeaders.CONTENT_LENGTH)
@@ -1043,6 +1036,7 @@ open class DependencyFileImpl(
                             response.body().use { responseBody ->
                                 when (val status = response.statusCode()) {
                                     200 -> {
+                                        val name = url.substringAfterLast("/")
                                         val expectedSize = fileFromVariant(dependency, name)?.size
                                             ?: getContentLengthHeaderValue(response)
                                         // todo (AB) : It might be useful to use here a dedicated limited dispatcher based on Dispatchers.IO
@@ -1118,6 +1112,33 @@ open class DependencyFileImpl(
 
         return false
     }
+
+    private suspend fun getUrl(
+        repository: MavenRepository,
+        progress: Progress,
+        cache: Cache,
+        spanBuilderSource: SpanBuilderSource,
+        diagnosticsReporter: DiagnosticReporter,
+    ): String {
+        val name = getNamePart(repository, nameWithoutExtension, extension, progress, cache, spanBuilderSource, diagnosticsReporter)
+        return repository.url.trimEnd('/') +
+                "/${dependency.group.replace('.', '/')}" +
+                "/${dependency.module}" +
+                "/${dependency.version.orUnspecified()}" +
+                "/$name"
+    }
+
+    /**
+     * Part of the public API that might be used for getting downloadable file URL
+     */
+    suspend fun getUrl(repository: MavenRepository, context: Context): String =
+        getUrl(
+            repository,
+            context.settings.progress,
+            context.resolutionCache,
+            context.debugSpanBuilder,
+            diagnosticsReporter,
+        )
 
     private fun Builder.withBasicAuth(repository: MavenRepository): Builder = also {
         if (!repository.userName.isNullOrBlank() && !repository.password.isNullOrBlank()) {
@@ -1442,10 +1463,10 @@ class SnapshotDependencyFileImpl(
             .download(listOf(repository), progress, cache, spanBuilderSource, verify = false, diagnosticsReporter, mavenMetadataFilesLock)
     }
 
-    override suspend fun shouldOverwrite(cache: Cache, expectedHash: Hash, actualHash: Hash): Boolean =
+    override suspend fun shouldOverwrite(expectedHash: Hash, actualHash: Hash): Boolean =
         isMavenMetadata
                 || getVersionFilePath()?.takeIf { it.exists() }?.readText() != getSnapshotVersion()
-                || super.shouldOverwrite(cache, expectedHash, actualHash)
+                || super.shouldOverwrite(expectedHash, actualHash)
 
     override suspend fun onFileDownloaded(target: Path, repository: MavenRepository?) {
         super.onFileDownloaded(target, repository)
