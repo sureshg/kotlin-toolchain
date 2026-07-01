@@ -31,6 +31,7 @@ import org.jetbrains.amper.compilation.TerminalCompilerBuildProblemProcessor
 import org.jetbrains.amper.compilation.TerminalPrintingKotlinLogger
 import org.jetbrains.amper.compilation.asBuildToolsCompilerMessageRenderer
 import org.jetbrains.amper.compilation.asKotlinLogger
+import org.jetbrains.amper.compilation.bta.CompilationDetectingBuildMetricsCollector
 import org.jetbrains.amper.compilation.bta.makeClasspathEntrySnapshot
 import org.jetbrains.amper.compilation.downloadCompilerPlugins
 import org.jetbrains.amper.compilation.kotlinJvmCompilerArgs
@@ -77,7 +78,8 @@ import org.jetbrains.kotlin.buildtools.api.BaseCompilationOperation.Companion.CO
 import org.jetbrains.kotlin.buildtools.api.BaseIncrementalCompilationConfiguration.Companion.MODULE_BUILD_DIR
 import org.jetbrains.kotlin.buildtools.api.BaseIncrementalCompilationConfiguration.Companion.ROOT_PROJECT_DIR
 import org.jetbrains.kotlin.buildtools.api.BaseIncrementalCompilationConfiguration.Companion.TRACK_CONFIGURATION_INPUTS
-import org.jetbrains.kotlin.buildtools.api.CompilationResult
+import org.jetbrains.kotlin.buildtools.api.BuildOperation
+import org.jetbrains.kotlin.buildtools.api.CompilationResult.COMPILATION_SUCCESS
 import org.jetbrains.kotlin.buildtools.api.CompilerArgumentsParseException
 import org.jetbrains.kotlin.buildtools.api.ExperimentalBuildToolsApi
 import org.jetbrains.kotlin.buildtools.api.KotlinLogger
@@ -265,7 +267,7 @@ internal class JvmCompileTask(
 
             if (nonEmptySourceDirs.isNotEmpty()) {
                 logger.infoNoConsole("Compiling module '${module.userReadableName}' for platform '${platform.pretty}'...")
-                val compilerProblems = compileSources(
+                val result = compileSources(
                     jdk = jdk,
                     sourceDirectories = nonEmptySourceDirs,
                     additionalSources = additionalSources,
@@ -276,7 +278,7 @@ internal class JvmCompileTask(
                     javaAnnotationProcessorsGeneratedDir = javaAnnotationProcessorsGeneratedDir,
                     tempRoot = tempRoot,
                 )
-                allCompilerProblems.addAll(compilerProblems)
+                allCompilerProblems.addAll(result.problems)
                 if (compiledJvmArtifact.kotlinCompilerOutputRoot.exists()) {
                     outputPaths.add(compiledJvmArtifact.kotlinCompilerOutputRoot.toAbsolutePath())
                 }
@@ -286,7 +288,11 @@ internal class JvmCompileTask(
                 if (javaAnnotationProcessorsGeneratedDir.exists()) {
                     outputPaths.add(javaAnnotationProcessorsGeneratedDir)
                 }
-                terminal.printCompilationSuccess(module, platform, isTest)
+                if (result.didCompileSomething) {
+                    terminal.printCompilationSuccess(module, platform, isTest)
+                } else {
+                    logger.debug("Up-to-date compilation result for ${fragments.identificationPhrase()}")
+                }
             } else {
                 logger.debug("No sources were found for ${fragments.identificationPhrase()}, skipping compilation")
             }
@@ -344,7 +350,7 @@ internal class JvmCompileTask(
         javaAnnotationProcessorClasspath: List<Path>,
         tempRoot: AmperProjectTempRoot,
         javaAnnotationProcessorsGeneratedDir: Path,
-    ): List<CompilerBuildProblem> {
+    ): CompilationResult {
         for (friendPath in friendPaths) {
             require(classpath.contains(friendPath)) {
                 "The classpath must contain all friend paths, but '$friendPath' is not in '${classpath.joinToString(File.pathSeparator)}'"
@@ -355,13 +361,14 @@ internal class JvmCompileTask(
         val kotlinFilesToCompile = sourcesFiles.filter { it.extension == "kt" }
         val javaFilesToCompile = sourcesFiles.filter { it.extension == "java" }
         val allCompilerProblems = mutableListOf<CompilerBuildProblem>()
+        var didCompileSomething = false
 
         if (kotlinFilesToCompile.isNotEmpty()) {
             // Enable multi-platform support only if targeting other than JVM platforms
             // or having a common and JVM fragments (like src and src@jvm directories)
             val isMultiplatform = (module.leafPlatforms - Platform.JVM).isNotEmpty() || sourceDirectories.size > 1
 
-            val collectedMessages = compileKotlinSources(
+            val result = compileKotlinSources(
                 userSettings = userSettings,
                 isMultiplatform = isMultiplatform,
                 classpath = classpath,
@@ -370,7 +377,8 @@ internal class JvmCompileTask(
                 additionalSourceRoots = additionalSources,
                 friendPaths = friendPaths,
             )
-            allCompilerProblems.addAll(collectedMessages)
+            allCompilerProblems.addAll(result.problems)
+            didCompileSomething = result.didCompileSomething
         }
 
         if (javaFilesToCompile.isNotEmpty()) {
@@ -383,8 +391,12 @@ internal class JvmCompileTask(
                 javaSourceFiles = javaFilesToCompile,
                 tempRoot = tempRoot,
             )
+            didCompileSomething = true // we don't have the information for Java compilation for now
         }
-        return allCompilerProblems
+        return CompilationResult(
+            problems = allCompilerProblems,
+            didCompileSomething = didCompileSomething,
+        )
     }
 
     private suspend fun compileKotlinSources(
@@ -395,7 +407,7 @@ internal class JvmCompileTask(
         sourceFiles: List<Path>,
         additionalSourceRoots: List<SourceRoot>,
         friendPaths: List<Path>,
-    ): List<CompilerBuildProblem> {
+    ): CompilationResult {
         logger.debug("Compiling Kotlin/JVM sources for module '${module.userReadableName}'...")
 
         val kotlinToolchains = KotlinToolchains.loadMaybeCachedImpl(
@@ -440,6 +452,7 @@ internal class JvmCompileTask(
         )
 
         val collectingMessageProcessor = CollectingCompilerBuildProblemProcessor()
+        val compilationDetectingBuildMetricsCollector = CompilationDetectingBuildMetricsCollector()
 
         val kotlinCompilationResult = spanBuilder("kotlin-compilation")
             .setAmperModule(module)
@@ -498,6 +511,7 @@ internal class JvmCompileTask(
                                 this[TRACK_CONFIGURATION_INPUTS] = true
                             }
                         }
+                        this[BuildOperation.METRICS_COLLECTOR] = compilationDetectingBuildMetricsCollector
                     }
                     session.executeOperation(
                         operation = compilationOperation,
@@ -507,12 +521,20 @@ internal class JvmCompileTask(
                 }
             }
 
-        if (kotlinCompilationResult != CompilationResult.COMPILATION_SUCCESS) {
+        if (kotlinCompilationResult != COMPILATION_SUCCESS) {
             userReadableError("Kotlin compilation failed with ${errorsCollector.errors.size} errors (see above)")
         }
 
-        return collectingMessageProcessor.messages
+        return CompilationResult(
+            problems = collectingMessageProcessor.messages,
+            didCompileSomething = compilationDetectingBuildMetricsCollector.didCompileSomething,
+        )
     }
+
+    data class CompilationResult(
+        val problems: List<CompilerBuildProblem>,
+        val didCompileSomething: Boolean,
+    )
 
     private fun replayCachedCompilerBuildProblems(result: IncrementalCache.ExecutionResult) {
         val serializedProblems = result.outputValues[JVM_COMPILER_BUILD_PROBLEMS_OUTPUT_KEY] ?: return
