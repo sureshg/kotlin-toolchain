@@ -5,6 +5,8 @@
 package org.jetbrains.amper.tasks.jvm
 
 import com.github.ajalt.mordant.terminal.Terminal
+import io.opentelemetry.api.GlobalOpenTelemetry
+import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.trace.SpanBuilder
 import kotlinx.serialization.json.Json
 import org.apache.maven.artifact.versioning.ComparableVersion
@@ -32,7 +34,9 @@ import org.jetbrains.amper.compilation.TerminalPrintingKotlinLogger
 import org.jetbrains.amper.compilation.asBuildToolsCompilerMessageRenderer
 import org.jetbrains.amper.compilation.asKotlinLogger
 import org.jetbrains.amper.compilation.bta.CompilationDetectingBuildMetricsCollector
+import org.jetbrains.amper.compilation.bta.OpenTelemetryBuildMetricsCollector
 import org.jetbrains.amper.compilation.bta.makeClasspathEntrySnapshot
+import org.jetbrains.amper.compilation.bta.metrics.CombiningMetricsCollector
 import org.jetbrains.amper.compilation.downloadCompilerPlugins
 import org.jetbrains.amper.compilation.kotlinJvmCompilerArgs
 import org.jetbrains.amper.compilation.kotlinModuleName
@@ -132,6 +136,7 @@ internal class JvmCompileTask(
     override val platform: Platform = Platform.JVM,
     private val processRunner: ProcessRunner,
     private val terminal: Terminal,
+    private val openTelemetry: OpenTelemetry,
 ) : ArtifactTaskBase(), BuildTask {
 
     init {
@@ -453,6 +458,13 @@ internal class JvmCompileTask(
 
         val collectingMessageProcessor = CollectingCompilerBuildProblemProcessor()
         val compilationDetectingBuildMetricsCollector = CompilationDetectingBuildMetricsCollector()
+        val openTelemetryBuildMetricsCollector = OpenTelemetryBuildMetricsCollector(openTelemetry)
+        val metricsCollector = CombiningMetricsCollector(
+            [
+                compilationDetectingBuildMetricsCollector,
+                openTelemetryBuildMetricsCollector
+            ]
+        )
 
         val kotlinCompilationResult = spanBuilder("kotlin-compilation")
             .setAmperModule(module)
@@ -511,13 +523,17 @@ internal class JvmCompileTask(
                                 this[TRACK_CONFIGURATION_INPUTS] = true
                             }
                         }
-                        this[BuildOperation.METRICS_COLLECTOR] = compilationDetectingBuildMetricsCollector
+                        this[BuildOperation.METRICS_COLLECTOR] = metricsCollector
                     }
-                    session.executeOperation(
-                        operation = compilationOperation,
-                        executionPolicy = executionPolicy,
-                        logger = compilationLogger,
-                    )
+                    spanBuilder("BTA compilation operation").use {
+                        session.executeOperation(
+                            operation = compilationOperation,
+                            executionPolicy = executionPolicy,
+                            logger = compilationLogger,
+                        ).also {
+                            openTelemetryBuildMetricsCollector.reportSpans()
+                        }
+                    }
                 }
             }
 
@@ -572,27 +588,29 @@ internal class JvmCompileTask(
             }
         }
         return context(incrementalCache) {
-            snapshottableClasspath.mapConcurrently { entryPath ->
-                makeClasspathEntrySnapshot(
-                    entryPath = entryPath,
-                    entryMoniker = if (entryPath.isDirectory()) {
-                        // Directories are kotlin-output and java-output under a module name (in general), so we
-                        // prepend the module name to make it more recognizable
-                        "${module.userReadableName}${if (isTest) "-test" else ""}-${entryPath.name}"
-                    } else {
-                        entryPath.name
-                    },
-                    outputDir = outputDir,
-                    granularity = if (entryPath.isDirectory()) {
-                        // Directories are local modules, we want high granularity at the cost of higher snapshot size
-                        ClassSnapshotGranularity.CLASS_MEMBER_LEVEL
-                    } else {
-                        // JARs are usually external deps and change less often, so CLASS_LEVEL granularity is enough
-                        // and we can save on size
-                        ClassSnapshotGranularity.CLASS_LEVEL
-                    },
-                    logger = kotlinLogger,
-                )
+            spanBuilder("Make classpath snapshot").use {
+                snapshottableClasspath.mapConcurrently { entryPath ->
+                    makeClasspathEntrySnapshot(
+                        entryPath = entryPath,
+                        entryMoniker = if (entryPath.isDirectory()) {
+                            // Directories are kotlin-output and java-output under a module name (in general), so we
+                            // prepend the module name to make it more recognizable
+                            "${module.userReadableName}${if (isTest) "-test" else ""}-${entryPath.name}"
+                        } else {
+                            entryPath.name
+                        },
+                        outputDir = outputDir,
+                        granularity = if (entryPath.isDirectory()) {
+                            // Directories are local modules, we want high granularity at the cost of higher snapshot size
+                            ClassSnapshotGranularity.CLASS_MEMBER_LEVEL
+                        } else {
+                            // JARs are usually external deps and change less often, so CLASS_LEVEL granularity is enough
+                            // and we can save on size
+                            ClassSnapshotGranularity.CLASS_LEVEL
+                        },
+                        logger = kotlinLogger,
+                    )
+                }
             }
         }
     }

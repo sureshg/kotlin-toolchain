@@ -189,6 +189,7 @@ fun ProjectTasksBuilder.setupAndroidTasks() {
                     platform = Platform.ANDROID,
                     processRunner = context.processRunner,
                     terminal = context.terminal,
+                    openTelemetry = context.openTelemetry,
                 ),
                 dependsOn = buildList {
                     add(AndroidTaskType.InstallPlatform.getTaskName(module, platform, isTest))

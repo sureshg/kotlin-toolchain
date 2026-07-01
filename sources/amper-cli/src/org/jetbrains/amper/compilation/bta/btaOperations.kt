@@ -63,7 +63,7 @@ internal suspend fun KotlinToolchains.BuildSession.makeClasspathEntrySnapshot(
         ),
         inputFiles = listOf(entryPath),
     ) {
-        spanBuilder("Snapshot classpath")
+        spanBuilder("Snapshot classpath entry")
             .setAttribute("classpathEntry", entryPath.pathString)
             .use {
                 val snapshot = spanBuilder("Compute snapshot data").use {

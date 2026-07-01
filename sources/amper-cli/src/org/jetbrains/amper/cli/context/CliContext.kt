@@ -6,6 +6,7 @@ package org.jetbrains.amper.cli.context
 
 import com.github.ajalt.mordant.terminal.Terminal
 import io.opentelemetry.api.GlobalOpenTelemetry
+import io.opentelemetry.api.OpenTelemetry
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.format
 import org.jetbrains.amper.ProcessRunner
@@ -87,14 +88,21 @@ class ProjectCliContext(
     }
 
     /**
+     * The [OpenTelemetry] instance to use for tracing.
+     */
+    val openTelemetry: OpenTelemetry by lazy {
+        // by the time we get here, GlobalOpenTelemetry should be set
+        GlobalOpenTelemetry.get()
+    }
+
+    /**
      * The incremental cache for the current project.
      */
     val incrementalCache: IncrementalCache by lazy {
         IncrementalCache(
             stateRoot = buildOutputRoot.path.resolve("incremental.state"),
             codeVersion = AmperVersion.codeIdentifier,
-            // by the time we get here, GlobalOpenTelemetry should be set
-            openTelemetry = GlobalOpenTelemetry.get(),
+            openTelemetry = openTelemetry,
         )
     }
 
@@ -105,8 +113,7 @@ class ProjectCliContext(
     val jdkProvider: JdkProvider by lazy {
         JdkProvider(
             userCacheRoot = userCacheRoot,
-            // by the time we get here, GlobalOpenTelemetry should be set
-            openTelemetry = GlobalOpenTelemetry.get(),
+            openTelemetry = openTelemetry,
             incrementalCache = incrementalCache,
         )
     }

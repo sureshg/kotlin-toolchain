@@ -42,6 +42,7 @@ fun ProjectTasksBuilder.setupJvmTasks() {
                     jdkProvider = context.jdkProvider,
                     processRunner = context.processRunner,
                     terminal = context.terminal,
+                    openTelemetry = context.openTelemetry,
                 ),
                 dependsOn = buildList {
                     add(CommonTaskType.Dependencies.getTaskName(module, platform, isTest))
