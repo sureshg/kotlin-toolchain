@@ -6,11 +6,14 @@ package org.jetbrains.amper.processes
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.IOException
 import java.io.InputStream
 import java.util.concurrent.TimeUnit
@@ -76,7 +79,7 @@ internal suspend fun Process.awaitListening(outputListener: ProcessOutputListene
  * **WARNING:** this suspending function blocks the thread despite the suspend keyword!
  *
  * This function complies with coroutine cancellation by checking for cancellation between each line read. However, a
- * single line read blocks the thread and cannot be cancelled until it returns (interruption doesn't work on them).
+ * single line read blocks the thread and cannot be canceled until it returns (interruption doesn't work on them).
  */
 // We're not using Dispatchers.IO on purpose here, so the caller can decide on the thread pool.
 private suspend inline fun InputStream.consumeLinesBlockingCancellable(onEachLine: (String) -> Unit) {
@@ -139,18 +142,71 @@ internal suspend inline fun <T> Process.withGuaranteedTermination(
     }
     withDestructionHook(gracePeriod) {
         try {
-            // jump straight to the catch block if the coroutine is already cancelled
+            // jump straight to the catch block if the coroutine is already canceled
             currentCoroutineContext().ensureActive()
 
-            return coroutineScope {  // Required to catch exceptions from any child coroutines
+            /*
+             * This `coroutineScope` inside a try-catch is here to catch exceptions from coroutines that are started in
+             * the caller-provided `cancellableBlock`, to make sure we always terminate the process.
+             * If we instead just make `cancellableBlock` non-suspend and rely on inlining, callers may still start
+             * nested coroutines by relying on an outer coroutine scope:
+             *
+             * coroutineScope {
+             *   process.withGuaranteedTermination {
+             *     launch {
+             *       error("I bubble up straight to the coroutineScope, not caught by withGuaranteedTermination")
+             *     }
+             *   }
+             * }
+             */
+            return coroutineScope {
+                /*
+                 * We need this manual cancellation tracking because `cancellableBlock` might misbehave. If that block
+                 * contains blocking code that hangs without respecting coroutine cancellations, we still want to kill
+                 * the process. This is not a theoretical case that can be solved by saying that callers must behave
+                 * properly. It's something that cannot be prevented when dealing with blocking I/O. In particular,
+                 * our own handling of stdout/stderr streams has to block on an uninterruptible readLine(). Even if we
+                 * respect cancellation between line reads, we can indefinitely block on one line read if the process
+                 * just doesn't output anything. By tracking cancellation here, we can kill the process which unblocks
+                 * the line reads of the stream readers and allows this function to return properly.
+                 */
+                val cancellationTrackingJob = launch {
+                    try {
+                        awaitCancellation()
+                    } catch (e: CancellationException) {
+                        // The NonCancellable is not strictly necessary because this function is blocking, but it shows
+                        // the intent that we want to kill and wait for the process to terminate even when canceled, to
+                        // avoid zombie processes.
+                        withContext(NonCancellable) {
+                            killAndAwaitTermination(gracePeriod)
+                        }
+                        throw e
+                    }
+                }
                 cancellableBlock(this@withGuaranteedTermination).also {
                     onExit().await()
+                    // Yes, this will unnecessarily trigger the kill-on-cancellation of the cancellationTrackingJob,
+                    // but killAndAwaitTermination is a no-op in this case, so it's fine.
+                    cancellationTrackingJob.cancel()
                 }
             }
-        } catch (e: Throwable) { // Intentionally catches both errors AND cancellations
-            // Intentionally non-cancellable to avoid leaking a live process while seemingly cancelling this call.
-            // For hardcore throwables (ThreadDeath, OOM...), we still attempt to kill the process on a best-efforts basis.
-            killAndAwaitTermination(gracePeriod)
+        } catch (e: Throwable) {
+            /*
+             This block intentionally catches exceptions, errors and cancellations from the preliminary
+             ensureActive() check:
+               * for regular exceptions, we need to kill the process by contract
+               * for JVM errors (ThreadDeath, OOM...), we still attempt to kill the process (best-effort)
+               * for the cancellation from the preliminary ensureActive() check, we need to kill the process by contract
+               * for other cancellations that might come from the coroutineScope body, they are already handled by the
+                 cancellation-tracking job above. In that case, it's fine to call killAndAwaitTermination again because
+                 it will be a no-op, so no need for special cases.
+             */
+
+            // The NonCancellable is not strictly necessary because this function is blocking, but it shows the intent
+            // that we want to kill and wait for the process to terminate even when canceled, to avoid zombie processes.
+            withContext(NonCancellable) {
+                killAndAwaitTermination(gracePeriod)
+            }
             throw e
         }
     }
@@ -237,7 +293,7 @@ internal inline fun <T> withShutdownHook(
             runtime.removeShutdownHook(hookThread)
         } catch (_: IllegalStateException) {
             // IllegalStateException is thrown if the JVM is already shutting down (it's the only documented case).
-            // In this case, we don't want to unregister the hook, so it's fine to ignore this exception.
+            // In this case, we don't need to unregister the hook, so it's fine to ignore this exception.
             // Note: there is no direct way to check whether the JVM is shutting down before attempting to remove the
             // hook, so we have to rely on this non-obvious exception mechanism.
         }

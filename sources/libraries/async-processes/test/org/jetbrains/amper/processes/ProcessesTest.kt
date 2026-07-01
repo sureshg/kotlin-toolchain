@@ -8,6 +8,8 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
@@ -15,10 +17,8 @@ import java.util.concurrent.TimeUnit
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import kotlin.test.fail
-import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
 import kotlin.time.measureTimedValue
@@ -122,17 +122,44 @@ class ProcessesTest {
     }
 
     @Test
-    fun `withGuaranteedTermination should kill the process when cancelled`() = runBlocking(Dispatchers.IO) {
+    fun `withGuaranteedTermination should kill the process when canceled`() = runBlocking(Dispatchers.IO) {
         @Suppress("PROCESS_BUILDER_START_LEAK") // we're literally testing the mechanism
-        val process = ProcessBuilder(binSh("sleep 60")).start()
-
-        val time = measureTime {
-            // simulate quick cancellation (cannot be 0ms otherwise the block is not run at all)
-            withTimeoutOrNull(1.milliseconds) {
-                process.withGuaranteedTermination {
-                    // no need for anything in the body
-                }
+        val process = ProcessBuilder(binSh("sleep 600")).start()
+        val userBlockStartEvent = CompletableDeferred<Unit>()
+        val job = launch {
+            process.withGuaranteedTermination {
+                userBlockStartEvent.complete(Unit)
+                delay(30.seconds)
             }
+        }
+        userBlockStartEvent.await()
+        val time = measureTime {
+            job.cancelAndJoin()
+        }
+        assertTerminated(process, "withGuaranteedTermination should not exit before the process is terminated")
+        assertTrue(time < 5.seconds, "The process should be terminated almost instantly, but ran for $time")
+    }
+
+    @Test
+    fun `withGuaranteedTermination should kill the process when canceled even when reading streams`() = runBlocking(Dispatchers.IO) {
+        @Suppress("PROCESS_BUILDER_START_LEAK") // we're literally testing the mechanism
+        val process = ProcessBuilder(binSh("echo 'started'; sleep 600")).start()
+        val firstOutputLineEvent = CompletableDeferred<Unit>()
+        val job = launch {
+            process.withGuaranteedTermination {
+                process.awaitListening(object : ProcessOutputListener {
+                    override fun onStdoutLine(line: String, pid: Long) {
+                        assertEquals("started", line)
+                        firstOutputLineEvent.complete(Unit)
+                    }
+                    override fun onStderrLine(line: String, pid: Long) {
+                    }
+                })
+            }
+        }
+        firstOutputLineEvent.await()
+        val time = measureTime {
+            job.cancelAndJoin()
         }
         assertTerminated(process, "withGuaranteedTermination should not exit before the process is terminated")
         assertTrue(time < 5.seconds, "The process should be terminated almost instantly, but ran for $time")
@@ -143,13 +170,13 @@ class ProcessesTest {
         @Suppress("PROCESS_BUILDER_START_LEAK") // we're literally testing the mechanism
         val process = ProcessBuilder(binSh("sleep 60")).start()
 
-        val time = measureTime {
-            val launchJob = launch {
-                cancel() // simulates that the coroutine is already canceled before the call
-                process.withGuaranteedTermination {
-                    fail("The body of withGuaranteedTermination should not be run if the coroutine is already cancelled")
-                }
+        val launchJob = launch {
+            cancel() // simulates that the coroutine is already canceled before the call
+            process.withGuaranteedTermination {
+                fail("The body of withGuaranteedTermination should not be run if the coroutine is already cancelled")
             }
+        }
+        val time = measureTime {
             launchJob.join()
         }
         assertTerminated(process, "withGuaranteedTermination should not exit before the process is terminated")
