@@ -168,7 +168,13 @@ data class MavenPublishable(
      * The path to the publishable file.
      */
     val path: SerializablePath,
-)
+) {
+    /**
+     * Whether this publishable is a signature file. This matters because we don't want to generate checksums for those.
+     */
+    val isSignature: Boolean
+        get() = mavenArtifactExtension.endsWith("asc")
+}
 
 private fun TaskResult.toMavenPublishables(coordsPerPlatform: Map<Platform, MavenCoordinates>) = when (this) {
     is JvmClassesJarTask.Result -> listOf(toMavenPublishable(coordsPerPlatform))

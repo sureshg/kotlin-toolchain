@@ -57,18 +57,22 @@ class PrepareMavenCentralBundleTask(
             ?.publishables
             ?: error("Expected single PrepareMavenPublishablesTask.Result from task dependencies")
 
+        // Checksums are not mandatory for signatures, and we want to limit the number of published files, so we only
+        // generate checksums for non-signature publishables.
+        val nonSignaturePublishables = mainPublishables.filterNot { it.isSignature }
+
         val checksumsToPublish = module.publishingSettings.checksums
 
         val checksumPublishables = incrementalCache.execute(
             key = "${taskName.id.value}-generate-checksums",
             inputValues = mapOf(
-                "publishables" to Json.encodeToString(mainPublishables),
+                "nonSignaturePublishables" to Json.encodeToString(nonSignaturePublishables),
                 "checksumsToPublish" to checksumsToPublish.joinToString(),
             ),
-            inputFiles = mainPublishables.map { it.path },
+            inputFiles = nonSignaturePublishables.map { it.path },
             serializer = ListSerializer(MavenPublishable.serializer()),
         ) {
-            val checksumPublishables = mainPublishables.flatMapConcurrently { mainPublishable ->
+            val checksumPublishables = nonSignaturePublishables.flatMapConcurrently { mainPublishable ->
                 generateChecksums(mainPublishable, checksumsToPublish)
             }
             ResultWithSerializable(
