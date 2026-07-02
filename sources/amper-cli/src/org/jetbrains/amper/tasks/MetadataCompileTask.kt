@@ -109,7 +109,8 @@ internal class MetadataCompileTask(
      * - metadata compilation result of all same-module fragments refining this one (dependsOn closure)
      * - commonized cinterop sources of all target platforms
      */
-    override suspend fun run(dependenciesResult: List<TaskResult>, executionContext: TaskGraphExecutionContext): Result {
+    context(executionContext: TaskGraphExecutionContext)
+    override suspend fun run(dependenciesResult: List<TaskResult>): Result {
         checkFragment()
 
         val kotlinSettings = fragment.serializableKotlinSettings()

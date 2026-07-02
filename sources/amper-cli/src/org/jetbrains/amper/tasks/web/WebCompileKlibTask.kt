@@ -95,9 +95,9 @@ internal abstract class WebCompileKlibTask(
         quantifier = Quantifier.AnyOrNone,
     )
 
+    context(executionContext: TaskGraphExecutionContext)
     override suspend fun run(
         dependenciesResult: List<TaskResult>,
-        executionContext: TaskGraphExecutionContext,
     ): TaskResult {
         val fragments = module.fragments.filter {
             it.platforms.contains(platform) && it.isTest == isTest

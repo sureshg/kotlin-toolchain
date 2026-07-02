@@ -77,7 +77,8 @@ class JvmTestTask(
 
     private val logger = LoggerFactory.getLogger(javaClass)
 
-    override suspend fun run(dependenciesResult: List<TaskResult>, executionContext: TaskGraphExecutionContext): TaskResult {
+    context(executionContext: TaskGraphExecutionContext)
+    override suspend fun run(dependenciesResult: List<TaskResult>): TaskResult {
         val jvmTestSettings = module.leafFragments.single { it.platform == platform && it.isTest }.settings.jvm.test
         // https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.10.1/junit-platform-console-standalone-1.10.1.jar
         val junitConsoleUrl = Downloader.getUriForMavenArtifact(

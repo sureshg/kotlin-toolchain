@@ -62,9 +62,9 @@ class AfterMavenPhaseTask(
         it.platform == Platform.JVM && it.isTest == isTest
     } ?: error("No relevant JVM fragment was found. This task should be created only for modules with JVM platform.")
 
+    context(executionContext: TaskGraphExecutionContext)
     override suspend fun run(
         dependenciesResult: List<TaskResult>,
-        executionContext: TaskGraphExecutionContext,
     ): MavenPhaseResult {
         // Get the previous phase task result (should be exactly one)
         val previousPhaseResult = dependenciesResult

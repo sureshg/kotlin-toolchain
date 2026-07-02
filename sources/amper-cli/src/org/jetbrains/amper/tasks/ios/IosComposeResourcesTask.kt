@@ -42,7 +42,8 @@ class IosComposeResourcesTask(
         quantifier = Quantifier.AtLeastOne,
     )
 
-    override suspend fun run(dependenciesResult: List<TaskResult>, executionContext: TaskGraphExecutionContext): TaskResult {
+    context(executionContext: TaskGraphExecutionContext)
+    override suspend fun run(dependenciesResult: List<TaskResult>): TaskResult {
         val results = dependenciesMerged.filter { it.path.isDirectory() }
         val outputPath = taskOutputRoot.path / "merged"
         if (results.isEmpty()) {

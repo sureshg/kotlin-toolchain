@@ -25,7 +25,8 @@ class TransformAarExternalDependenciesTask(
     private val incrementalCache: IncrementalCache,
     private val classpathExtractor: (ResolveExternalDependenciesTask.Result) -> List<Path> = { it.compileClasspath },
 ) : Task {
-    override suspend fun run(dependenciesResult: List<TaskResult>, executionContext: TaskGraphExecutionContext): TaskResult {
+    context(executionContext: TaskGraphExecutionContext)
+    override suspend fun run(dependenciesResult: List<TaskResult>): TaskResult {
         val resolvedAndroidCompileDependencies = dependenciesResult
             .filterIsInstance<ResolveExternalDependenciesTask.Result>()
             .flatMap { classpathExtractor(it) }

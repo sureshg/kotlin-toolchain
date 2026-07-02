@@ -97,9 +97,9 @@ internal abstract class WebLinkTask(
     val taskOutputRoot
         get() = compiledWebArtifact.path
 
+    context(executionContext: TaskGraphExecutionContext)
     override suspend fun run(
         dependenciesResult: List<TaskResult>,
-        executionContext: TaskGraphExecutionContext,
     ): Result {
         val fragments = module.fragments.filter {
             it.platforms.contains(platform) && it.isTest == isTest

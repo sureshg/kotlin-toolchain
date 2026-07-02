@@ -116,7 +116,8 @@ internal class KspTask(
         conventionPath = leafFragment.kspGeneratedResourcesPath(buildOutputRoot.path),
     )
 
-    override suspend fun run(dependenciesResult: List<TaskResult>, executionContext: TaskGraphExecutionContext): TaskResult {
+    context(executionContext: TaskGraphExecutionContext)
+    override suspend fun run(dependenciesResult: List<TaskResult>): TaskResult {
         val jdk = jdkProvider.getJdkOrUserError(leafFragment.settings.jvm.jdk)
 
         val kspVersion = fragments.singleLeafFragment().settings.kotlin.ksp.version

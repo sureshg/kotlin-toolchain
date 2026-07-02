@@ -39,7 +39,8 @@ class NativeRunTask(
         require(platform.isDescendantOf(Platform.NATIVE))
     }
 
-    override suspend fun run(dependenciesResult: List<TaskResult>, executionContext: TaskGraphExecutionContext): TaskResult {
+    context(executionContext: TaskGraphExecutionContext)
+    override suspend fun run(dependenciesResult: List<TaskResult>): TaskResult {
         val compileTaskResult = dependenciesResult.filterIsInstance<NativeLinkTask.Result>().singleOrNull()
             ?: error("Could not find a single compile task in dependencies of $taskName")
 

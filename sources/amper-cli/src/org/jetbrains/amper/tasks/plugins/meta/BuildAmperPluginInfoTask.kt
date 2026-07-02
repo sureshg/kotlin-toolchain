@@ -37,9 +37,9 @@ class BuildAmperPluginInfoTask(
     override val platform: Platform = Platform.JVM
     override val buildType: BuildType? = null
 
+    context(executionContext: TaskGraphExecutionContext)
     override suspend fun run(
         dependenciesResult: List<TaskResult>,
-        executionContext: TaskGraphExecutionContext,
     ): TaskResult {
         if (isRegistered) {
             // Do nothing for now, as we don't know the "plugin binary format" yet.

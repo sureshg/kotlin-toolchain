@@ -13,9 +13,9 @@ import org.jetbrains.amper.tasks.jvm.JvmRuntimeClasspathTask
 import java.nio.file.Path
 
 class JavaAnnotationProcessorClasspathTask(override val taskName: TaskName) : Task {
+    context(executionContext: TaskGraphExecutionContext)
     override suspend fun run(
-        dependenciesResult: List<TaskResult>,
-        executionContext: TaskGraphExecutionContext
+        dependenciesResult: List<TaskResult>
     ): TaskResult = Result(
         processorClasspath = buildRuntimeClasspath(dependenciesResult),
     )

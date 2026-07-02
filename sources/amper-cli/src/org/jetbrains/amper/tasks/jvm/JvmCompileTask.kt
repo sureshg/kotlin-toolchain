@@ -174,7 +174,8 @@ internal class JvmCompileTask(
     // This path is voluntarily not tied to the current module, so the snapshots are shared
     private val icSnapshotsDir: Path = buildOutputRoot.path / "ic-cache/classpath-snapshots"
 
-    override suspend fun run(dependenciesResult: List<TaskResult>, executionContext: TaskGraphExecutionContext): TaskResult {
+    context(executionContext: TaskGraphExecutionContext)
+    override suspend fun run(dependenciesResult: List<TaskResult>): TaskResult {
         require(fragments.isNotEmpty()) {
             "fragments list is empty for jvm compile task, module=${module.userReadableName}"
         }

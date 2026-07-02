@@ -15,7 +15,8 @@ interface Task {
 
     val taskName: TaskName
 
-    suspend fun run(dependenciesResult: List<TaskResult>, executionContext: TaskGraphExecutionContext): TaskResult
+    context(executionContext: TaskGraphExecutionContext)
+    suspend fun run(dependenciesResult: List<TaskResult>): TaskResult
 }
 
 interface MaybeBuildTypeAware {

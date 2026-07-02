@@ -22,9 +22,9 @@ import java.io.File
 val logger = LoggerFactory.getLogger("JvmReloadClassesTask")
 
 class JvmReloadClassesTask(override val taskName: TaskName) : Task {
+    context(executionContext: TaskGraphExecutionContext)
     override suspend fun run(
         dependenciesResult: List<TaskResult>,
-        executionContext: TaskGraphExecutionContext,
     ): TaskResult {
 
         val orchestrationPort = System.getenv(ENV_COMPOSE_HOT_RELOAD_ORCHESTRATION_PORT)

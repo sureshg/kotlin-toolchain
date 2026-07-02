@@ -27,7 +27,8 @@ class JvmMergedClassesTask(
     private val taskOutputRoot: TaskOutputRoot,
     private val incrementalCache: IncrementalCache,
 ) : Task {
-    override suspend fun run(dependenciesResult: List<TaskResult>, executionContext: TaskGraphExecutionContext): TaskResult {
+    context(executionContext: TaskGraphExecutionContext)
+    override suspend fun run(dependenciesResult: List<TaskResult>): TaskResult {
         val classesResults = dependenciesResult.filterIsInstance<JvmClassesTask.Result>()
         val inputDirs = classesResults.flatMap { it.runtimeClasspath }.filter { it.exists() }
         val outputDir = taskOutputRoot.path

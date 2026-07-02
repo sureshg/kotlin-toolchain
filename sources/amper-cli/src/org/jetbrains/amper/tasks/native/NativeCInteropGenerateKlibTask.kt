@@ -73,9 +73,9 @@ internal class NativeCInteropGenerateKlibTask(
         path = leafFragment.generatedCinteropKlibsDirPath(buildOutputRoot.path)!!,
     )
 
+    context(executionContext: TaskGraphExecutionContext)
     override suspend fun run(
         dependenciesResult: List<TaskResult>,
-        executionContext: TaskGraphExecutionContext,
     ): TaskResult {
         data class CinteropEntry(
             val defFile: Path,

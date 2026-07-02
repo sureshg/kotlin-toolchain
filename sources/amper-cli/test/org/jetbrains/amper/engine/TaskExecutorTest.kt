@@ -231,9 +231,9 @@ class TaskExecutorTest {
         override val taskName: TaskName
             get() = testTaskName(name)
 
+        context(executionContext: TaskGraphExecutionContext)
         override suspend fun run(
             dependenciesResult: List<TaskResult>,
-            executionContext: TaskGraphExecutionContext,
         ): TaskResult {
             val currentTasksCount = runningTasksCount.incrementAndGet()
             maxParallelTasksCount.updateAndGet { max -> max(max, currentTasksCount) }

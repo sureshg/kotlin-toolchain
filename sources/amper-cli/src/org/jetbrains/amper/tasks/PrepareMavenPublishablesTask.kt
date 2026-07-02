@@ -47,7 +47,8 @@ class PrepareMavenPublishablesTask(
 ) : Task {
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
-    override suspend fun run(dependenciesResult: List<TaskResult>, executionContext: TaskGraphExecutionContext): TaskResult {
+    context(executionContext: TaskGraphExecutionContext)
+    override suspend fun run(dependenciesResult: List<TaskResult>): TaskResult {
         val depsCoordinatesOverrides = dependenciesResult
             .filterIsInstance<ResolveExternalDependenciesTask.Result>()
             .map { it.coordinateOverridesForPublishing }

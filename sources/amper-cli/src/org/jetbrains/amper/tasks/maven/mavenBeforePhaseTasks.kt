@@ -71,9 +71,9 @@ open class BeforeMavenPhaseTask(
     open suspend fun PhaseTaskParameters.configureSharedMavenProject(dependenciesResult: List<TaskResult>) =
         Unit
 
+    context(executionContext: TaskGraphExecutionContext)
     override suspend fun run(
         dependenciesResult: List<TaskResult>,
-        executionContext: TaskGraphExecutionContext,
     ): TaskResult {
         parameters.configureSharedMavenProject(dependenciesResult)
         return EmptyTaskResult

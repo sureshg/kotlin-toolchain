@@ -28,9 +28,9 @@ class BrowserRunTask(
     override val module: AmperModule,
     private val runSettings: WebRunSettings,
 ) : RunTask {
+    context(executionContext: TaskGraphExecutionContext)
     override suspend fun run(
         dependenciesResult: List<TaskResult>,
-        executionContext: TaskGraphExecutionContext,
     ): TaskResult {
         val port = runSettings.port ?: defaultWebBrowserRunPort
         val builtApp = dependenciesResult.requireSingleDependency<WasmJsBuildTask.Result>().appPath

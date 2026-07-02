@@ -61,7 +61,8 @@ class IosBuildTask(
     override val isTest: Boolean
         get() = false
 
-    override suspend fun run(dependenciesResult: List<TaskResult>, executionContext: TaskGraphExecutionContext): TaskResult {
+    context(executionContext: TaskGraphExecutionContext)
+    override suspend fun run(dependenciesResult: List<TaskResult>): TaskResult {
         val projectInitialInfo = dependenciesResult.requireSingleDependency<ManageXCodeProjectTask.Result>()
         val prebuildResult = dependenciesResult.requireSingleDependency<IosPreBuildTask.Result>()
         val xcodeSettings = projectInitialInfo.getResolvedXcodeSettings(buildType)

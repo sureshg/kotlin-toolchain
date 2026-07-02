@@ -63,7 +63,8 @@ class AndroidRunTask(
 
     private val fragments = module.fragments.filter { !it.isTest && it.platforms.contains(platform) }
 
-    override suspend fun run(dependenciesResult: List<TaskResult>, executionContext: TaskGraphExecutionContext): TaskResult {
+    context(executionContext: TaskGraphExecutionContext)
+    override suspend fun run(dependenciesResult: List<TaskResult>): TaskResult {
         val adb = waitForAdbConnection()
         val androidFragment = fragments.filterIsInstance<LeafFragment>().singleOrNull()
             ?: error("Only one $platform fragment is expected")

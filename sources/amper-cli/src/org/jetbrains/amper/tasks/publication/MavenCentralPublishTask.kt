@@ -36,9 +36,9 @@ class MavenCentralPublishTask(
 
     private val logger = LoggerFactory.getLogger(javaClass)
 
+    context(executionContext: TaskGraphExecutionContext)
     override suspend fun run(
         dependenciesResult: List<TaskResult>,
-        executionContext: TaskGraphExecutionContext,
     ): TaskResult {
         val zipBundle = dependenciesResult.filterIsInstance<PrepareMavenCentralBundleTask.Result>()
             .singleOrNull()

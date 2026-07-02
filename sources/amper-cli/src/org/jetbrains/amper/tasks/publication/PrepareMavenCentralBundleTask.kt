@@ -48,9 +48,9 @@ class PrepareMavenCentralBundleTask(
     override val platform: Platform? = null // we bundle all platforms together
     override val buildType: BuildType? = null
 
+    context(executionContext: TaskGraphExecutionContext)
     override suspend fun run(
         dependenciesResult: List<TaskResult>,
-        executionContext: TaskGraphExecutionContext,
     ): Result {
         val mainPublishables = dependenciesResult.filterIsInstance<PrepareMavenPublishablesTask.Result>()
             .singleOrNull()

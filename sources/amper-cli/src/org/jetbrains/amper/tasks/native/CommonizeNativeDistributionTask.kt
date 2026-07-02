@@ -52,7 +52,8 @@ class CommonizeNativeDistributionTask(
 
     private val kotlinDownloader = KotlinArtifactsDownloader(userCacheRoot, incrementalCache)
 
-    override suspend fun run(dependenciesResult: List<TaskResult>, executionContext: TaskGraphExecutionContext): TaskResult {
+    context(executionContext: TaskGraphExecutionContext)
+    override suspend fun run(dependenciesResult: List<TaskResult>): TaskResult {
         coroutineScope {
             model.nativePlatformSetsToCommonizeByKotlinVersion().forEach { [kotlinVersion, sharedPlatformSets] ->
                 launch {

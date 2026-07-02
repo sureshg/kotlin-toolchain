@@ -85,7 +85,8 @@ internal class NativeLinkTask(
         quantifier = Quantifier.AnyOrNone,
     )
 
-    override suspend fun run(dependenciesResult: List<TaskResult>, executionContext: TaskGraphExecutionContext): Result {
+    context(executionContext: TaskGraphExecutionContext)
+    override suspend fun run(dependenciesResult: List<TaskResult>): Result {
         val fragments = module.fragments.filter {
             it.platforms.contains(platform) && it.isTest == isTest
         }

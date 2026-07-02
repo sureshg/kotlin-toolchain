@@ -44,9 +44,9 @@ internal class ModuleSourcesResolveTask(
         quantifier = Quantifier.AnyOrNone,
     )
 
+    context(executionContext: TaskGraphExecutionContext)
     override suspend fun run(
-        dependenciesResult: List<TaskResult>,
-        executionContext: TaskGraphExecutionContext
+        dependenciesResult: List<TaskResult>
     ): TaskResult {
         request.node.sourceDirectories = buildList {
             fragmentsForSources.forEach {

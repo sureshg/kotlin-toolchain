@@ -78,9 +78,9 @@ class ExecuteMavenMojoTask(
     private val pluginCoordinates = "${mavenPlugin.groupId}:${mavenPlugin.artifactId}:${mavenPlugin.version}"
     private val mavenBuildDir get() = Path(mavenProject.build.directory)
 
+    context(executionContext: TaskGraphExecutionContext)
     override suspend fun run(
         dependenciesResult: List<TaskResult>,
-        executionContext: TaskGraphExecutionContext,
     ): TaskResult {
         val localRepoPath = MavenLocalRepository.Default.repository
         val repoSession = plexus.createRepositorySession(localRepoPath)

@@ -60,7 +60,8 @@ class ManageXCodeProjectTask(
         require(module.type == ProductType.IOS_APP) { "Wrong module type: ${module.type}" }
     }
 
-    override suspend fun run(dependenciesResult: List<TaskResult>, executionContext: TaskGraphExecutionContext): TaskResult {
+    context(executionContext: TaskGraphExecutionContext)
+    override suspend fun run(dependenciesResult: List<TaskResult>): TaskResult {
         initializeXcodeComponentManager()
         val baseDir = module.source.moduleDir
         val projectDir = baseDir / XCODE_PROJECT_DIR_NAME

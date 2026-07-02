@@ -18,7 +18,8 @@ class JvmRuntimeClasspathTask(
     private val module: AmperModule,
     private val isTest: Boolean,
 ): Task {
-    override suspend fun run(dependenciesResult: List<TaskResult>, executionContext: TaskGraphExecutionContext): TaskResult {
+    context(executionContext: TaskGraphExecutionContext)
+    override suspend fun run(dependenciesResult: List<TaskResult>): TaskResult {
         val classpath = buildRuntimeClasspath(dependenciesResult)
 
         return Result(

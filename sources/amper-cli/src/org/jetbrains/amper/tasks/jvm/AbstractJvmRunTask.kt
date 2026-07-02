@@ -48,7 +48,8 @@ abstract class AbstractJvmRunTask(
 
     protected open fun getEnvironment(dependenciesResult: List<TaskResult>): Map<String, String> = emptyMap()
 
-    override suspend fun run(dependenciesResult: List<TaskResult>, executionContext: TaskGraphExecutionContext): TaskResult {
+    context(executionContext: TaskGraphExecutionContext)
+    override suspend fun run(dependenciesResult: List<TaskResult>): TaskResult {
         val result = processRunner.runJava(
             jdk = getJdk(),
             workingDir = runSettings.workingDir,

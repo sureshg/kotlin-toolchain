@@ -31,9 +31,9 @@ class AndroidComposeResourcesTask(
         quantifier = Quantifier.Single,
     )
 
+    context(executionContext: TaskGraphExecutionContext)
     override suspend fun run(
         dependenciesResult: List<TaskResult>,
-        executionContext: TaskGraphExecutionContext,
     ): TaskResult {
         val preparedResourcesPath = preparedResources.path
 

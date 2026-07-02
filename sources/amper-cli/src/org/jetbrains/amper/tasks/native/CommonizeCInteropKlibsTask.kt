@@ -80,9 +80,9 @@ class CommonizeCInteropKlibsTask(
         path = fragment.generatedCinteropKlibsDirPath(buildOutputRoot.path)!!,
     )
 
+    context(executionContext: TaskGraphExecutionContext)
     override suspend fun run(
         dependenciesResult: List<TaskResult>,
-        executionContext: TaskGraphExecutionContext,
     ): TaskResult {
         val compiler = downloadNativeCompiler(kotlinVersion, userCacheRoot, jdkProvider)
         val commonizerClasspath = kotlinDownloader.downloadKotlinCommonizerEmbeddable(kotlinVersion)

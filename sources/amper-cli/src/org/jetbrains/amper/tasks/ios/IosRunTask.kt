@@ -32,7 +32,8 @@ class IosRunTask(
     private val taskOutputPath: TaskOutputRoot,
     private val processRunner: ProcessRunner,
 ) : RunTask {
-    override suspend fun run(dependenciesResult: List<TaskResult>, executionContext: TaskGraphExecutionContext): TaskResult {
+    context(executionContext: TaskGraphExecutionContext)
+    override suspend fun run(dependenciesResult: List<TaskResult>): TaskResult {
         taskOutputPath.path.createDirectories()
         val builtApp = dependenciesResult.requireSingleDependency<IosBuildTask.Result>()
         if (platform.isIosSimulator) {

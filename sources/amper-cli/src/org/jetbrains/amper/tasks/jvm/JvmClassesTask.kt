@@ -15,7 +15,8 @@ import java.nio.file.Path
  * Dummy task only needed as a classpath provider because dev tools require depending on classes instead of jars.
  */
 class JvmClassesTask(override val taskName: TaskName): Task {
-    override suspend fun run(dependenciesResult: List<TaskResult>, executionContext: TaskGraphExecutionContext): TaskResult {
+    context(executionContext: TaskGraphExecutionContext)
+    override suspend fun run(dependenciesResult: List<TaskResult>): TaskResult {
         val compileTaskResults = dependenciesResult.filterIsInstance<JvmCompileTask.Result>()
         require(compileTaskResults.isNotEmpty()) {
             "Call classes task without any compilation dependency"

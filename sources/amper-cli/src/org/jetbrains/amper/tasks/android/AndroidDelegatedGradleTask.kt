@@ -50,7 +50,8 @@ abstract class AndroidDelegatedGradleTask(
     override val taskName: TaskName,
 ) : Task {
 
-    override suspend fun run(dependenciesResult: List<TaskResult>, executionContext: TaskGraphExecutionContext): TaskResult {
+    context(executionContext: TaskGraphExecutionContext)
+    override suspend fun run(dependenciesResult: List<TaskResult>): TaskResult {
         val runtimeClasspath = runtimeClasspath(dependenciesResult)
 
         val moduleGradlePath = module.gradlePath(projectRoot)

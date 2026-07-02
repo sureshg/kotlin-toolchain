@@ -16,7 +16,8 @@ import org.jetbrains.amper.tasks.native.NativeLinkTask
 class IosPreBuildTask(
     override val taskName: TaskName,
 ) : Task {
-    override suspend fun run(dependenciesResult: List<TaskResult>, executionContext: TaskGraphExecutionContext): TaskResult {
+    context(executionContext: TaskGraphExecutionContext)
+    override suspend fun run(dependenciesResult: List<TaskResult>): TaskResult {
         val frameworkPath = checkNotNull(
             dependenciesResult.requireSingleDependency<NativeLinkTask.Result>().linkedBinary
         ) { "Framework must always be linked" }

@@ -13,8 +13,8 @@ import org.jetbrains.amper.engine.TaskName
  */
 internal class NoopTask(override val taskName: TaskName) : Task {
 
+    context(executionContext: TaskGraphExecutionContext)
     override suspend fun run(
         dependenciesResult: List<TaskResult>,
-        executionContext: TaskGraphExecutionContext,
     ): TaskResult = EmptyTaskResult
 }

@@ -60,7 +60,7 @@ class TaskExecutor(
                 val executionContext = DefaultTaskGraphExecutionContext()
                 try {
                     val results = ConcurrentHashMap<TaskId, Deferred<ExecutionResult>>()
-                    context(listener, executionContext) {
+                    val _ = context(listener, executionContext) {
                         runTasks(tasksToRun, currentPath = emptyList(), results)
                     }
 
@@ -168,7 +168,7 @@ class TaskExecutor(
         }
     }
 
-    context(progressListener: TaskGraphExecutionListener, executionContext: TaskGraphExecutionContext)
+    context(progressListener: TaskGraphExecutionListener, _: TaskGraphExecutionContext)
     private suspend fun runSingleTask(
         taskId: TaskId,
         dependencyResults: List<TaskResult>,
@@ -178,7 +178,7 @@ class TaskExecutor(
         try {
             val mdcWithTaskName = MDCContext(MDC.getCopyOfContextMap() + ("amper-task-name" to taskId.value))
             withContext(tasksDispatcher + mdcWithTaskName + CoroutineName("task:${taskId.value}")) {
-                task.run(dependencyResults, executionContext)
+                task.run(dependencyResults)
             }
         } finally {
             // TODO: completion status can be tracked here as well

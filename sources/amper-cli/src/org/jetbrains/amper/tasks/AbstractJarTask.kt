@@ -27,7 +27,8 @@ abstract class AbstractJarTask(
 
     protected abstract fun createResult(jarPath: Path): Result
 
-    override suspend fun run(dependenciesResult: List<TaskResult>, executionContext: TaskGraphExecutionContext): TaskResult {
+    context(executionContext: TaskGraphExecutionContext)
+    override suspend fun run(dependenciesResult: List<TaskResult>): TaskResult {
         val inputDirs = assembleInputDirs(dependenciesResult)
         val outputJarPath = outputJarPath()
 

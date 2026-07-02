@@ -38,7 +38,8 @@ class IosKotlinTestTask(
     override val buildType: BuildType,
     private val processRunner: ProcessRunner,
 ) : TestTask {
-    override suspend fun run(dependenciesResult: List<TaskResult>, executionContext: TaskGraphExecutionContext): TaskResult {
+    context(executionContext: TaskGraphExecutionContext)
+    override suspend fun run(dependenciesResult: List<TaskResult>): TaskResult {
         val compileTaskResult = dependenciesResult.requireSingleDependency<NativeLinkTask.Result>()
         val workingDir = module.source.moduleDir
         val executable = compileTaskResult.linkedBinary

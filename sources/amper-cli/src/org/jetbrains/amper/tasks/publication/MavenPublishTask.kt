@@ -53,7 +53,8 @@ class MavenPublishTask(
     override val targetRepositoryId: String
         get() = targetRepository.id
 
-    override suspend fun run(dependenciesResult: List<TaskResult>, executionContext: TaskGraphExecutionContext): TaskResult {
+    context(executionContext: TaskGraphExecutionContext)
+    override suspend fun run(dependenciesResult: List<TaskResult>): TaskResult {
 
         if (!targetRepository.publish) {
             userReadableError(

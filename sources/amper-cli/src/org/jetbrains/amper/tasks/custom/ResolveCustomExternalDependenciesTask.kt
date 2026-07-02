@@ -74,9 +74,9 @@ internal class ResolveCustomExternalDependenciesTask(
 
     private val mavenResolver = CliReportingMavenResolver(userCacheRoot, incrementalCache)
 
+    context(executionContext: TaskGraphExecutionContext)
     override suspend fun run(
         dependenciesResult: List<TaskResult>,
-        executionContext: TaskGraphExecutionContext,
     ): Result {
         val dependencyPaths: List<Path> =
             when {

@@ -43,9 +43,9 @@ class WasmJsBuildTask(
     override val isTest: Boolean
         get() = false
 
+    context(executionContext: TaskGraphExecutionContext)
     override suspend fun run(
         dependenciesResult: List<TaskResult>,
-        executionContext: TaskGraphExecutionContext,
     ): TaskResult {
         val linkedDir = dependenciesResult.requireSingleDependency<WebLinkTask.Result>().linkedBinary
             ?: userReadableError("Build an application without sources is not possible.")

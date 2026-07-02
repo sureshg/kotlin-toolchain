@@ -20,9 +20,9 @@ internal class ResolveClasspathRequestTask(
     private val classpathRequest: TaskFromPluginDescription.ClasspathRequest,
 ) : Task {
 
+    context(executionContext: TaskGraphExecutionContext)
     override suspend fun run(
         dependenciesResult: List<TaskResult>,
-        executionContext: TaskGraphExecutionContext,
     ): TaskResult {
         val resolvedFiles = buildList {
             dependenciesResult.forEach { result ->

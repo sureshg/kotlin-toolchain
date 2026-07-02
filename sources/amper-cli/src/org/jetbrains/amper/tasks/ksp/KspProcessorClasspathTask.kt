@@ -18,7 +18,8 @@ class KspProcessorClasspathTask(
     private val module: AmperModule,
     private val isTest: Boolean,
 ) : Task {
-    override suspend fun run(dependenciesResult: List<TaskResult>, executionContext: TaskGraphExecutionContext): TaskResult = Result(
+    context(executionContext: TaskGraphExecutionContext)
+    override suspend fun run(dependenciesResult: List<TaskResult>): TaskResult = Result(
         processorClasspath = buildRuntimeClasspath(dependenciesResult),
         module = module,
         isTest = isTest,

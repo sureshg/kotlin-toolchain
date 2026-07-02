@@ -46,7 +46,8 @@ internal abstract class AbstractResolveJvmExternalDependenciesTask(
 
     protected open val incrementalCacheKey: String get() = taskName.id.value
 
-    override suspend fun run(dependenciesResult: List<TaskResult>, executionContext: TaskGraphExecutionContext): TaskResult {
+    context(executionContext: TaskGraphExecutionContext)
+    override suspend fun run(dependenciesResult: List<TaskResult>): TaskResult {
         val repositories = module.mavenResolveRepositories.map { it.toRepository() }.distinct()
         
         val externalUnscopedDependencies = getMavenCoordinatesToResolve()

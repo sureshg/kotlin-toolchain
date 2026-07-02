@@ -17,7 +17,8 @@ class GetAndroidPlatformFileFromPackageTask(
     private val userCacheRoot: AmperUserCacheRoot,
     override val taskName: TaskName,
 ) : Task {
-    override suspend fun run(dependenciesResult: List<TaskResult>, executionContext: TaskGraphExecutionContext): Result {
+    context(executionContext: TaskGraphExecutionContext)
+    override suspend fun run(dependenciesResult: List<TaskResult>): Result {
         val packagePath = SdkInstallManager(userCacheRoot, androidSdkPath).install(packageName).path
         val localFileSystemPackagePath = packagePath
             .split(";")

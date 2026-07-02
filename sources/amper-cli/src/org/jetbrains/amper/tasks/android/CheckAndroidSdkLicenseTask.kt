@@ -18,7 +18,8 @@ class CheckAndroidSdkLicenseTask(
     private val userCacheRoot: AmperUserCacheRoot,
     override val taskName: TaskName
 ): Task {
-    override suspend fun run(dependenciesResult: List<TaskResult>, executionContext: TaskGraphExecutionContext): TaskResult {
+    context(executionContext: TaskGraphExecutionContext)
+    override suspend fun run(dependenciesResult: List<TaskResult>): TaskResult {
         val unacceptedLicenses = SdkInstallManager(userCacheRoot, androidSdkPath).findUnacceptedSdkLicenses()
         if (unacceptedLicenses.isNotEmpty()) {
             val licensesListText = unacceptedLicenses.map { it.id }

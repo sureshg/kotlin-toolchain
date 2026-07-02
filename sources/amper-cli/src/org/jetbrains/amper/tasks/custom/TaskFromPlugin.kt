@@ -96,9 +96,9 @@ class TaskFromPlugin(
         // No need to consume anything, because we match inputs by paths already
     }
 
+    context(executionContext: TaskGraphExecutionContext)
     override suspend fun run(
         dependenciesResult: List<TaskResult>,
-        executionContext: TaskGraphExecutionContext,
     ): TaskResult {
         val taskCode = dependenciesResult
             .filterIsInstance<JvmRuntimeClasspathTask.Result>()

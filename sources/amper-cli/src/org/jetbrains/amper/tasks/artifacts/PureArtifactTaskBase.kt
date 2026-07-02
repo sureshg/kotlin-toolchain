@@ -78,9 +78,9 @@ abstract class PureArtifactTaskBase(
 
     abstract suspend fun run(executionContext: TaskGraphExecutionContext)
 
+    context(executionContext: TaskGraphExecutionContext)
     final override suspend fun run(
-        dependenciesResult: List<TaskResult>,
-        executionContext: TaskGraphExecutionContext
+        dependenciesResult: List<TaskResult>
     ): TaskResult {
         incrementalCache.execute(
             key = taskName.id.value,
