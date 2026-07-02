@@ -9,10 +9,29 @@ import org.jetbrains.amper.test.Dirs
 import org.jetbrains.amper.test.dr.toMavenNode
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInfo
+import org.junit.jupiter.api.assertNotNull
+import org.junit.jupiter.api.io.TempDir
+import java.nio.file.Path
+import java.util.*
+import kotlin.io.path.Path
+import kotlin.io.path.copyToRecursively
+import kotlin.io.path.createDirectories
+import kotlin.io.path.deleteIfExists
+import kotlin.io.path.exists
+import kotlin.io.path.name
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class ResolverTest: BaseDRTest() {
+
+    @TempDir
+    lateinit var tmpDir: Path
+
+    fun uniqueNestedTempDir(): Path = tmpDir.resolve(UUID.randomUUID().toString().substring(0, 10))
+
+    override val testDataPath: Path
+        get() = super.testDataPath.resolve("resolver")
 
     @Test
     fun `junit-jupiter-params resolved in two contexts (COMPILE, RUNTIME)`() = runDrTest {
@@ -172,5 +191,76 @@ class ResolverTest: BaseDRTest() {
                     || node.messages.single().detailedMessage.contains("java.lang.IllegalArgumentException: Illegal character in path at index"),
             "Unexpected detailed error message: \n ${node.messages.single().detailedMessage}"
         )
+    }
+
+    /**
+     * This test checks that sources are downloaded actually by [Resolver.downloadDependencies]
+     * if a dependency graph was downloaded before WITHOUT sources already.
+     */
+    @Test
+    fun `com_github_ajalt_clikt clikt-core-wasm-js 5_0_3`(testInfo: TestInfo) = runDrTest {
+
+        val defaultCacheRoot = Dirs.userCacheRoot
+
+        val platforms = setOf(ResolutionPlatform.WASM_JS)
+        val dependency = [testInfo.nameToDependency()]
+
+        val resolver = Resolver()
+
+        // 1. Populating default test local storage with all related dependencies, including source files.
+        dependency.also {
+            val defaultContext = context(
+                platform = platforms,
+                cacheBuilder = cacheBuilder(defaultCacheRoot),
+            )
+            val root = dependency.toRootNode(defaultContext)
+            resolver.resolveDependencies(root, ResolutionLevel.NETWORK,
+                downloadSources = true, transitive = false, incrementalCacheUsage = IncrementalCacheUsage.SKIP)
+            downloadAndAssertFiles(testInfo, root, withSources = true)
+        }
+
+        // Checking that the sources are downloaded on the second attempt after graph was initially downloaded without them
+        dependency.also {
+            val cleanCacheRoot = uniqueNestedTempDir()
+
+            // 2. Populating clean test local storage with all related dependencies, excluding source file.
+            val cliktRelativePath = Path(".m2.cache/com/github/ajalt/clikt/clikt-core-wasm-js/5.0.3")
+            val cliktDirInCleanCacheRoot = cleanCacheRoot.resolve(cliktRelativePath).createDirectories()
+
+            // Populating clean cache with artifacts (except sources)
+            defaultCacheRoot.resolve(cliktRelativePath)
+                .copyToRecursively(cliktDirInCleanCacheRoot, followLinks = false, overwrite = false)
+            cliktDirInCleanCacheRoot.resolve("clikt-core-wasm-js-5.0.3-sources.jar").deleteIfExists()
+
+            // 3. Preparing resolution context that will reuse artifacts from default cache
+            val cleanContext = context(
+                platform = platforms,
+                cacheBuilder = {
+                    // Using clean local artifact storage for the test
+                    cacheBuilder(cleanCacheRoot).invoke(this)
+                    // This allows reusing the shared cache on TC and locally (avoiding redownloading already cached dependencies).
+                    // At the same time, the test could check what is presented/missing in its own test-specific local storage.
+                    this.readOnlyExternalRepositories = [MavenLocalRepository(defaultCacheRoot.resolve(".m2.cache"))]
+                },
+            )
+
+            // 4. Resolving dependencies WITHOUT sources. As a result, test artifacts storage won't contain sources.
+            val root = dependency.toRootNode(cleanContext)
+            resolver.resolveDependencies(
+                root, ResolutionLevel.NETWORK, downloadSources = false, transitive = false, incrementalCacheUsage = IncrementalCacheUsage.SKIP)
+
+            val sourcesFile = root.distinctBfsSequence()
+                .filterIsInstance<MavenDependencyNode>()
+                .flatMap { it.dependency.files(true) }
+                .singleOrNull { it.path?.name == "clikt-core-wasm-js-5.0.3-sources.jar" }
+
+            assertNotNull(sourcesFile?.path) { "Sources file is not found in the resolved dependencies graph" }
+            assertFalse(sourcesFile.path!!.exists(), "Sources file is not found in the resolved dependencies graph")
+
+            // 5. Resolving dependencies WITH sources. As a result, test artifacts storage won't contain sources.
+            downloadAndAssertFiles(testInfo, root, withSources = true)
+
+            assertTrue(sourcesFile.path!!.exists(), "Sources file should has been downloaded")
+        }
     }
 }

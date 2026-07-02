@@ -925,7 +925,7 @@ class MavenDependencyImpl internal constructor(
         }
 
     private fun getTargetDownloadState(downloadSources: Boolean): DownloadState =
-        if (downloadSources) DownloadState.WITHOUT_SOURCES else DownloadState.COMPLETE
+        if (downloadSources) DownloadState.COMPLETE else DownloadState.WITHOUT_SOURCES
 
     private fun resetMetadataDiagnostics() {
         metadataResolutionFailureMessage = null
