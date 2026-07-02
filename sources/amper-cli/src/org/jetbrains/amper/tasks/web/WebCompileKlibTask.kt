@@ -16,6 +16,7 @@ import org.jetbrains.amper.compilation.KotlinArtifactsDownloader
 import org.jetbrains.amper.compilation.KotlinCompilationType
 import org.jetbrains.amper.compilation.KotlinUserSettings
 import org.jetbrains.amper.compilation.ResolvedCompilerPlugin
+import org.jetbrains.amper.compilation.compiler.downloadKotlinCompiler
 import org.jetbrains.amper.compilation.downloadCompilerPlugins
 import org.jetbrains.amper.compilation.kotlinModuleName
 import org.jetbrains.amper.compilation.serializableKotlinSettings
@@ -203,8 +204,9 @@ internal abstract class WebCompileKlibTask(
         librariesPaths: List<Path>,
         friendPaths: List<Path>,
     ) {
-        val compilerJars = kotlinArtifactsDownloader.downloadKotlinCompilerEmbeddable(
+        val compiler = kotlinArtifactsDownloader.downloadKotlinCompiler(
             version = kotlinUserSettings.compilerVersion,
+            jdk = jdk,
         )
         val compilerPlugins = kotlinArtifactsDownloader.downloadCompilerPlugins(
             plugins = kotlinUserSettings.compilerPlugins,
@@ -231,16 +233,9 @@ internal abstract class WebCompileKlibTask(
             .setListAttribute("compiler-args", compilerArgs)
             .use {
                 logger.info("Compiling Kotlin ${expectedPlatform.name} for module '${module.userReadableName}'...")
-                val result = processRunner.runJava(
-                    jdk = jdk,
-                    workingDir = Path("."),
-                    mainClass = "org.jetbrains.kotlin.cli.js.K2JSCompiler",
-                    classpath = compilerJars,
-                    programArgs = compilerArgs,
-                    jvmArgs = emptyList(),
-                    argsMode = ArgsMode.ArgFile(tempRoot = tempRoot),
-                    outputListener = LoggingProcessOutputListener(logger),
-                )
+                val result = context(processRunner) {
+                    compiler.compileJs(compilerArgs = compilerArgs, ArgsMode.ArgFile(tempRoot = tempRoot))
+                }
                 if (result.exitCode != 0) {
                     userReadableError("Kotlin ${expectedPlatform.name} compilation failed (see errors above)")
                 }

@@ -15,6 +15,7 @@ import org.jetbrains.amper.compilation.KotlinArtifactsDownloader
 import org.jetbrains.amper.compilation.KotlinCompilationType
 import org.jetbrains.amper.compilation.KotlinNativeCompiler
 import org.jetbrains.amper.compilation.KotlinUserSettings
+import org.jetbrains.amper.compilation.compiler.downloadKotlinCompiler
 import org.jetbrains.amper.compilation.downloadCompilerPlugins
 import org.jetbrains.amper.compilation.downloadNativeCompiler
 import org.jetbrains.amper.compilation.kotlinMetadataCompilerArgs
@@ -312,9 +313,7 @@ internal class MetadataCompileTask(
         val nativeCompiler = downloadNativeCompiler(kotlinUserSettings.compilerVersion, userCacheRoot, jdkProvider)
         val commonizedKlibs = commonizedKlibs(nativeCompiler, fragmentPlatforms, kotlinUserSettings)
 
-        val compilerJars = kotlinArtifactsDownloader.downloadKotlinCompilerEmbeddable(
-            version = kotlinUserSettings.compilerVersion,
-        )
+        val kotlinCompiler = kotlinArtifactsDownloader.downloadKotlinCompiler(kotlinUserSettings.compilerVersion, jdk)
         val compilerPlugins = kotlinArtifactsDownloader.downloadCompilerPlugins(
             plugins = kotlinUserSettings.compilerPlugins,
             repositories = module.mavenResolveRepositories.map { it.toRepository() },
@@ -340,15 +339,12 @@ internal class MetadataCompileTask(
             .setListAttribute("compiler-args", compilerArgs)
             .use {
                 logger.infoNoConsole("Compiling Kotlin metadata for module '${module.userReadableName}'...")
-                val result = processRunner.runJava(
-                    jdk = jdk,
-                    workingDir = Path("."),
-                    mainClass = "org.jetbrains.kotlin.cli.metadata.KotlinMetadataCompiler",
-                    classpath = compilerJars,
-                    programArgs = compilerArgs,
-                    argsMode = ArgsMode.ArgFile(tempRoot = tempRoot),
-                    outputListener = LoggingProcessOutputListener(logger),
-                )
+                val result = context(processRunner) {
+                    kotlinCompiler.compileMetadata(
+                        compilerArgs = compilerArgs,
+                        argsMode = ArgsMode.ArgFile(tempRoot = tempRoot),
+                    )
+                }
                 if (result.exitCode != 0) {
                     userReadableError("Kotlin metadata compilation failed (see errors above)")
                 }
