@@ -1,0 +1,28 @@
+product: jvm/lib
+
+description: A test library
+
+repositories:
+  - id: mavenLocal
+    url: mavenLocal
+    resolve: false
+    publish: true
+
+settings:
+  publishing:
+    enabled: true
+    group: "amper.test.jvm-publish-all-checksums"
+    version: "2.2"
+    name: artifactName
+    signArtifacts: true
+    publishSources: true
+    checksums: [md5, sha1, sha256, sha512]
+    mavenCentral: enabled
+    pom:
+      url: https://example.org
+      scm: https://git.example.org
+      licenses:
+        - name: MIT
+          url: https://opensource.org/licenses/MIT
+      developers:
+        - John Doe

@@ -97,6 +97,9 @@ settings@android:
     version: 1.18.46  # default
   publishing:
     artifactId: null  # default, from ${name}
+    checksums:
+      - md5  # default
+      - sha1  # default
     enabled: false  # default
     group: null  # default
     mavenCentral:
@@ -200,6 +203,9 @@ settings@jvm:
     version: 1.18.46  # default
   publishing:
     artifactId: null  # default, from ${name}
+    checksums:
+      - md5  # default
+      - sha1  # default
     enabled: false  # default
     group: null  # default
     mavenCentral:
@@ -319,6 +325,9 @@ settings@jvm+android:
     version: 1.18.46  # default
   publishing:
     artifactId: null  # default, from ${name}
+    checksums:
+      - md5  # default
+      - sha1  # default
     enabled: false  # default
     group: null  # default
     mavenCentral:
@@ -428,6 +437,9 @@ settings@jvm:
     version: 1.18.46  # default
   publishing:
     artifactId: null  # default, from ${name}
+    checksums:
+      - md5  # default
+      - sha1  # default
     enabled: false  # default
     group: null  # default
     mavenCentral:
@@ -544,6 +556,9 @@ settings@android:
     version: 1.18.46  # default
   publishing:
     artifactId: null  # default, from ${name}
+    checksums:
+      - md5  # default
+      - sha1  # default
     enabled: false  # default
     group: null  # default
     mavenCentral:

@@ -20,4 +20,9 @@ class MavenCentralRequirementsDiagnosticsTest : FrontendTestCaseBase(Path("testR
     fun `publishing disabled explicitly`() {
         diagnosticsTest(caseName = "publishing-false-explicit")
     }
+
+    @Test
+    fun `explicit checksums list missing required`() {
+        diagnosticsTest(caseName = "overridden-checksums-missing-required")
+    }
 }

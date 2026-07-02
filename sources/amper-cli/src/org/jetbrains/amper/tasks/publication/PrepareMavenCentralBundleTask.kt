@@ -17,6 +17,8 @@ import org.jetbrains.amper.engine.TaskGraphExecutionContext
 import org.jetbrains.amper.engine.TaskName
 import org.jetbrains.amper.frontend.AmperModule
 import org.jetbrains.amper.frontend.Platform
+import org.jetbrains.amper.frontend.publishingSettings
+import org.jetbrains.amper.frontend.schema.Checksum
 import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.incrementalcache.ResultWithSerializable
 import org.jetbrains.amper.incrementalcache.execute
@@ -35,8 +37,6 @@ import kotlin.io.path.Path
 import kotlin.io.path.createParentDirectories
 import kotlin.io.path.readBytes
 import kotlin.io.path.writeText
-
-private val checksumsAlgorithms = setOf("MD5", "SHA-1", "SHA-256", "SHA-512")
 
 class PrepareMavenCentralBundleTask(
     override val taskName: TaskName,
@@ -57,15 +57,20 @@ class PrepareMavenCentralBundleTask(
             ?.publishables
             ?: error("Expected single PrepareMavenPublishablesTask.Result from task dependencies")
 
+        val checksumsToPublish = module.publishingSettings.checksums
+
         val checksumPublishables = incrementalCache.execute(
             key = "${taskName.id.value}-generate-checksums",
             inputValues = mapOf(
                 "publishables" to Json.encodeToString(mainPublishables),
+                "checksumsToPublish" to checksumsToPublish.joinToString(),
             ),
             inputFiles = mainPublishables.map { it.path },
             serializer = ListSerializer(MavenPublishable.serializer()),
         ) {
-            val checksumPublishables = mainPublishables.flatMapConcurrently { generateChecksums(it) }
+            val checksumPublishables = mainPublishables.flatMapConcurrently { mainPublishable ->
+                generateChecksums(mainPublishable, checksumsToPublish)
+            }
             ResultWithSerializable(
                 outputValue = checksumPublishables,
                 outputFiles = checksumPublishables.map { it.path },
@@ -87,10 +92,12 @@ class PrepareMavenCentralBundleTask(
         return Result(zip)
     }
 
-    private suspend fun generateChecksums(publishable: MavenPublishable): List<MavenPublishable> =
-        checksumsAlgorithms.mapConcurrently { algorithm ->
-            generateChecksum(publishable, algorithm)
-        }
+    private suspend fun generateChecksums(
+        publishable: MavenPublishable,
+        checksumsToPublish: List<Checksum>,
+    ): List<MavenPublishable> = checksumsToPublish.mapConcurrently { algorithm ->
+        generateChecksum(publishable, algorithm.algorithmName)
+    }
 
     private suspend fun generateChecksum(publishable: MavenPublishable, algorithm: String): MavenPublishable =
         withContext(Dispatchers.IO) {

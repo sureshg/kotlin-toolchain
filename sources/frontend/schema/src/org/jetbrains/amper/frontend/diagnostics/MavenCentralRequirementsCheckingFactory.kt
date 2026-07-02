@@ -8,9 +8,11 @@ import org.jetbrains.amper.frontend.AmperModule
 import org.jetbrains.amper.frontend.SchemaBundle
 import org.jetbrains.amper.frontend.api.SchemaValueDelegate
 import org.jetbrains.amper.frontend.api.Trace
+import org.jetbrains.amper.frontend.api.TraceableValue
 import org.jetbrains.amper.frontend.api.isSetInTemplate
 import org.jetbrains.amper.frontend.asBuildProblemSource
 import org.jetbrains.amper.frontend.publishingSettings
+import org.jetbrains.amper.frontend.schema.Checksum
 import org.jetbrains.amper.frontend.types.generated.*
 import org.jetbrains.amper.problems.reporting.BuildProblem
 import org.jetbrains.amper.problems.reporting.BuildProblemSource
@@ -20,6 +22,8 @@ import org.jetbrains.amper.problems.reporting.FileBuildProblemSource
 import org.jetbrains.amper.problems.reporting.Level
 import org.jetbrains.amper.problems.reporting.MultipleLocationsBuildProblemSource
 import org.jetbrains.amper.problems.reporting.ProblemReporter
+
+private val requiredChecksums = [Checksum.MD5, Checksum.SHA1]
 
 object MavenCentralRequirementsCheckingFactory : AomSingleModuleDiagnosticFactory {
 
@@ -55,6 +59,21 @@ object MavenCentralRequirementsCheckingFactory : AomSingleModuleDiagnosticFactor
                 )
             )
         }
+
+        val missingRequiredChecksums = requiredChecksums.filter { it !in module.publishingSettings.checksums }
+        if (missingRequiredChecksums.isNotEmpty()) {
+            problemReporter.reportMessage(
+                RequiredCheckumsMissingForMavenCentralPublication(
+                    mavenCentralEnabledTrace = mavenCentralEnabledProp.trace,
+                    missingRequiredChecksums = missingRequiredChecksums,
+                    actualChecksums = TraceableValue(
+                        trace = module.publishingSettings.checksumsDelegate.trace,
+                        value = module.publishingSettings.checksums,
+                    )
+                )
+            )
+        }
+
         val missingProperties = mutableSetOf<MissingProperty>()
         if (module.description == null) {
             missingProperties.add(MissingProperty("description", module.commonModuleNode.descriptionDelegate))
@@ -151,6 +170,26 @@ class SourcesJarIsRequiredForMavenCentralPublication(
     )
 }
 
+class RequiredCheckumsMissingForMavenCentralPublication(
+    val mavenCentralEnabledTrace: Trace,
+    val missingRequiredChecksums: List<Checksum>,
+    val actualChecksums: TraceableValue<List<Checksum>>,
+) : BuildProblem {
+
+    override val diagnosticId: DiagnosticId = FrontendDiagnosticId.SourcesJarIsRequiredForMavenCentralPublication
+    override val message = SchemaBundle.message(
+        "maven.central.required.checksums.missing",
+        missingRequiredChecksums.sortedBy { it.schemaValue }.joinToString { "`${it.schemaValue}`" },
+    )
+    override val level: Level = Level.Error
+    override val type: BuildProblemType = BuildProblemType.InconsistentConfiguration
+    override val source: BuildProblemSource = singleOrMultiBuildProblemSource(
+        mavenCentralEnabledTrace,
+        actualChecksums.trace,
+        groupingMessage = SchemaBundle.message("maven.central.required.checksums.missing.grouping"),
+    )
+}
+
 class RequiredPropertiesMissingForMavenCentralPublication(
     val mavenCentralEnabledTrace: Trace,
     val missingProperties: Set<MissingProperty>,
@@ -159,7 +198,7 @@ class RequiredPropertiesMissingForMavenCentralPublication(
     override val diagnosticId: DiagnosticId = FrontendDiagnosticId.RequiredPropertiesMissingForMavenCentralPublication
     override val message = SchemaBundle.message(
         "maven.central.required.properties.missing",
-        missingProperties.sortedBy { it.path }.joinToString("\n") { " - `${it.path}`" }
+        missingProperties.sortedBy { it.path }.joinToString("\n") { " - `${it.path}`" },
     )
     override val level: Level = Level.Error
     override val type: BuildProblemType = BuildProblemType.InconsistentConfiguration

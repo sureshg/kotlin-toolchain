@@ -151,6 +151,10 @@ Fragments:
       native: <default> null
       publishing: <default> {
         artifactId: <default> null
+        checksums: <default> [
+          - md5
+          - sha1
+        ]
         enabled: <default> false
         group: <default> null
         mavenCentral: <default> {
@@ -337,6 +341,10 @@ Fragments:
       native: <default> null
       publishing: <default> {
         artifactId: <default> null
+        checksums: <default> [
+          - md5
+          - sha1
+        ]
         enabled: <default> false
         group: <default> null
         mavenCentral: <default> {

@@ -53,6 +53,12 @@ class PublishingSettings : SchemaNode() {
     @SchemaDoc("If set to true, JARs with sources for each platform are published as extra artifacts.")
     val publishSources by value(default = false)
 
+    @SchemaDoc(
+        "The list of checksums to publish for each artifact. By default, only the checksums required by " +
+                "Maven Central (md5 and sha1) are published to reduce the number of files."
+    )
+    val checksums by value(default = [Checksum.MD5, Checksum.SHA1])
+
     @SchemaDoc("Configures publication to Maven Central (via the Publish portal).")
     val mavenCentral by nested<MavenCentralSettings>()
 }
@@ -65,6 +71,21 @@ class MavenCentralSettings : SchemaNode() {
 
     @SchemaDoc("Configures whether the publication should be fully automated, or pause for manual verification.")
     val publishingMode: PublishingMode by value(default = PublishingMode.Manual)
+}
+
+enum class Checksum(
+    override val schemaValue: String,
+    /**
+     * Standard algorithm name as described in the
+     * [Java Security Standard Algorithm Names Specification](https://docs.oracle.com/en/java/javase/25/docs/specs/security/standard-names.html),
+     * in the _MessageDigest Algorithms_ section.
+     */
+    val algorithmName: String,
+) : SchemaEnum {
+    MD5(schemaValue = "md5", algorithmName = "MD5"),
+    SHA1(schemaValue = "sha1", algorithmName = "SHA-1"),
+    SHA256(schemaValue = "sha256", algorithmName = "SHA-256"),
+    SHA512(schemaValue = "sha512", algorithmName = "SHA-512"),
 }
 
 /**

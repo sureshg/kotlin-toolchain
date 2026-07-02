@@ -206,6 +206,69 @@ class AmperPublishTest : AmperCliTestBase() {
             "artifactName/2.2/artifactName-2.2-javadoc.jar.asc",
             "artifactName/2.2/artifactName-2.2-javadoc.jar.asc.md5",
             "artifactName/2.2/artifactName-2.2-javadoc.jar.asc.sha1",
+            "artifactName/2.2/artifactName-2.2-javadoc.jar.md5",
+            "artifactName/2.2/artifactName-2.2-javadoc.jar.sha1",
+            "artifactName/2.2/artifactName-2.2-sources.jar",
+            "artifactName/2.2/artifactName-2.2-sources.jar.asc",
+            "artifactName/2.2/artifactName-2.2-sources.jar.asc.md5",
+            "artifactName/2.2/artifactName-2.2-sources.jar.asc.sha1",
+            "artifactName/2.2/artifactName-2.2-sources.jar.md5",
+            "artifactName/2.2/artifactName-2.2-sources.jar.sha1",
+            "artifactName/2.2/artifactName-2.2.jar",
+            "artifactName/2.2/artifactName-2.2.jar.asc",
+            "artifactName/2.2/artifactName-2.2.jar.asc.md5",
+            "artifactName/2.2/artifactName-2.2.jar.asc.sha1",
+            "artifactName/2.2/artifactName-2.2.jar.md5",
+            "artifactName/2.2/artifactName-2.2.jar.sha1",
+            "artifactName/2.2/artifactName-2.2.pom",
+            "artifactName/2.2/artifactName-2.2.pom.asc",
+            "artifactName/2.2/artifactName-2.2.pom.asc.md5",
+            "artifactName/2.2/artifactName-2.2.pom.asc.sha1",
+            "artifactName/2.2/artifactName-2.2.pom.md5",
+            "artifactName/2.2/artifactName-2.2.pom.sha1",
+        )
+
+        assertSignatureIsValid(
+            dataFile = groupDir.resolve("artifactName/2.2/artifactName-2.2.jar"),
+            signatureFile = groupDir.resolve("artifactName/2.2/artifactName-2.2.jar.asc"),
+            verificationCertificate = testPgpKey,
+        )
+        assertSignatureIsValid(
+            dataFile = groupDir.resolve("artifactName/2.2/artifactName-2.2-sources.jar"),
+            signatureFile = groupDir.resolve("artifactName/2.2/artifactName-2.2-sources.jar.asc"),
+            verificationCertificate = testPgpKey,
+        )
+        assertSignatureIsValid(
+            dataFile = groupDir.resolve("artifactName/2.2/artifactName-2.2.pom"),
+            signatureFile = groupDir.resolve("artifactName/2.2/artifactName-2.2.pom.asc"),
+            verificationCertificate = testPgpKey,
+        )
+    }
+
+    @Test
+    fun `prepare maven central bundle with all checksums`() = runSlowTest {
+        val openPgpApi = BcOpenPGPApi()
+        val testPgpKey = openPgpApi.generateKey().signOnlyKey().build()
+
+        val result = runCli(
+            projectDir = testProject("jvm-publish-all-checksums"),
+            "package", "--format=maven-central-bundle",
+            environment = mapOf("KOTLIN_TOOLCHAIN_SIGNING_KEY" to testPgpKey.toAsciiArmoredString()),
+        )
+
+        val zipBundle = result
+            .getTaskOutputPath(":jvm-publish-all-checksums:prepareMavenCentralBundle")
+            .resolve("jvm-publish-all-checksums-central-bundle.zip")
+
+        val bundleDir = tempRoot.resolve("jvm-publish-all-checksums-central-bundle").also { it.createDirectories() }
+        extractZip(zipBundle, bundleDir, stripRoot = false)
+
+        val groupDir = bundleDir.resolve("amper/test/jvm-publish-all-checksums")
+        groupDir.assertContainsRelativeFiles(
+            "artifactName/2.2/artifactName-2.2-javadoc.jar",
+            "artifactName/2.2/artifactName-2.2-javadoc.jar.asc",
+            "artifactName/2.2/artifactName-2.2-javadoc.jar.asc.md5",
+            "artifactName/2.2/artifactName-2.2-javadoc.jar.asc.sha1",
             "artifactName/2.2/artifactName-2.2-javadoc.jar.asc.sha256",
             "artifactName/2.2/artifactName-2.2-javadoc.jar.asc.sha512",
             "artifactName/2.2/artifactName-2.2-javadoc.jar.md5",
