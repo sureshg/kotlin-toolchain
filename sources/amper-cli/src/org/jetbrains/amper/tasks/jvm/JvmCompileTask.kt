@@ -74,6 +74,8 @@ import org.jetbrains.amper.telemetry.spanBuilder
 import org.jetbrains.amper.telemetry.use
 import org.jetbrains.amper.util.BuildType
 import org.jetbrains.kotlin.buildtools.api.BaseCompilationOperation.Companion.COMPILER_MESSAGE_RENDERER
+import org.jetbrains.kotlin.buildtools.api.BaseIncrementalCompilationConfiguration.Companion.MODULE_BUILD_DIR
+import org.jetbrains.kotlin.buildtools.api.BaseIncrementalCompilationConfiguration.Companion.ROOT_PROJECT_DIR
 import org.jetbrains.kotlin.buildtools.api.BaseIncrementalCompilationConfiguration.Companion.TRACK_CONFIGURATION_INPUTS
 import org.jetbrains.kotlin.buildtools.api.CompilationResult
 import org.jetbrains.kotlin.buildtools.api.CompilerArgumentsParseException
@@ -484,6 +486,12 @@ internal class JvmCompileTask(
                                 sourcesChanges = SourcesChanges.ToBeCalculated,
                                 dependenciesSnapshotFiles = classpathSnapshots,
                             ) {
+                                this[ROOT_PROJECT_DIR] = projectRoot.path
+
+                                // Not the module's build dir because there is no such thing.
+                                // This is the closest we have.
+                                this[MODULE_BUILD_DIR] = buildOutputRoot.path
+
                                 // Necessary to avoid a cache hit when important compiler args change (e.g. JVM target).
                                 // Surprisingly, this is not the default!
                                 // Note: has no effect in Kotlin >= 2.4.0, but we warn users about it in the frontend
