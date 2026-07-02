@@ -48,9 +48,8 @@ import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.jdk.provisioning.Jdk
 import org.jetbrains.amper.jdk.provisioning.JdkProvider
 import org.jetbrains.amper.jvm.getJdkOrUserError
+import org.jetbrains.amper.problems.reporting.ProblemReporter
 import org.jetbrains.amper.processes.ArgsMode
-import org.jetbrains.amper.processes.LoggingProcessOutputListener
-import org.jetbrains.amper.processes.runJava
 import org.jetbrains.amper.tasks.artifacts.ArtifactTaskBase
 import org.jetbrains.amper.tasks.artifacts.KotlinJavaSourceDirArtifact
 import org.jetbrains.amper.tasks.artifacts.Selectors
@@ -62,7 +61,6 @@ import org.jetbrains.amper.util.BuildType
 import org.slf4j.LoggerFactory
 import java.nio.file.Files
 import java.nio.file.Path
-import kotlin.io.path.Path
 import kotlin.io.path.exists
 import kotlin.io.path.extension
 import kotlin.io.path.isDirectory
@@ -160,6 +158,7 @@ internal class MetadataCompileTask(
         return isDirectory() && Files.newDirectoryStream(this).use { it.none() }
     }
 
+    context(_: ProblemReporter)
     private suspend fun compileCommonMetadata(
         fragmentClasspath: List<Path>,
         refinesPaths: List<Path>,
@@ -220,6 +219,7 @@ internal class MetadataCompileTask(
                     "${f.name} of this fragment ${module.userReadableName}:${fragment.name}. Actual results: " +
                     map { "${it.module.userReadableName}:${it.fragment.name}" })
 
+    context(_: ProblemReporter)
     private suspend fun compileNativeSharedSources(
         kotlinUserSettings: KotlinUserSettings,
         sourceDirectories: List<Path>,
@@ -295,6 +295,7 @@ internal class MetadataCompileTask(
     private fun KonanDistribution.commonizedKlibs(platforms: List<Platform>, kotlinUserSettings: KotlinUserSettings) =
         commonizedKlibs(platforms, kotlinUserSettings.compilerVersion)
 
+    context(_: ProblemReporter)
     private suspend fun compileCommonSources(
         jdk: Jdk,
         kotlinUserSettings: KotlinUserSettings,
@@ -352,6 +353,7 @@ internal class MetadataCompileTask(
     }
 
     // todo (AB) : [AMPER-721] Add commonized cinterop Klibs as an input of native metadata compilation.
+    context(_: ProblemReporter)
     private suspend fun compileNativeMetadata(
         fragmentClasspath: List<Path>,
         refinesPaths: List<Path>,

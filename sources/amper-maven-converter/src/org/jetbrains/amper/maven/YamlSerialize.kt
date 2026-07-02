@@ -22,6 +22,7 @@ import org.jetbrains.amper.frontend.tree.copy
 import org.jetbrains.amper.frontend.tree.schemaValue
 import org.jetbrains.amper.frontend.types.SchemaType
 import org.jetbrains.amper.problems.reporting.CollectingProblemReporter
+import org.jetbrains.amper.problems.reporting.noProblemsReported
 import kotlin.io.path.invariantSeparatorsPathString
 import kotlin.io.path.pathString
 
@@ -45,7 +46,7 @@ internal fun MappingNode.serializeToYaml(comments: YamlComments = emptyMap()): S
             withDefaults = false,
         )
     }
-    check(problemReporter.problems.isEmpty()) {
+    check(problemReporter.noProblemsReported) {
         // This indicates a problem in the converter code, so it's fine to just fail here
         buildString {
             appendLine("Failed to refine converted tree:")

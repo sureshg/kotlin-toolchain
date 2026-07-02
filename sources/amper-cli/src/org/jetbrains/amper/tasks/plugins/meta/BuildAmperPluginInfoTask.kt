@@ -4,7 +4,6 @@
 
 package org.jetbrains.amper.tasks.plugins.meta
 
-import org.jetbrains.amper.cli.CliProblemReporter
 import org.jetbrains.amper.cli.userReadableError
 import org.jetbrains.amper.engine.BuildTask
 import org.jetbrains.amper.engine.TaskGraphExecutionContext
@@ -17,8 +16,8 @@ import org.jetbrains.amper.frontend.project.AmperProjectContext
 import org.jetbrains.amper.frontend.types.SchemaTypingContext
 import org.jetbrains.amper.plugins.schema.model.PluginData
 import org.jetbrains.amper.problems.reporting.CollectingProblemReporter
-import org.jetbrains.amper.problems.reporting.Level
-import org.jetbrains.amper.problems.reporting.replayProblemsTo
+import org.jetbrains.amper.problems.reporting.anyErrorsReported
+import org.jetbrains.amper.problems.reporting.plus
 import org.jetbrains.amper.tasks.EmptyTaskResult
 import org.jetbrains.amper.tasks.TaskResult
 import org.jetbrains.amper.tasks.jvm.logger
@@ -51,12 +50,14 @@ class BuildAmperPluginInfoTask(
         val modulePath = PluginData.Source.Local(module.source.moduleDir)
         val (pluginData, diagnostics) = globalResult.result.first { it.pluginData.source == modulePath }
 
-        diagnostics.forEach(CliProblemReporter::reportMessage)
-        if (diagnostics.any { it.level == Level.Error }) {
+        val collecting = CollectingProblemReporter()
+        val reporter = collecting + executionContext
+
+        diagnostics.forEach(reporter::reportMessage)
+        if (collecting.anyErrorsReported) {
             userReadableError("Plugin Kotlin schema processing failed, see the errors above.")
         }
 
-        val reporter = CollectingProblemReporter()
         // TODO: It's not super beautiful to create `AmperPluginImpl` directly here; we'll see what can be done later
         AmperPluginImpl(
             projectContext = projectContext,
@@ -67,8 +68,7 @@ class BuildAmperPluginInfoTask(
             ),
             problemReporter = reporter,
         )
-        reporter.replayProblemsTo(CliProblemReporter)
-        if (reporter.problems.any { it.level == Level.Error }) {
+        if (collecting.anyErrorsReported) {
             userReadableError("`plugin.yaml` processing failed, see the errors above.")
         }
 

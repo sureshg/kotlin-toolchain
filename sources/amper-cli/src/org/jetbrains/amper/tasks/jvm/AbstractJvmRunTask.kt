@@ -21,6 +21,7 @@ import org.jetbrains.amper.jdk.provisioning.Jdk
 import org.jetbrains.amper.jdk.provisioning.JdkProvider
 import org.jetbrains.amper.jvm.getEffectiveJvmMainClass
 import org.jetbrains.amper.jvm.getJdkOrUserError
+import org.jetbrains.amper.problems.reporting.ProblemReporter
 import org.jetbrains.amper.processes.ArgsMode
 import org.jetbrains.amper.processes.PrintToTerminalProcessOutputListener
 import org.jetbrains.amper.processes.ProcessInput
@@ -70,6 +71,7 @@ abstract class AbstractJvmRunTask(
         return EmptyTaskResult
     }
 
+    context(_: ProblemReporter)
     protected open suspend fun getJdk(): Jdk = jdkProvider.getJdkOrUserError(module.jdkSettings)
 
     protected open suspend fun getJvmArgs(dependenciesResult: List<TaskResult>): List<String> = buildList {

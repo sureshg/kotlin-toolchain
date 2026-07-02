@@ -48,7 +48,8 @@ import org.jetbrains.amper.problems.reporting.FileBuildProblemSource
 import org.jetbrains.amper.problems.reporting.Level
 import org.jetbrains.amper.problems.reporting.MultipleLocationsBuildProblemSource
 import org.jetbrains.amper.problems.reporting.ProblemReporter
-import org.jetbrains.amper.problems.reporting.replayProblemsTo
+import org.jetbrains.amper.problems.reporting.anyErrorsReported
+import org.jetbrains.amper.problems.reporting.plus
 import kotlin.io.path.div
 import kotlin.io.path.isRegularFile
 
@@ -190,8 +191,8 @@ private fun parseAndDiagnosePluginTree(
         projectContext.frontendPathResolver.loadVirtualFile(pluginFilepath)
     }
 
-    val proxyReporter = CollectingProblemReporter()
-    context(proxyReporter, projectContext.frontendPathResolver, projectContext.projectRoot) {
+    val collecting = CollectingProblemReporter()
+    context(collecting + problemReporter, projectContext.frontendPathResolver, projectContext.projectRoot) {
         val tree = readTree(
             file = pluginFile,
             declaration = pluginYamlDeclaration,
@@ -207,8 +208,7 @@ private fun parseAndDiagnosePluginTree(
             diagnosticsFactory.analyze(refinedTree)
         }
 
-        proxyReporter.replayProblemsTo(problemReporter)
-        if (proxyReporter.problems.any { it.level == Level.Error }) {
+        if (collecting.anyErrorsReported) {
             // If errors are detected, don't save the tree. No point in applying the plugin with errors.
             return null
         }

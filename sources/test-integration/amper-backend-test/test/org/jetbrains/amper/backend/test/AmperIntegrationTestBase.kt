@@ -11,6 +11,8 @@ import org.jetbrains.amper.cli.context.ProjectCliContext
 import org.jetbrains.amper.core.AmperUserCacheRoot
 import org.jetbrains.amper.frontend.project.AmperProjectContext
 import org.jetbrains.amper.problems.reporting.CollectingProblemReporter
+import org.jetbrains.amper.problems.reporting.NoopProblemReporter
+import org.jetbrains.amper.problems.reporting.anyProblemsReported
 import org.jetbrains.amper.test.Dirs
 import org.jetbrains.amper.test.TempDirExtension
 import org.junit.jupiter.api.extension.RegisterExtension
@@ -61,7 +63,7 @@ abstract class AmperIntegrationTestBase {
             AmperProjectContext.create(rootDir = projectRoot, buildDir = buildDir)
                 ?: error("No Kotlin project found at $projectRoot")
         }
-        if (problemReporter.problems.isNotEmpty()) {
+        if (problemReporter.anyProblemsReported) {
             fail("Error in the test project's project.yaml:\n${problemReporter.problems.joinToString("\n")}")
         }
         return ProjectCliContext(
@@ -69,6 +71,7 @@ abstract class AmperIntegrationTestBase {
             projectContext = projectContext,
             userCacheRoot = userCacheRoot,
             terminal = Terminal(),
+            problemReporter = NoopProblemReporter,
         )
     }
 

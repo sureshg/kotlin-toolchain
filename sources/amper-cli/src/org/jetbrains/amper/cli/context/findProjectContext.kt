@@ -4,9 +4,12 @@
 
 package org.jetbrains.amper.cli.context
 
-import org.jetbrains.amper.cli.CliProblemReporter
 import org.jetbrains.amper.cli.userReadableError
 import org.jetbrains.amper.frontend.project.AmperProjectContext
+import org.jetbrains.amper.problems.reporting.CollectingProblemReporter
+import org.jetbrains.amper.problems.reporting.ProblemReporter
+import org.jetbrains.amper.problems.reporting.anyErrorsReported
+import org.jetbrains.amper.problems.reporting.plus
 import org.jetbrains.amper.telemetry.spanBuilder
 import org.jetbrains.amper.telemetry.use
 import java.nio.file.Path
@@ -25,12 +28,14 @@ import kotlin.io.path.absolute
  *
  * The [explicitBuildDir] parameter is just a configuration option and doesn't impact the project search.
  */
+context(problemReporter: ProblemReporter)
 internal suspend fun findProjectContext(
     explicitProjectDir: Path?,
     explicitBuildDir: Path?,
 ): AmperProjectContext? = spanBuilder("Find Kotlin project context").use {
-    with(CliProblemReporter) {
-        val context = if (explicitProjectDir != null) {
+    val collecting = CollectingProblemReporter()
+    val context = context(collecting + problemReporter) {
+        if (explicitProjectDir != null) {
             AmperProjectContext.create(
                 rootDir = explicitProjectDir.absolute(),
                 buildDir = explicitBuildDir?.absolute(),
@@ -45,9 +50,9 @@ internal suspend fun findProjectContext(
                 buildDir = explicitBuildDir?.absolute(),
             )
         }
-        if (wereProblemsReported()) {
-            userReadableError("Aborting because there were errors in the Kotlin project file, please see above.")
-        }
-        context
     }
+    if (collecting.anyErrorsReported) {
+        userReadableError("Aborting because there were errors in the Kotlin project file, please see above.")
+    }
+    context
 }

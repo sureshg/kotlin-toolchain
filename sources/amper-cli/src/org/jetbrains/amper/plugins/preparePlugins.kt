@@ -51,6 +51,7 @@ suspend fun preparePlugins(
                     incrementalCache = context.incrementalCache,
                     plugins = pluginInfos,
                     processRunner = context.processRunner,
+                    problemReporter = context.problemReporter,
                 )
             }
     }

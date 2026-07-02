@@ -19,6 +19,7 @@ import org.jetbrains.amper.frontend.dr.resolver.native.platformLibsDir
 import org.jetbrains.amper.jdk.provisioning.Jdk
 import org.jetbrains.amper.jdk.provisioning.JdkProvider
 import org.jetbrains.amper.jvm.getDefaultJdk
+import org.jetbrains.amper.problems.reporting.ProblemReporter
 import org.jetbrains.amper.processes.ArgsMode
 import org.jetbrains.amper.processes.LoggingProcessOutputListener
 import org.jetbrains.amper.processes.ProcessResult
@@ -31,6 +32,7 @@ import org.slf4j.LoggerFactory
 import java.nio.file.Path
 import kotlin.io.path.div
 
+context(_: ProblemReporter)
 suspend fun downloadNativeCompiler(
     kotlinVersion: String,
     userCacheRoot: AmperUserCacheRoot,

@@ -9,6 +9,7 @@ import com.github.ajalt.clikt.core.requireObject
 import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.mordant.terminal.success
 import org.jetbrains.amper.buildinfo.AmperBuild
+import org.jetbrains.amper.cli.CliProblemReporter
 import org.jetbrains.amper.cli.context.AmperProjectRoot
 import org.jetbrains.amper.cli.context.CliContext
 import org.jetbrains.amper.cli.context.GlobalCliContext
@@ -42,15 +43,20 @@ internal abstract class AmperSubcommand(name: String) : SuspendingCliktCommand(n
     ): CliContext = spanBuilder("Create CLI context").use {
         require(commandName.isNotBlank()) { "commandName should not be blank" }
 
-        val projectContext = findProjectContext(
-            explicitProjectDir = layoutOptions?.explicitProjectDir,
-            explicitBuildDir = layoutOptions?.explicitBuildDir,
-        )
+        val problemReporter = CliProblemReporter(terminal)
+
+        val projectContext = context(problemReporter) {
+            findProjectContext(
+                explicitProjectDir = layoutOptions?.explicitProjectDir,
+                explicitBuildDir = layoutOptions?.explicitBuildDir,
+            )
+        }
         if (projectContext == null) {
             GlobalCliContext(
                 commandName = commandName,
                 userCacheRoot = commonOptions.sharedCachesRoot,
                 terminal = terminal,
+                problemReporter = problemReporter,
             )
         } else {
             ProjectCliContext(
@@ -58,6 +64,7 @@ internal abstract class AmperSubcommand(name: String) : SuspendingCliktCommand(n
                 projectContext = projectContext,
                 userCacheRoot = commonOptions.sharedCachesRoot,
                 terminal = terminal,
+                problemReporter = problemReporter,
             )
         }
     }

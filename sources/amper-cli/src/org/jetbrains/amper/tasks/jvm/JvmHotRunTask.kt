@@ -6,7 +6,6 @@ package org.jetbrains.amper.tasks.jvm
 
 import com.github.ajalt.mordant.terminal.Terminal
 import org.jetbrains.amper.ProcessRunner
-import org.jetbrains.amper.cli.CliProblemReporter
 import org.jetbrains.amper.cli.context.AmperProjectRoot
 import org.jetbrains.amper.cli.context.AmperProjectTempRoot
 import org.jetbrains.amper.cli.lazyload.ExtraClasspath
@@ -26,6 +25,7 @@ import org.jetbrains.amper.jdk.provisioning.Jdk
 import org.jetbrains.amper.jdk.provisioning.JdkProvider
 import org.jetbrains.amper.jdk.provisioning.JdkProvisioningCriteria
 import org.jetbrains.amper.jdk.provisioning.orElse
+import org.jetbrains.amper.problems.reporting.ProblemReporter
 import org.jetbrains.amper.run.ToolingArtifactsDownloader
 import org.jetbrains.amper.tasks.JvmMainRunSettings
 import org.jetbrains.amper.tasks.TaskResult
@@ -129,8 +129,9 @@ class JvmHotRunTask(
         }
     }
 
-    override suspend fun getJdk(): Jdk = context(CliProblemReporter) {
-        jdkProvider.getJdk(
+    context(_: ProblemReporter)
+    override suspend fun getJdk(): Jdk {
+        return jdkProvider.getJdk(
             criteria = JdkProvisioningCriteria(
                 majorVersion = module.jdkSettings.version, // we want a JBR in the same version as the user's JDK
                 distributions = listOf(JvmDistribution.JetBrainsRuntime), // the JBR is necessary to run Compose Hot Reload

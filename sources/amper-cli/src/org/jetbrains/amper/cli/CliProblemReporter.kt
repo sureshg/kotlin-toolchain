@@ -4,6 +4,7 @@
 
 package org.jetbrains.amper.cli
 
+import com.github.ajalt.mordant.terminal.Terminal
 import org.jetbrains.amper.CliBundle
 import org.jetbrains.amper.frontend.api.TraceableString
 import org.jetbrains.amper.frontend.asBuildProblemSource
@@ -33,13 +34,11 @@ import org.jetbrains.amper.problems.reporting.Level
 import org.jetbrains.amper.problems.reporting.ProblemReporter
 import org.jetbrains.amper.stdlib.collections.forEachEndAware
 import org.slf4j.LoggerFactory
-import java.util.concurrent.atomic.AtomicBoolean
 
-internal object CliProblemReporter : ProblemReporter {
+internal class CliProblemReporter(
+    @Suppress("unused") /*TODO: Soon to be used*/ private val terminal: Terminal,
+) : ProblemReporter {
     private val logger = LoggerFactory.getLogger("build")
-    private val problemsWereReported = AtomicBoolean(false)
-
-    fun wereProblemsReported() = problemsWereReported.get()
 
     override fun reportMessage(message: BuildProblem) {
         val renderedMessage = when (message) {
@@ -50,10 +49,7 @@ internal object CliProblemReporter : ProblemReporter {
 
         when (message.level) {
             Level.Warning -> logger.warn(renderedMessage)
-            Level.Error -> {
-                logger.error(renderedMessage)
-                problemsWereReported.set(true)
-            }
+            Level.Error -> logger.error(renderedMessage)
             Level.WeakWarning -> logger.info(renderedMessage)
         }
     }

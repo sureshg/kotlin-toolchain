@@ -93,7 +93,7 @@ class AmperBackend(
     }
 
     private val taskExecutor: TaskExecutor by lazy {
-        TaskExecutor(taskGraph, taskExecutionMode) {
+        TaskExecutor(taskGraph, taskExecutionMode, context.problemReporter) {
             TaskProgressRenderer(
                 terminal = context.terminal,
                 coroutineScope = backgroundScope,

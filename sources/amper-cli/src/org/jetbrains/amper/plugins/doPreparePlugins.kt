@@ -7,7 +7,6 @@ package org.jetbrains.amper.plugins
 import com.github.ajalt.mordant.terminal.Terminal
 import kotlinx.coroutines.coroutineScope
 import org.jetbrains.amper.ProcessRunner
-import org.jetbrains.amper.cli.CliProblemReporter
 import org.jetbrains.amper.cli.context.AmperProjectRoot
 import org.jetbrains.amper.cli.logging.infoNoConsole
 import org.jetbrains.amper.cli.userReadableError
@@ -17,6 +16,7 @@ import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.incrementalcache.executeForSerializable
 import org.jetbrains.amper.plugins.schema.model.PluginData
 import org.jetbrains.amper.problems.reporting.Level
+import org.jetbrains.amper.problems.reporting.ProblemReporter
 import org.slf4j.LoggerFactory
 import java.nio.file.Path
 
@@ -26,6 +26,7 @@ internal suspend fun doPreparePlugins(
     incrementalCache: IncrementalCache,
     plugins: Map<Path, PluginManifest>,
     processRunner: ProcessRunner,
+    problemReporter: ProblemReporter,
 ): List<PluginData> = coroutineScope {
     require(plugins.isNotEmpty())
 
@@ -51,7 +52,7 @@ internal suspend fun doPreparePlugins(
     }
 
     val allProblems = pluginDataWithDiagnostics.flatMap { it.diagnostics }
-    allProblems.forEach(CliProblemReporter::reportMessage)
+    allProblems.forEach(problemReporter::reportMessage)
     if (allProblems.any { it.level.atLeastAsSevereAs(Level.Error) }) {
         userReadableError("Local plugins pre-processing failed, see the errors above.")
     }

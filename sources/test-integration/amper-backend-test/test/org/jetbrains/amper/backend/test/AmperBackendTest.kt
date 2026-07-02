@@ -8,6 +8,7 @@ import org.jetbrains.amper.cli.AmperBackend
 import org.jetbrains.amper.frontend.TaskId
 import org.jetbrains.amper.frontend.aomBuilder.readProjectModel
 import org.jetbrains.amper.problems.reporting.CollectingProblemReporter
+import org.jetbrains.amper.problems.reporting.anyProblemsReported
 import org.jetbrains.amper.tasks.AllRunSettings
 import org.jetbrains.amper.tasks.ResolveExternalDependenciesTask
 import org.jetbrains.amper.tasks.jvm.JvmRuntimeClasspathTask
@@ -34,7 +35,7 @@ class AmperBackendTest : AmperIntegrationTestBase() {
         val model = with(problemReporter) { 
             cliContext.projectContext.readProjectModel(pluginData = emptyList(), mavenPluginXmls = emptyList()) 
         }
-        if (problemReporter.problems.isNotEmpty()) {
+        if (problemReporter.anyProblemsReported) {
             fail("Error(s) in the '$testProjectName' test project's model:\n${problemReporter.problems.joinToString("\n") { it.message }}")
         }
         return AmperBackend(

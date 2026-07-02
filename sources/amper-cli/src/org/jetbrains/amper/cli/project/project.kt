@@ -7,7 +7,6 @@ package org.jetbrains.amper.cli.project
 import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.api.OpenTelemetry
 import org.jetbrains.amper.buildinfo.AmperBuild
-import org.jetbrains.amper.cli.CliProblemReporter
 import org.jetbrains.amper.cli.UserReadableError
 import org.jetbrains.amper.cli.context.ProjectCliContext
 import org.jetbrains.amper.cli.userReadableError
@@ -18,6 +17,9 @@ import org.jetbrains.amper.frontend.project.AmperProjectContext
 import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.plugins.prepareMavenPlugins
 import org.jetbrains.amper.plugins.preparePlugins
+import org.jetbrains.amper.problems.reporting.CollectingProblemReporter
+import org.jetbrains.amper.problems.reporting.anyErrorsReported
+import org.jetbrains.amper.problems.reporting.plus
 import org.jetbrains.amper.telemetry.spanBuilder
 import org.jetbrains.amper.telemetry.use
 import kotlin.io.path.div
@@ -42,8 +44,9 @@ internal suspend fun ProjectCliContext.preparePluginsAndReadModel(): Model {
         )
     }
 
+    val collecting = CollectingProblemReporter()
     val model = spanBuilder("Read model from Kotlin project files").use {
-        with(CliProblemReporter) {
+        with(collecting + problemReporter) {
             projectContext.readProjectModel(
                 pluginData = pluginData,
                 mavenPluginXmls = mavenPluginsWithXmls,
@@ -52,7 +55,7 @@ internal suspend fun ProjectCliContext.preparePluginsAndReadModel(): Model {
     }
 
     // In CLI, we immediately stop the build if we had any error, because the model could be incorrect otherwise
-    if (CliProblemReporter.wereProblemsReported()) {
+    if (collecting.anyErrorsReported) {
         userReadableError("failed to read Kotlin project model, refer to the errors above")
     }
 

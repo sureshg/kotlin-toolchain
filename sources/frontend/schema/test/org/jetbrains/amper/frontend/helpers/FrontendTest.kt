@@ -6,6 +6,7 @@ package org.jetbrains.amper.frontend.helpers
 
 import org.jetbrains.amper.frontend.project.AmperFrontendProjectRoot
 import org.jetbrains.amper.problems.reporting.CollectingProblemReporter
+import org.jetbrains.amper.problems.reporting.noProblemsReported
 import org.jetbrains.amper.test.golden.GoldFileTest
 import java.nio.file.Path
 import kotlin.io.path.absolute
@@ -45,7 +46,7 @@ abstract class FrontendTest(
     /**
      * Check that there are no reported errors in the [problemReporter].
      */
-    protected fun assertNoReportedErrors() = assert(problemReporter.problems.isEmpty()) {
+    protected fun assertNoReportedErrors() = assert(problemReporter.noProblemsReported) {
         val concatenatedMessages = problemReporter.problems.joinToString(separator = "\n\t") { it.message }
         "Expected no errors, but got \n\t$concatenatedMessages\n"
     }

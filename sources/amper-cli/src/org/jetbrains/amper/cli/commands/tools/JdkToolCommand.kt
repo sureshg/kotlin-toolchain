@@ -6,9 +6,11 @@ package org.jetbrains.amper.cli.commands.tools
 
 import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.core.subcommands
+import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
 import io.opentelemetry.api.GlobalOpenTelemetry
+import org.jetbrains.amper.cli.CliProblemReporter
 import org.jetbrains.amper.cli.commands.AmperSubcommand
 import org.jetbrains.amper.cli.context.sharedIncrementalCache
 import org.jetbrains.amper.cli.userReadableError
@@ -49,7 +51,9 @@ private class JdkToolSubcommand(private val name: String) : AmperSubcommand(name
             openTelemetry = GlobalOpenTelemetry.get(),
             incrementalCache = commonOptions.sharedCachesRoot.sharedIncrementalCache(),
         )
-        val jdk = jdkProvider.getDefaultJdk()
+        val jdk = context(CliProblemReporter(terminal)) {
+            jdkProvider.getDefaultJdk()
+        }
         val ext = if (OsFamily.current.isWindows) ".exe" else ""
         val toolPath = jdk.javaExecutable.resolveSibling(name + ext)
         if (!toolPath.isExecutable()) {

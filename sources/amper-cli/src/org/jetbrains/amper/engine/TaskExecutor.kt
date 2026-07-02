@@ -17,6 +17,7 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.amper.cli.UserReadableError
 import org.jetbrains.amper.cli.userReadableError
 import org.jetbrains.amper.frontend.TaskId
+import org.jetbrains.amper.problems.reporting.ProblemReporter
 import org.jetbrains.amper.stdlib.graphs.depthFirstNodeSequence
 import org.jetbrains.amper.tasks.TaskResult
 import org.jetbrains.amper.telemetry.spanBuilder
@@ -28,6 +29,7 @@ import java.util.concurrent.ConcurrentMap
 class TaskExecutor(
     private val graph: TaskGraph,
     private val mode: Mode,
+    private val problemReporter: ProblemReporter,
     private val listenerProvider: TaskGraphExecutionListener.Provider = { TaskGraphExecutionListener.Noop },
 ) {
     class ExecutionPlan(
@@ -57,7 +59,7 @@ class TaskExecutor(
             .use {
                 val executionPlan = buildExecutionPlan(tasksToRun)
                 val listener = listenerProvider.createListener(executionPlan)
-                val executionContext = DefaultTaskGraphExecutionContext()
+                val executionContext = DefaultTaskGraphExecutionContext(problemReporter)
                 try {
                     val results = ConcurrentHashMap<TaskId, Deferred<ExecutionResult>>()
                     val _ = context(listener, executionContext) {

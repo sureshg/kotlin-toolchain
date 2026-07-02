@@ -16,6 +16,7 @@ import org.jetbrains.amper.core.AmperUserCacheRoot
 import org.jetbrains.amper.frontend.project.AmperProjectContext
 import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.jdk.provisioning.JdkProvider
+import org.jetbrains.amper.problems.reporting.ProblemReporter
 import org.jetbrains.amper.util.DateTimeFormatForFilenames
 import org.jetbrains.amper.util.nowInDefaultTimezone
 import java.nio.file.Path
@@ -28,18 +29,21 @@ sealed interface CliContext {
     val commandName: String
     val userCacheRoot: AmperUserCacheRoot
     val terminal: Terminal
+    val problemReporter: ProblemReporter
 }
 
 class GlobalCliContext(
     override val commandName: String,
     override val userCacheRoot: AmperUserCacheRoot,
     override val terminal: Terminal,
+    override val problemReporter: ProblemReporter,
 ) : CliContext
 
 class ProjectCliContext(
     override val commandName: String,
     override val userCacheRoot: AmperUserCacheRoot,
     override val terminal: Terminal,
+    override val problemReporter: ProblemReporter,
     val projectContext: AmperProjectContext,
 ) : CliContext {
     val projectRoot: AmperProjectRoot = AmperProjectRoot(projectContext.projectRoot.path)

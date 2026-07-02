@@ -21,6 +21,7 @@ import org.jetbrains.amper.frontend.dr.resolver.native.commonizedPlatformsIdenti
 import org.jetbrains.amper.frontend.isDescendantOf
 import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.jdk.provisioning.JdkProvider
+import org.jetbrains.amper.problems.reporting.ProblemReporter
 import org.jetbrains.amper.processes.ArgsMode
 import org.jetbrains.amper.processes.LoggingProcessOutputListener
 import org.jetbrains.amper.processes.runJava
@@ -64,6 +65,7 @@ class CommonizeNativeDistributionTask(
         return EmptyTaskResult
     }
 
+    context(_: ProblemReporter)
     private suspend fun commonize(kotlinVersion: String, sharedPlatformSets: Set<List<Platform>>) {
         val sharedPlatforms = sharedPlatformSets.map {  it.commonizedPlatformsIdentifier() }.toSet()
 

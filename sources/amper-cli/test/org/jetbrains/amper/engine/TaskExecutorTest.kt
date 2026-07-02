@@ -7,7 +7,9 @@ package org.jetbrains.amper.engine
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withTimeout
 import org.jetbrains.amper.cli.UserReadableError
+import org.jetbrains.amper.engine.TaskExecutor.Mode
 import org.jetbrains.amper.frontend.TaskId
+import org.jetbrains.amper.problems.reporting.NoopProblemReporter
 import org.jetbrains.amper.tasks.TaskResult
 import org.jetbrains.amper.test.runTestWithMdc
 import org.junit.jupiter.api.assertThrows
@@ -250,4 +252,13 @@ class TaskExecutorTest {
     }
 
     private class TestTaskResult(val taskName: TaskName) : TaskResult
+
+    private fun TaskExecutor(
+        graph: TaskGraph,
+        mode: Mode,
+    ) = TaskExecutor(
+        graph = graph,
+        mode = mode,
+        problemReporter = NoopProblemReporter,
+    )
 }
