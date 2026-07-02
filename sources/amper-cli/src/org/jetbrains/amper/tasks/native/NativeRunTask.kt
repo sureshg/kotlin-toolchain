@@ -23,7 +23,6 @@ import org.jetbrains.amper.telemetry.setListAttribute
 import org.jetbrains.amper.telemetry.spanBuilder
 import org.jetbrains.amper.telemetry.use
 import org.jetbrains.amper.util.BuildType
-import org.slf4j.LoggerFactory
 import kotlin.io.path.pathString
 
 class NativeRunTask(
@@ -59,16 +58,11 @@ class NativeRunTask(
                     input = ProcessInput.Inherit,
                 )
 
-                val message = "Process exited with exit code ${result.exitCode}"
                 if (result.exitCode != 0) {
-                    userReadableError(message, exitCode = result.exitCode)
-                } else {
-                    logger.info(message)
+                    userReadableError("Process failed with exit code ${result.exitCode}", exitCode = result.exitCode)
                 }
 
                 EmptyTaskResult
             }
     }
-
-    private val logger = LoggerFactory.getLogger(javaClass)
 }

@@ -6,6 +6,7 @@ package org.jetbrains.amper.tasks.native
 
 import com.github.ajalt.mordant.terminal.Terminal
 import org.jetbrains.amper.ProcessRunner
+import org.jetbrains.amper.cli.logging.infoNoConsole
 import org.jetbrains.amper.cli.telemetry.setAmperModule
 import org.jetbrains.amper.cli.userReadableError
 import org.jetbrains.amper.engine.TaskGraphExecutionContext
@@ -42,7 +43,7 @@ class NativeTestTask(
 
         val executable = compileTaskResult.linkedBinary
         if (executable == null) {
-            logger.info("No test binary was found for ${platform.pretty}, skipping test run")
+            logger.debug("No test binary was found for ${platform.pretty}, skipping test run")
             return EmptyTaskResult
         }
 
@@ -56,7 +57,7 @@ class NativeTestTask(
             .setAttribute("executable", command.first())
             .setListAttribute("args", command.drop(1))
             .use { span ->
-                logger.info("Testing module '${module.userReadableName}' for platform '${platform.pretty}'...")
+                logger.infoNoConsole("Testing module '${module.userReadableName}' for platform '${platform.pretty}'...")
 
                 val workingDir = module.source.moduleDir
 

@@ -7,6 +7,7 @@ package org.jetbrains.amper.tasks.native
 import kotlinx.serialization.json.Json
 import org.jetbrains.amper.ProcessRunner
 import org.jetbrains.amper.cli.context.AmperProjectTempRoot
+import org.jetbrains.amper.cli.logging.infoNoConsole
 import org.jetbrains.amper.cli.userReadableError
 import org.jetbrains.amper.compilation.KotlinArtifactsDownloader
 import org.jetbrains.amper.compilation.KotlinCompilationType
@@ -107,7 +108,7 @@ internal class NativeLinkTask(
         if (includeArtifact == null && isTest) {
             // We may skip linking for test specifically if there's no compiled code in the fragments.
             // Libraries are of no interest here because they can't contain any tests
-            logger.info("No test code was found compiled for ${fragments.identificationPhrase()}, skipping linking")
+            logger.debug("No test code was found compiled for ${fragments.identificationPhrase()}, skipping linking")
             return Result(
                 linkedBinary = null,
             )
@@ -173,7 +174,7 @@ internal class NativeLinkTask(
                     userReadableError("Unable to link: there are no inputs (libraries or compiled source code). " +
                             "Ensure that there are sources and/or dependencies for $fragmentsString")
                 }
-                logger.info("Linking native '${platform.pretty}' $binaryKind for module '${module.userReadableName}'...")
+                logger.infoNoConsole("Linking native ${platform.pretty} $binaryKind for module '${module.userReadableName}'...")
             }
 
             val artifactPath = taskOutputRoot.path.resolve(compilationType.outputFilename(module, platform, isTest))

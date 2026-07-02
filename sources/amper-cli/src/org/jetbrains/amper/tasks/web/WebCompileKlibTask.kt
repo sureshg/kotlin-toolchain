@@ -232,7 +232,7 @@ internal abstract class WebCompileKlibTask(
             .setAttribute("compiler-version", kotlinUserSettings.compilerVersion)
             .setListAttribute("compiler-args", compilerArgs)
             .use {
-                logger.info("Compiling Kotlin ${expectedPlatform.name} for module '${module.userReadableName}'...")
+                logger.infoNoConsole("Compiling module '${module.userReadableName}' for platform '${platform.pretty}'...")
                 val result = context(processRunner) {
                     compiler.compileJs(compilerArgs = compilerArgs, ArgsMode.ArgFile(tempRoot = tempRoot))
                 }

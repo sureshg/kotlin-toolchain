@@ -134,13 +134,6 @@ class AmperBackend(
         modules: Set<String>? = null,
         buildTypes: Set<BuildType>? = null,
     ) {
-        if (platforms != null) {
-            logger.info("Compiling for platforms: ${platforms.map { it.name }.sorted().joinToString(" ")}")
-        }
-        if (modules != null) {
-            logger.info("Compiling modules: ${modules.sorted().joinToString(" ")}")
-        }
-
         val possibleCompilationPlatforms = if (OsFamily.current.isMac) {
             Platform.leafPlatforms
         } else {
@@ -191,19 +184,6 @@ class AmperBackend(
         buildTypes: Set<BuildType>? = null,
         formats: Set<PackageTask.Format>? = null,
     ) {
-        if (platforms != null) {
-            logger.info("Packaging for platforms: ${platforms.map { it.name }.sorted().joinToString(" ")}")
-        }
-        if (modules != null) {
-            logger.info("Packaging modules: ${modules.sorted().joinToString(" ")}")
-        }
-        if (buildTypes != null) {
-            logger.info("Packaging variants: ${buildTypes.map { it.value }.sorted().joinToString(" ")}")
-        }
-        if (formats != null) {
-            logger.info("Packaging formats: ${formats.map { it.value }.sorted().joinToString(" ")}")
-        }
-
         val possiblePlatforms = if (OsFamily.current.isMac) {
             Platform.leafPlatforms
         } else {

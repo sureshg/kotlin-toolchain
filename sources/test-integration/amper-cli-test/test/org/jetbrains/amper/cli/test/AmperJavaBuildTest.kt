@@ -214,12 +214,9 @@ class AmperJavaBuildTest : AmperCliTestBase() {
             assertEmptyStdErr = assertEmptyStdErr
         )
 
-    private fun AmperCliResult.realStdout(): String {
-        // remove the last line from the logger
-        return stdoutClean
-            .lineSequence()
-            .dropWhile { "✓ Compilation successful" in it }
-            .takeWhile { "Process exited with exit code" !in it }
-            .joinToString("\n")
-    }
+    private fun AmperCliResult.realStdout(): String = stdoutClean
+        .lineSequence()
+        .dropWhile { "✓ Compilation successful" in it }
+        .joinToString("\n")
+        .trim()
 }

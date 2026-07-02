@@ -58,14 +58,12 @@ class AmperRunTest : AmperCliTestBase() {
     @Test
     fun `mixed java kotlin`() = runSlowTest {
         val result = runCli(projectDir = testProject("java-kotlin-mixed"), "run")
-        result.assertLogStartsWith("Process exited with exit code 0", Level.INFO)
         result.assertStdoutContains("Output: <XYZ>")
     }
 
     @Test
     fun `jvm hello world with custom JDK 26`() = runSlowTest {
         val result = runCli(projectDir = testProject("jvm-custom-jdk"), "run")
-        result.assertLogStartsWith("Process exited with exit code 0", Level.INFO)
         result.assertStdoutContains("Hello")
     }
 
@@ -256,7 +254,7 @@ ARG2: <${argumentsWithSpecialChars[2]}>"""
         val projectRoot = testProject("jvm-exit-code")
 
         val result = runCli(projectDir = projectRoot, "run", expectedExitCode = 5, assertEmptyStdErr = false)
-        result.assertStderrContains("Process exited with exit code 5")
+        result.assertStderrContains("Process failed with exit code 5")
     }
 
     @Test
@@ -269,7 +267,7 @@ ARG2: <${argumentsWithSpecialChars[2]}>"""
             "run", "--module", "linux-cli", "--platform=linuxX64",
             expectedExitCode = 5, assertEmptyStdErr = false,
         )
-        result.assertStderrContains("Process exited with exit code 5")
+        result.assertStderrContains("Process failed with exit code 5")
     }
 
     @Test
@@ -282,7 +280,7 @@ ARG2: <${argumentsWithSpecialChars[2]}>"""
             "run", "--module", "macos-cli",
             expectedExitCode = 5, assertEmptyStdErr = false,
         )
-        result.assertStderrContains("Process exited with exit code 5")
+        result.assertStderrContains("Process failed with exit code 5")
     }
 
     @Test
@@ -295,7 +293,7 @@ ARG2: <${argumentsWithSpecialChars[2]}>"""
             "run", "--module", "windows-cli",
             expectedExitCode = 5, assertEmptyStdErr = false,
         )
-        result.assertStderrContains("Process exited with exit code 5")
+        result.assertStderrContains("Process failed with exit code 5")
     }
 
     @Test

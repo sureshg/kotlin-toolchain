@@ -131,6 +131,7 @@ class PrepareMavenPublishablesTask(
     private suspend fun PgpSigner.signArtifact(artifact: MavenPublishable): MavenPublishable {
         val signatureFilePath = taskOutputRoot.path.resolve(artifact.path.name + ".asc")
         try {
+            // TODO add some fine-grained progress reporting instead (see AMPER-5487)
             logger.info("Signing artifact '${artifact.path.name}'…")
             sign(artifact.path, outputSignatureFile = signatureFilePath)
         } catch (e: PgpSigningKeyPassphraseException) {

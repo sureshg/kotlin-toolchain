@@ -29,7 +29,6 @@ import org.jetbrains.amper.tasks.EmptyTaskResult
 import org.jetbrains.amper.tasks.JvmMainRunSettings
 import org.jetbrains.amper.tasks.TaskResult
 import org.jetbrains.amper.tasks.workingDir
-import org.slf4j.LoggerFactory
 import java.nio.file.Path
 
 abstract class AbstractJvmRunTask(
@@ -47,8 +46,6 @@ abstract class AbstractJvmRunTask(
     override val platform = Platform.JVM
     protected val fragments = module.fragments.filter { !it.isTest && it.platforms.contains(Platform.JVM) }
 
-    protected val logger = LoggerFactory.getLogger(javaClass)
-
     protected open fun getEnvironment(dependenciesResult: List<TaskResult>): Map<String, String> = emptyMap()
 
     override suspend fun run(dependenciesResult: List<TaskResult>, executionContext: TaskGraphExecutionContext): TaskResult {
@@ -65,11 +62,8 @@ abstract class AbstractJvmRunTask(
             input = ProcessInput.Inherit,
         )
 
-        val message = "Process exited with exit code ${result.exitCode}"
         if (result.exitCode != 0) {
-            userReadableError(message, exitCode = result.exitCode)
-        } else {
-            logger.info(message)
+            userReadableError("Process failed with exit code ${result.exitCode}", exitCode = result.exitCode)
         }
 
         return EmptyTaskResult

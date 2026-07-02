@@ -8,6 +8,7 @@ import kotlinx.serialization.json.Json
 import org.jetbrains.amper.ProcessRunner
 import org.jetbrains.amper.cli.context.AmperBuildOutputRoot
 import org.jetbrains.amper.cli.context.AmperProjectTempRoot
+import org.jetbrains.amper.cli.logging.infoNoConsole
 import org.jetbrains.amper.cli.telemetry.setAmperModule
 import org.jetbrains.amper.cli.userReadableError
 import org.jetbrains.amper.compilation.KotlinArtifactsDownloader
@@ -122,7 +123,7 @@ internal abstract class WebLinkTask(
         if (includeArtifact == null && isTest) {
             // We may skip linking for test specifically if there's no compiled code in the fragments.
             // Libraries are of no interest here because they can't contain any tests
-            logger.info("No test code was found compiled for ${fragments.identificationPhrase()}, skipping linking")
+            logger.debug("No test code was found compiled for ${fragments.identificationPhrase()}, skipping linking")
             return Result(
                 linkedBinary = null,
             )
@@ -208,14 +209,13 @@ internal abstract class WebLinkTask(
         if (isTest) {
             logger.debug("Linking ${expectedPlatform.name} test executable for module '${module.userReadableName}' on platform '${platform.pretty}'...")
         } else {
-            logger.info("Linking ${expectedPlatform.name} '${platform.pretty}' executable for module '${module.userReadableName}'...")
+            logger.infoNoConsole("Linking ${platform.pretty} executable for module '${module.userReadableName}'...")
         }
         spanBuilder("kotlin-${expectedPlatform.name.lowercase()}-link")
             .setAmperModule(module)
             .setAttribute("compiler-version", kotlinUserSettings.compilerVersion)
             .setListAttribute("compiler-args", compilerArgs)
             .use {
-                logger.info("Linking Kotlin ${expectedPlatform.name} for module '${module.userReadableName}'...")
                 val result = context(processRunner) {
                     compiler.compileJs(compilerArgs = compilerArgs, argsMode = ArgsMode.ArgFile(tempRoot = tempRoot))
                 }

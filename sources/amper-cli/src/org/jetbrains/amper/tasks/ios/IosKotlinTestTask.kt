@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.tasks.ios
@@ -43,7 +43,7 @@ class IosKotlinTestTask(
         val workingDir = module.source.moduleDir
         val executable = compileTaskResult.linkedBinary
         if (executable == null) {
-            logger.info("No test binary was found for ${platform.pretty}, skipping test run")
+            logger.debug("No test binary was found for ${platform.pretty}, skipping test run")
             return EmptyTaskResult
         }
         val chosenDevice = processRunner.pickBestDevice() ?: error("No available device")
