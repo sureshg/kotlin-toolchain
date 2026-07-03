@@ -4,7 +4,6 @@
 
 package org.jetbrains.amper.schema.processing
 
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import org.jetbrains.amper.plugins.schema.model.PluginData
 import org.jetbrains.amper.plugins.schema.model.PluginDeclarationsRequest
@@ -21,7 +20,6 @@ import kotlin.io.path.writeText
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-@OptIn(ExperimentalSerializationApi::class)
 class ExtensibilityApiDeclarationsTest {
     private val extensibilityApiSrc = Path("../amper-extensibility-api/src").absolute().normalize()
     private val request = PluginDeclarationsRequest.Request(
