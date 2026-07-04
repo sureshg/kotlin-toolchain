@@ -20,8 +20,8 @@ import org.jetbrains.amper.problems.reporting.anyErrorsReported
 import org.jetbrains.amper.problems.reporting.plus
 import org.jetbrains.amper.tasks.EmptyTaskResult
 import org.jetbrains.amper.tasks.TaskResult
-import org.jetbrains.amper.tasks.jvm.logger
 import org.jetbrains.amper.util.BuildType
+import org.slf4j.LoggerFactory
 
 class BuildAmperPluginInfoTask(
     private val projectContext: AmperProjectContext,
@@ -35,6 +35,8 @@ class BuildAmperPluginInfoTask(
     override val isTest: Boolean = false
     override val platform: Platform = Platform.JVM
     override val buildType: BuildType? = null
+
+    private val logger = LoggerFactory.getLogger(javaClass)
 
     context(executionContext: TaskGraphExecutionContext)
     override suspend fun run(
