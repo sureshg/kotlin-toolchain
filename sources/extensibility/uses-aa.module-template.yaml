@@ -6,6 +6,18 @@ repositories:
     url: https://maven.pkg.jetbrains.space/kotlin/p/kotlin/kotlin-ide-plugin-dependencies
 
 settings:
+  jvm:
+    test:
+      systemProperties:
+        # The combination of org.jetbrains.kotlin:kotlin-compiler and com.jetbrains.intellij.platform:util on the
+        # runtime classpath registers a service loader with a broken XMLOutputFactory. This, in turn, makes JUnit fail
+        # to write XML reports.
+        # We use this system property to ensure the default implementation is used.
+        # See https://docs.oracle.com/javase/8/docs/api/javax/xml/stream/XMLOutputFactory.html#newFactory--
+        # This is not a bug per se. We can't in general prevent users from overriding this factory, and we should
+        # respect it when they do, so we can't set this system property by default. And also, we can't know the
+        # implementation class for sure anyway.
+        javax.xml.stream.XMLOutputFactory: com.sun.xml.internal.stream.XMLOutputFactoryImpl
   internal:
     excludeDependencies:
       # this is a list of broken (unpublished) AA dependencies. See KT-61419.

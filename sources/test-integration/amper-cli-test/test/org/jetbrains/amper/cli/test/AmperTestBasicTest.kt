@@ -133,6 +133,17 @@ class AmperTestBasicTest : AmperCliTestBase() {
         result.assertStdoutContains("my-test-2")
     }
 
+    // This ensures we're not tempted to force the XMLOutputFactoru inside our own test framework
+    @Test
+    fun                                                                                                                                                                                                                                             `jvm test with custom XMLOutputFactory`() = runSlowTest {
+        val projectRoot = testProject("jvm-test-custom-xml-factory")
+        val result = runCli(projectDir = projectRoot, "test")
+
+        val xmlReport = result.buildDir.resolve("reports/jvm-test-custom-xml-factory/jvm/TEST-junit-jupiter.xml")
+            .readText()
+        assertContains(xmlReport, "<testcase name=\"smoke()\" classname=\"apkg.ATest\"")
+    }
+
     @Test
     @MacOnly
     fun `missing platform to test`() = runSlowTest {
