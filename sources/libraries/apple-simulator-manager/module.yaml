@@ -1,0 +1,12 @@
+product: jvm/lib
+
+apply:
+  - //sources/common.module-template.yaml
+
+dependencies:
+  - //sources/libraries/async-processes
+  - //sources/libraries/serialization-extended
+
+settings:
+  kotlin:
+    serialization: json

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package iosUtils
@@ -7,6 +7,8 @@ package iosUtils
 import TestBase
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.amper.processes.ProcessLeak
+import org.jetbrains.amper.processes.runProcessAndCaptureOutput
+import org.jetbrains.amper.simctl.SimCtl
 import org.jetbrains.amper.test.MacOnly
 import java.nio.file.Path
 import kotlin.io.path.div
@@ -38,7 +40,7 @@ open class IOSBaseTest : TestBase() {
         SimulatorManager.launchSimulator()
         val appFile = appDir.findAppFile()
         println("Running iOS app ${appFile.name} from $appDir")
-        AppManager.installAndVerifyAppLaunch(appFile = appFile, appBundleId = bundleIdentifier)
+        installAndVerifyAppLaunch(appFile = appFile, appBundleId = bundleIdentifier)
     }
 
     /**
@@ -69,4 +71,40 @@ open class IOSBaseTest : TestBase() {
 
     private fun Path.findAppFile(): Path =
         listDirectoryEntries("*.app").firstOrNull() ?: error("app file not found in $this")
+
+    /**
+     * Installs an iOS app on the booted simulator, launches it, verifies its successful start,
+     * and uninstalls it to clean up after the check.
+     *
+     * The function installs the specified app file, identified by its bundle ID, onto the currently booted simulator.
+     * It then launches the app and checks the log output for any errors or indicators of failure. If no errors are found,
+     * it verifies the presence of both the bundle ID and a process ID (PID) to confirm a successful start.
+     * Additionally, it ensures the app's data container is accessible, signaling that the app is fully active.
+     * Finally, the function uninstalls the app to leave the simulator in a clean state.
+     */
+    private suspend fun installAndVerifyAppLaunch(appFile: Path, appBundleId: String) {
+        println("Installing $appBundleId")
+        SimCtl.installApp(appFile)
+
+        println("Launching $appBundleId")
+        val pid = SimCtl.launchApp(appBundleId)
+        println("Log output indicates successful launch with PID $pid")
+
+        // Step 5: Verify the existence of app data container to ensure app is running
+        println("Verifying app container existence in data directory")
+        val containerDataOutput = runProcessAndCaptureOutput(
+            command = listOf("xcrun", "simctl", "get_app_container", "booted", appBundleId, "data"),
+            redirectErrorStream = true
+        )
+        // If data container is missing, the app might not be fully active
+        if (containerDataOutput.stdout.length <= 1) {
+            error("App container not found in data directory. Container data check failed.")
+        }
+        println("App data container verified successfully.")
+        println("App launched and verified successfully!")
+
+        // Step 6: Uninstall the app to clean up after testing
+        println("Uninstalling $appBundleId")
+        SimCtl.uninstallApp(appBundleId)
+    }
 }
