@@ -6,7 +6,6 @@ package org.jetbrains.amper.cli.test
 
 import kotlinx.coroutines.launch
 import org.jetbrains.amper.cli.test.utils.assertFileContentEquals
-import org.jetbrains.amper.cli.test.utils.assertLogStartsWith
 import org.jetbrains.amper.cli.test.utils.assertStderrContains
 import org.jetbrains.amper.cli.test.utils.assertStdoutContains
 import org.jetbrains.amper.cli.test.utils.getTaskOutputPath
@@ -25,14 +24,12 @@ import org.jetbrains.amper.test.spans.kotlinJvmCompilationSpans
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assumptions.assumeFalse
 import org.junit.jupiter.api.Disabled
-import org.slf4j.event.Level
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import kotlin.test.Test
 import kotlin.test.assertContains
-import kotlin.test.assertTrue
 
 class AmperRunTest : AmperCliTestBase() {
 
@@ -48,11 +45,15 @@ class AmperRunTest : AmperCliTestBase() {
         val r = runCli(projectDir = testProject("jvm-kotlin-test-smoke"), "run", "--help")
 
         // Check that '--' is printed before program arguments
-        val string = "Usage: kotlin run [<options>] -- [<app_arguments>]..."
+        val usageText = """
+            Usage:
+              kotlin run [<options>] -- [<app_arguments>]...
+              kotlin run --script <script_path> [<script_options>] -- [<app_arguments>]...
+              kotlin run <script_path> [<script_options>] -- [<app_arguments>]...
+        """.trimIndent()
 
-        assertTrue("There should be '$string' in `run --help` output") {
-            r.stdout.lines().any { it == string }
-        }
+        val actualUsageOutput = r.stdoutClean.lines().takeWhile { it.isNotBlank() }.joinToString("\n")
+        assert(actualUsageOutput == usageText) { "There should be '$usageText' in `run --help` output" }
     }
 
     @Test

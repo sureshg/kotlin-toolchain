@@ -28,6 +28,24 @@ internal suspend fun JdkProvider.getJdkOrUserError(jdkSettings: JdkSettings): Jd
     }
 
 /**
+ * Finds or provisions a JDK matching the given [majorVersion] and default settings for other criteria, or fails with a
+ * [userReadableError].
+ *
+ * Potential global errors about `JAVA_HOME` are reported via the given [ProblemReporter], but only once per
+ * instance of [JdkProvider].
+ */
+context(_: ProblemReporter)
+suspend fun JdkProvider.getJdkOrUserError(
+    majorVersion: Int,
+    selectionMode: JdkSelectionMode = JdkSelectionMode.auto,
+): Jdk = getJdk(
+    criteria = JdkProvisioningCriteria(majorVersion = majorVersion),
+    selectionMode = selectionMode,
+).orElse { errorMessage ->
+    userReadableError("Could not provide JDK $majorVersion: $errorMessage")
+}
+
+/**
  * Finds or provisions a JDK matching the default settings, or fails with a [userReadableError].
  *
  * This JDK is what users get when a module uses the default JDK settings.

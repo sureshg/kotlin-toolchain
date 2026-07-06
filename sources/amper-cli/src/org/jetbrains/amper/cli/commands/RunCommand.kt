@@ -7,22 +7,36 @@ package org.jetbrains.amper.cli.commands
 import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
+import com.github.ajalt.clikt.parameters.groups.OptionGroup
+import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.clikt.parameters.types.path
+import org.jetbrains.amper.cli.context.CliContext
+import org.jetbrains.amper.cli.context.GlobalCliContext
 import org.jetbrains.amper.cli.context.ProjectCliContext
+import org.jetbrains.amper.cli.options.ProjectLayoutOptions
 import org.jetbrains.amper.cli.options.UserJvmArgsOption
 import org.jetbrains.amper.cli.options.buildTypeOption
 import org.jetbrains.amper.cli.options.leafPlatformOption
 import org.jetbrains.amper.cli.options.userJvmArgsOption
+import org.jetbrains.amper.cli.project.preparePluginsAndReadModel
+import org.jetbrains.amper.cli.userReadableError
 import org.jetbrains.amper.cli.withBackend
-import org.jetbrains.amper.frontend.Model
+import org.jetbrains.amper.compilation.compiler.provisionKotlinCompilerCli
+import org.jetbrains.amper.frontend.schema.DefaultVersions
+import org.jetbrains.amper.frontend.schema.DiscouragedDirectDefaultVersionAccess
+import org.jetbrains.amper.jvm.getJdkOrUserError
+import org.jetbrains.amper.processes.PrintToTerminalProcessOutputListener
 import org.jetbrains.amper.tasks.AllRunSettings
+import java.nio.file.Path
 import kotlin.io.path.Path
+import kotlin.io.path.extension
+import kotlin.io.path.notExists
 
-internal class RunCommand : AmperModelAwareCommand(name = "run") {
+internal class RunCommand : AmperSubcommand(name = "run") {
 
     private val module by option("-m", "--module", help = "Specific module to run (run the `show modules` command to get the modules list)")
 
@@ -59,7 +73,8 @@ internal class RunCommand : AmperModelAwareCommand(name = "run") {
 
     private val workingDir by option("--working-dir", help = "The working directory for the application run. " +
             "By default, the current directory is used. This option is only applicable for JVM and native desktop " +
-            "applications (the working directory is not customizable in mobile emulator runs).")
+            "applications, and Kotlin scripts. The working directory is not customizable for web applications or " +
+            "mobile emulator runs.")
         .path(mustExist = true, canBeFile = false, canBeDir = true)
         .default(Path("."))
 
@@ -79,16 +94,72 @@ internal class RunCommand : AmperModelAwareCommand(name = "run") {
         """.trimIndent(),
     ).int()
 
+    private val layoutOptions by ProjectLayoutOptions()
+
+    private val scriptOptions by ScriptOptions()
+
     private val programArguments by argument(name = "app_arguments").multiple()
 
-    override fun help(context: Context): String = "Run your application"
+    override fun help(context: Context): String =
+        "Run an application module in your project, or a standalone Kotlin script"
 
-    override fun helpEpilog(context: Context): String = "Use `--` to separate the application's arguments from the Kotlin CLI options"
+    override fun helpEpilog(context: Context): String = """
+        _Note: use `--` to separate the application's arguments from the Kotlin CLI options.
+        It is required if any application argument looks like a CLI option (starts with '-')._
+        
+        **Example 1:** Run an application module of your project 
+        (when there is only one, or only one that can run on the current host)
+        ```
+        kotlin run
+        kotlin run -- arg1 arg2
+        ```
+        
+        **Example 2:** Run a specific application module of your project (when there are several candidates):
+        ```
+        # Disambiguate using the module's name
+        kotlin run -m my-module
+        kotlin run -m my-module -- arg1 arg2
+        
+        # Disambiguate using the platform to run
+        kotlin run -p jvm
+        kotlin run -p android 
+        ```
+        
+        **Example 3:** Run a simple standalone `.main.kts` script:
+        ```
+        kotlin run --script my-script.main.kts
+        kotlin run --script my-script.main.kts -- arg1 arg2
+        ```
+        
+        **Example 4:** Simpler form to run scripts outside any project:
+        ```
+        kotlin run my-script.main.kts
+        kotlin run my-script.main.kts -- arg1 arg2
+        ```
+    """.trimIndent()
 
-    override suspend fun run(cliContext: ProjectCliContext, model: Model) {
+    override suspend fun run() {
+        val script = scriptOptions.scriptPath
+        val cliContext = findCliContext(layoutOptions)
+        when {
+            script != null -> cliContext.runScript(script, programArguments)
+            cliContext is ProjectCliContext -> runProjectApp(cliContext)
+            cliContext is GlobalCliContext -> {
+                val scriptPath = programArguments.firstOrNull()?.let(::Path)
+                    ?: userReadableError(
+                        "The 'run' command is executed outside of a project. Expected a --script or a " +
+                                "positional argument with the path of a .main.kts script to run."
+                    )
+                cliContext.runScript(scriptPath = scriptPath, args = programArguments.drop(1))
+            }
+        }
+    }
+
+    private suspend fun runProjectApp(cliContext: ProjectCliContext) {
+        setProjectSpecificState(cliContext)
         withBackend(
-            cliContext,
-            model = model,
+            cliContext = cliContext,
+            model = cliContext.preparePluginsAndReadModel(),
             runSettings = AllRunSettings(
                 programArgs = programArguments,
                 workingDir = workingDir,
@@ -102,4 +173,44 @@ internal class RunCommand : AmperModelAwareCommand(name = "run") {
             backend.runApplication(moduleName = module, platform = platform, buildType = variant)
         }
     }
+
+    private suspend fun CliContext.runScript(scriptPath: Path, args: List<String>) {
+        if (scriptPath.notExists()) {
+            userReadableError("'$scriptPath' does not exist, cannot run it as a Kotlin script")
+        }
+        if (scriptPath.extension != "kts") {
+            userReadableError("The given file is not a Kotlin script, please provide a file with .kts extension")
+        }
+        val kotlinCompiler = context(userCacheRoot, processRunner) {
+            provisionKotlinCompilerCli(scriptOptions.kotlinVersion)
+        }
+        val jdk = context(problemReporter) {
+            jdkProvider.getJdkOrUserError(majorVersion = scriptOptions.jdkMajorVersion)
+        }
+        kotlinCompiler.runKotlinScript(
+            scriptPath = scriptPath,
+            workingDir = workingDir,
+            jdkHome = jdk.homeDir,
+            args = args,
+            outputListener = PrintToTerminalProcessOutputListener(terminal),
+        )
+    }
+}
+
+@OptIn(DiscouragedDirectDefaultVersionAccess::class)
+private class ScriptOptions : OptionGroup(
+    name = "Script-specific options",
+) {
+    val scriptPath by option("--script", help = "Executes the given Kotlin script (.main.kts)")
+        .path(mustExist = true, canBeFile = true, canBeDir = false)
+
+    val kotlinVersion by option(
+        "--script-kotlin-version",
+        help = "The Kotlin compiler version to use to compile and run Kotlin scripts (.main.kts)",
+    ).default(DefaultVersions.kotlin)
+
+    val jdkMajorVersion by option(
+        "--script-jdk-version",
+        help = "The major JDK version to use to run Kotlin scripts (.main.kts)",
+    ).int().default(DefaultVersions.jdk)
 }
