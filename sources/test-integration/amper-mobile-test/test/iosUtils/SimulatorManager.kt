@@ -9,8 +9,10 @@ import org.apache.maven.artifact.versioning.ComparableVersion
 import org.jetbrains.amper.processes.ProcessLeak
 import org.jetbrains.amper.processes.startLongLivedProcess
 import org.jetbrains.amper.simctl.SimCtl
+import org.jetbrains.amper.simctl.model.ProductFamilies
 import org.jetbrains.amper.simctl.model.SimDevice
 import org.jetbrains.amper.simctl.model.SimDeviceId
+import org.jetbrains.amper.simctl.model.SimulatorPlatforms
 import kotlin.io.path.Path
 import kotlin.io.path.exists
 import kotlin.io.path.pathString
@@ -25,14 +27,14 @@ internal object SimulatorManager {
      * Launches the iOS Simulator with the specified device.
      */
     @ProcessLeak
-    suspend fun launchSimulator(deviceName: String = "iPhone 16"): SimDeviceId {
+    suspend fun launchLatestIPhoneSimulator(): SimDeviceId {
         if (!simulatorPath.exists()) {
             error("Simulator app not found at $simulatorPath")
         }
 
         // The iOS Simulator that is launched must be the latest version available in the system because the Kotlin
         // Toolchain builds the app file targeting the highest available iOS version by default.
-        val deviceId = getDeviceWithLatestIOS(deviceName)
+        val deviceId = getLatestIPhoneWithLatestIOS()
         SimCtl.bootSimulator(deviceId, failIfAlreadyBooted = false)
 
         startLongLivedProcess(command = listOf("open", simulatorPath.pathString))
@@ -50,17 +52,27 @@ internal object SimulatorManager {
         error("Simulator failed to start or initialize after multiple attempts.")
     }
 
-    private suspend fun getDeviceWithLatestIOS(deviceName: String): SimDeviceId {
+    private suspend fun getLatestIPhoneWithLatestIOS(): SimDeviceId {
         val devicesForLatestIOS = getDevicesForLatestIos()
-        val device = devicesForLatestIOS.find { it.name == deviceName }
-            ?: error("Device $deviceName not found for latest iOS. Available devices for this runtime:\n" +
-                    devicesForLatestIOS.joinToString { "  - ${it.name} (${it.id})" })
+        val iPhoneTypesById = SimCtl.listDeviceTypes()
+            .filter { it.productFamily == ProductFamilies.IPhone }
+            .associateBy { it.id }
+
+        // There is no machine-readable version for devices that would allow us to pick the latest. The names cannot
+        // really be used to sort versions, because we would have to encode how 'iPhone SE' compares to 'iPhone 16'.
+        // After all, we don't need the latest device, we just want to avoid obsolete ones and find a decently modern,
+        // so we use a heuristic here based on the supported runtime versions of the device type.
+        // There seems to be more differences in `minRuntimeVersion` than `maxRuntimeVersion`, so maximizing the minimum
+        // version seems to be a better way to find a more modern device.
+        val device = devicesForLatestIOS.maxBy { iPhoneTypesById[it.deviceTypeId]?.minRuntimeVersion ?: 0 }
+
+        println("Resolved device for latest installed iOS: ${device.name} (${device.id})")
         return device.id
     }
 
     private suspend fun getDevicesForLatestIos(): List<SimDevice> {
         val latestIOSRuntime = SimCtl.listRuntimes()
-            .filter { it.platform == "iOS" }
+            .filter { it.platform == SimulatorPlatforms.IOS }
             .maxByOrNull { ComparableVersion(it.version) }
             ?: error("No iOS runtime installed. Run 'xcodebuild -downloadPlatform iOS' to install runtimes.")
         println("Latest installed iOS runtime: ${latestIOSRuntime.version}")
