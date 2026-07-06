@@ -25,15 +25,17 @@ import kotlin.io.path.name
 
 object TelemetryEnvironment {
 
+    private const val KOTLIN_CLI_TRACES_FILENAME = "kotlin_cli_traces.jsonl"
+
     /**
-     * The filename to use for the traces file when placed in the user-level Amper cache.
+     * The directory name to use for traces when placed in the user-level Kotlin Toolchain cache.
      * It has to be unique, and somehow convey which project/command it came from.
      */
-    private val userLevelTracesFilename: String by lazy {
+    private val userLevelTracesDirName: String by lazy {
         val datetime = LocalDateTime.nowInDefaultTimezone().format(DateTimeFormatForFilenames)
-        val pid = ProcessHandle.current().pid() // avoid clashes with concurrent Amper processes
+        val pid = ProcessHandle.current().pid() // avoid clashes with concurrent Kotlin CLI processes
         val workingDirName = Path(".").absolute().normalize().name
-        "opentelemetry_traces_${datetime}_${pid}_${workingDirName.take(20)}.jsonl"
+        "${datetime}_${pid}_${workingDirName.take(20)}"
     }
 
     private var movableFileOutputStream: MovableFileOutputStream? = null
@@ -56,13 +58,19 @@ object TelemetryEnvironment {
     }
 
     fun setLogsRootDirectory(amperBuildLogsRoot: AmperBuildLogsRoot) {
-        moveSpansFile(newPath = amperBuildLogsRoot.telemetryPath.createDirectories() / "amper_cli_traces.jsonl")
+        moveSpansFile(newPath = amperBuildLogsRoot.telemetryPath.createDirectories() / KOTLIN_CLI_TRACES_FILENAME)
     }
 
-    private fun userLevelTracesPath(userCacheRoot: AmperUserCacheRoot): Path {
-        val userLevelTelemetryDir = (userCacheRoot.path / "telemetry").createDirectories()
-        return userLevelTelemetryDir / userLevelTracesFilename
-    }
+    private fun userLevelTracesPath(userCacheRoot: AmperUserCacheRoot): Path =
+        userLevelTracesDir(userCacheRoot) / KOTLIN_CLI_TRACES_FILENAME
+
+    /**
+     * Returns the directory where telemetry traces should be placed for the current execution in global (non-project)
+     * contexts. This is also the place where traces are temporarily stored very early in the CLI process lifetime
+     * before we know where the project is (at which point we move everything to a project-specific location).
+     */
+    internal fun userLevelTracesDir(userCacheRoot: AmperUserCacheRoot): Path =
+        (userCacheRoot.telemetryRoot / userLevelTracesDirName).createDirectories()
 
     private fun moveSpansFile(newPath: Path) {
         movableFileOutputStream?.moveTo(newPath)

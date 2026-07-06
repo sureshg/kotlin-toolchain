@@ -26,6 +26,9 @@ import kotlin.io.path.pathString
  * comprehensive support in a build system to make it observable
  */
 class ProcessRunner(
+    /**
+     * The directory in which to contribute telemetry traces from child processes.
+     */
     private val telemetryDir: Path,
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)

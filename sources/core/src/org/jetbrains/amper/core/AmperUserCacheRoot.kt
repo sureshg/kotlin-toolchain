@@ -44,6 +44,8 @@ data class AmperUserCacheRoot(val path: Path) : AmperUserCacheInitializationResu
 
     val extractCache by lazy { path.resolve("extract.cache").createDirectories() }
 
+    val telemetryRoot by lazy { path.resolve("telemetry").createDirectories() }
+
     // we want the CLI help to look clean
     override fun toString(): String = path.pathString
 

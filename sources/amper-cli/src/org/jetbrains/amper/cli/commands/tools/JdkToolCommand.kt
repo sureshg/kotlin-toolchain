@@ -9,13 +9,10 @@ import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
-import io.opentelemetry.api.GlobalOpenTelemetry
 import org.jetbrains.amper.cli.CliProblemReporter
 import org.jetbrains.amper.cli.commands.AmperSubcommand
-import org.jetbrains.amper.cli.context.sharedIncrementalCache
 import org.jetbrains.amper.cli.userReadableError
 import org.jetbrains.amper.intellij.CommandLineUtils
-import org.jetbrains.amper.jdk.provisioning.JdkProvider
 import org.jetbrains.amper.jvm.getDefaultJdk
 import org.jetbrains.amper.processes.runProcessWithInheritedIO
 import org.jetbrains.amper.system.info.OsFamily
@@ -46,11 +43,7 @@ private class JdkToolSubcommand(private val name: String) : AmperSubcommand(name
 
     @OptIn(DelicateAmperApi::class)
     override suspend fun run() {
-        val jdkProvider = JdkProvider(
-            userCacheRoot = commonOptions.sharedCachesRoot,
-            openTelemetry = GlobalOpenTelemetry.get(),
-            incrementalCache = commonOptions.sharedCachesRoot.sharedIncrementalCache(),
-        )
+        val jdkProvider = findCliContext().jdkProvider
         val jdk = context(CliProblemReporter(terminal)) {
             jdkProvider.getDefaultJdk()
         }
