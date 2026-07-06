@@ -37,6 +37,7 @@ import kotlin.io.path.invariantSeparatorsPathString
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.name
 import kotlin.io.path.nameWithoutExtension
+import kotlin.io.path.readText
 import kotlin.io.path.relativeTo
 import kotlin.io.path.writeText
 
@@ -107,6 +108,8 @@ class WasmJsBuildTask(
 
             if (taskOutputPath.path.listDirectoryEntries("index.html").isEmpty()) {
                 createIndexHtml()
+            } else {
+                processIndexHtml()
             }
 
             processNodeModulesWithImportMap(importMap, nodeModulesPath)
@@ -191,16 +194,16 @@ class WasmJsBuildTask(
     }
 
     private fun createIndexHtml() {
-        val moduleName = module.kotlinModuleName(isTest)
+        val (moduleName, _ = moduleFile, scriptLines) = indexHtmlDefaultTemplateValues()
+
         taskOutputPath.path.resolve("index.html").writeText(
             """
             |<!DOCTYPE html>
             |<html lang="en">
             |<head>
             |    <meta charset="UTF-8">
-            |    <title>Kotlin/Wasm</title>
-            |    <script src="importmap-loader.js"></script>
-            |    <script src="$moduleName.mjs" type="module"></script>
+            |    <title>$moduleName</title>
+            |${scriptLines.prependIndent("    ")}
             |</head>
             |<body>
             |
@@ -209,6 +212,46 @@ class WasmJsBuildTask(
             """.trimMargin()
         )
     }
+
+    private fun processIndexHtml() {
+        val (moduleName, moduleFile, scriptLines) = indexHtmlDefaultTemplateValues()
+
+        val indexHtml = taskOutputPath.path.resolve("index.html")
+        val content = indexHtml.readText()
+            .replace("{{kotlin.moduleName}}", moduleName)
+            .replace("{{kotlin.moduleFile}}", moduleFile)
+            .replace(
+                Regex(
+                    """([ \t]*)\{\{kotlin.scripts}}""",
+                )
+            ) { match ->
+                // try to keep indent for pretty printing
+                val indent = match.groupValues[1]
+
+                scriptLines.prependIndent(indent)
+            }
+        indexHtml.writeText(content)
+    }
+
+    private fun indexHtmlDefaultTemplateValues(): IndexHtmlDefaults {
+        val moduleName = module.kotlinModuleName(isTest)
+        val moduleFile = "$moduleName.mjs"
+        val scriptLines = """
+                <script src="import-map-loader.js"></script>
+                <script src="$moduleFile" type="module"></script>
+            """.trimIndent()
+        return IndexHtmlDefaults(
+            moduleName,
+            moduleFile,
+            scriptLines
+        )
+    }
+
+    private class IndexHtmlDefaults(
+        val moduleName: String,
+        val moduleFile: String,
+        val scriptLines: String,
+    )
 
     class Result(
         val appPath: Path,

@@ -14,6 +14,7 @@ import kotlin.io.path.div
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
 import kotlin.test.Test
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 
 class WasmJsProjectsTest : AmperCliTestBase() {
@@ -26,14 +27,75 @@ class WasmJsProjectsTest : AmperCliTestBase() {
         (projectDir / "resources" / "index.html")
             .createParentDirectories()
             .writeText(
-                """""
+                """
             |<!DOCTYPE html>
             |<html lang="en">
             |<head>
             |    <meta charset="UTF-8">
-            |    <title>Kotlin/Wasm</title>
-            |    <script src="importmap-loader.js"></script>
+            |    <title>wasm-js-app-with-compose</title>
+            |    <script src="import-map-loader.js"></script>
             |    <script src="wasm-js-app-with-compose.mjs" type="module"></script>
+            |</head>
+            |<body>
+            |
+            |</body>
+            |</html>
+            """.trimMargin()
+            )
+
+        val result = runCli(
+            projectDir = projectDir,
+            "build",
+        )
+
+        result.checkComposeApplication()
+    }
+
+    @Test
+    fun `wasm js app compose should build with templated index html`() = runSlowTest {
+        val projectDir = testProject("wasm-js-app-with-compose")
+
+        (projectDir / "resources" / "index.html")
+            .createParentDirectories()
+            .writeText(
+                """
+            |<!DOCTYPE html>
+            |<html lang="en">
+            |<head>
+            |    <meta charset="UTF-8">
+            |    <title>{{kotlin.moduleName}}</title>
+            |    {{kotlin.scripts}}
+            |</head>
+            |<body>
+            |
+            |</body>
+            |</html>
+            """.trimMargin()
+            )
+
+        val result = runCli(
+            projectDir = projectDir,
+            "build",
+        )
+
+        result.checkComposeApplication()
+    }
+
+    @Test
+    fun `wasm js app compose should build with templated index html only mjs script`() = runSlowTest {
+        val projectDir = testProject("wasm-js-app-with-compose")
+
+        (projectDir / "resources" / "index.html")
+            .createParentDirectories()
+            .writeText(
+                """
+            |<!DOCTYPE html>
+            |<html lang="en">
+            |<head>
+            |    <meta charset="UTF-8">
+            |    <title>{{kotlin.moduleName}}</title>
+            |    <script src="import-map-loader.js"></script>
+            |    <script src="{{kotlin.moduleFile}}" type="module"></script>
             |</head>
             |<body>
             |
@@ -79,6 +141,20 @@ class WasmJsProjectsTest : AmperCliTestBase() {
         assertFileExists(importObjectMjsFile)
         assertFileExists(jsBuiltinsMjs)
         assertFileExists(indexHtml)
+
+        assertContains(
+            indexHtml.readText(),
+            "    <title>wasm-js-app-with-compose</title>"
+        )
+        assertContains(
+            indexHtml.readText(),
+            "    <script src=\"import-map-loader.js\"></script>"
+        )
+        assertContains(
+            indexHtml.readText(),
+            "    <script src=\"wasm-js-app-with-compose.mjs\" type=\"module\"></script>"
+        )
+
         assertFileExists(skikoMjs)
         assertFileExists(skikoWasm)
 
