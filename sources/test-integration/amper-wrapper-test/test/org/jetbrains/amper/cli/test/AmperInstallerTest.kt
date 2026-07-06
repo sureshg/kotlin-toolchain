@@ -74,7 +74,16 @@ class AmperInstallerTest : AmperCliWithWrapperTestBase() {
     @Test
     @WindowsOnly
     fun `installer works in Windows Powershell (Windows default 5_1)`() = runBlocking {
-        `installer works`("powershell.exe")
+        `installer works`("powershell.exe", extraEnv = mapOf(
+            // If this test is called from PowerShell Core (pwsh), we need to reset this variable to
+            // avoid the Get_FileHash bug exactly like in our wrapper script.
+            // See https://github.com/PowerShell/PowerShell/issues/18108#issuecomment-2269703022
+            // "When pwsh.exe starts powershell.exe directly, it can attempt to automagically fix up the environment
+            // block for the child process. But if there is an intervening process in the process tree (such as
+            // pwsh.exe -> cmd.exe -> powershell.exe), then that fixup isn't applied, and you can end up in a
+            // powershell.exe process with an environment block that is appropriate for pwsh.exe, but not you."
+            "PSModulePath" to "",
+        ))
     }
 
     @Test
@@ -86,6 +95,7 @@ class AmperInstallerTest : AmperCliWithWrapperTestBase() {
 
     private suspend fun `installer works`(
         powershell: String,
+        extraEnv: Map<String, String> = emptyMap(),
     ) {
         val testHome = tempDirExtension.path / "home"
         val result = runProcessAndCaptureOutput(
@@ -93,7 +103,7 @@ class AmperInstallerTest : AmperCliWithWrapperTestBase() {
             environment = mapOf(
                 "KOTLIN_CLI_NO_MODIFY_PATH" to "1",
                 "USERPROFILE" to testHome.absolutePathString(),
-            ) + baseEnvironmentForWrapper(),
+            ) + baseEnvironmentForWrapper() + extraEnv,
             redirectErrorStream = true,
         )
 
