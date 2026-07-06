@@ -35,7 +35,7 @@ class AmperInstallerTest : AmperCliWithWrapperTestBase() {
 
     @Test
     @MacOrLinuxOnly
-    fun `installer works (bash)`() = runBlocking {
+    fun `installer works in Bash`() = runBlocking {
         val testHome = tempDirExtension.path / "home"
         val installer = LocalAmperPublication.installerSh
             .copyTo(tempDirExtension.path / "installer.sh")
@@ -73,13 +73,13 @@ class AmperInstallerTest : AmperCliWithWrapperTestBase() {
 
     @Test
     @WindowsOnly
-    fun `installer works (old powershell)`() = runBlocking {
+    fun `installer works in Windows Powershell (Windows default 5_1)`() = runBlocking {
         `installer works`("powershell.exe")
     }
 
     @Test
     @WindowsOnly
-    fun `installer works (new powershell)`() = runBlocking {
+    fun `installer works in Powershell Core (modern pwsh 7+)`() = runBlocking {
         Assumptions.assumeTrue(hasNewPowershell(), "pwsh is not available")
         `installer works`("pwsh.exe")
     }
