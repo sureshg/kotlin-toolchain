@@ -18,7 +18,6 @@ import org.jetbrains.amper.processes.ProcessInput
 import org.jetbrains.amper.tasks.EmptyTaskResult
 import org.jetbrains.amper.tasks.NativeDesktopRunSettings
 import org.jetbrains.amper.tasks.TaskResult
-import org.jetbrains.amper.tasks.workingDir
 import org.jetbrains.amper.telemetry.setListAttribute
 import org.jetbrains.amper.telemetry.spanBuilder
 import org.jetbrains.amper.telemetry.use

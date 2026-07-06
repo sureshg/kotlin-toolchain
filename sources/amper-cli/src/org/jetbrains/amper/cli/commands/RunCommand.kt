@@ -7,6 +7,7 @@ package org.jetbrains.amper.cli.commands
 import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
+import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.int
@@ -19,6 +20,7 @@ import org.jetbrains.amper.cli.options.userJvmArgsOption
 import org.jetbrains.amper.cli.withBackend
 import org.jetbrains.amper.frontend.Model
 import org.jetbrains.amper.tasks.AllRunSettings
+import kotlin.io.path.Path
 
 internal class RunCommand : AmperModelAwareCommand(name = "run") {
 
@@ -59,6 +61,7 @@ internal class RunCommand : AmperModelAwareCommand(name = "run") {
             "By default, the current directory is used. This option is only applicable for JVM and native desktop " +
             "applications (the working directory is not customizable in mobile emulator runs).")
         .path(mustExist = true, canBeFile = false, canBeDir = true)
+        .default(Path("."))
 
     private val composeHotReloadMode by option("--compose-hot-reload-mode", help = "Enable Compose Hot Reload " +
             "mode for Compose Multiplatform applications (for desktop applications and libraries which have jvm platform). " +
@@ -88,7 +91,7 @@ internal class RunCommand : AmperModelAwareCommand(name = "run") {
             model = model,
             runSettings = AllRunSettings(
                 programArgs = programArguments,
-                explicitWorkingDir = workingDir,
+                workingDir = workingDir,
                 userJvmArgs = jvmArgs,
                 userJvmMainClass = jvmMainClass,
                 deviceId = deviceId,

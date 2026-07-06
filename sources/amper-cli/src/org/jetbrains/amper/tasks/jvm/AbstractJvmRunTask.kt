@@ -29,7 +29,6 @@ import org.jetbrains.amper.processes.runJava
 import org.jetbrains.amper.tasks.EmptyTaskResult
 import org.jetbrains.amper.tasks.JvmMainRunSettings
 import org.jetbrains.amper.tasks.TaskResult
-import org.jetbrains.amper.tasks.workingDir
 import java.nio.file.Path
 
 abstract class AbstractJvmRunTask(

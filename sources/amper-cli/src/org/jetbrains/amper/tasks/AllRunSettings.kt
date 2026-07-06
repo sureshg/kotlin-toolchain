@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.tasks
@@ -24,18 +24,10 @@ sealed interface DesktopRunSettings : RunSettings {
     val programArgs: List<String>
 
     /**
-     * The explicitly specified working directory to use when running the user's application, or null if not specified.
-     *
-     * @see workingDir
+     * The working directory to use when running the user's application.
      */
-    val explicitWorkingDir: Path?
+    val workingDir: Path
 }
-
-/**
- * The working directory to use when running the user's application.
- */
-val DesktopRunSettings.workingDir: Path
-    get() = explicitWorkingDir ?: Path(System.getProperty("user.dir"))
 
 /**
  * Settings for mobile application runs (in a device or emulator, not on the host).
@@ -142,7 +134,7 @@ sealed interface WebRunSettings : RunSettings {
  */
 data class AllRunSettings(
     override val programArgs: List<String> = emptyList(),
-    override val explicitWorkingDir: Path? = null,
+    override val workingDir: Path = Path("."),
     override val testFilters: List<TestFilter> = emptyList(),
     override val testResultsFormat: TestResultsFormat = TestResultsFormat.Pretty,
     override val userJvmArgs: List<String> = emptyList(),
