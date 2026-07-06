@@ -305,7 +305,10 @@ private fun VirtualFile.resolveModuleFileOrNull(relativeModulePath: TraceableStr
         )
         return null
     }
-    return moduleFile
+    // We use the canonicalFile because we want paths to be normalized. Since our model parser normalizes paths
+    // automatically, we rely on this "paths are normalized" invariant throughout the frontend, so we need to respect
+    // it here (otherwise this breaks maps with paths as keys).
+    return moduleFile.canonicalFile
 }
 
 context(problemReporter: ProblemReporter)
