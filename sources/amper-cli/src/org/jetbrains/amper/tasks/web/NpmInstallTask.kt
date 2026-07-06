@@ -92,6 +92,27 @@ class NpmInstallTask(
 
                 spanBuilder("pnpm install")
                     .use {
+                        val disableUpdateNotify = processRunner.runProcessAndGetOutput(
+                            workingDir = outputDir,
+                            command = listOf(
+                                executable.pathString,
+                                "config",
+                                "set",
+                                "--location=project",
+                                "updateNotifier",
+                                "false"
+                            ),
+                            span = it,
+                            outputListener = LoggingProcessOutputListener(logger),
+                        )
+
+                        if (disableUpdateNotify.exitCode != 0) {
+                            error(
+                                "pnpm configuration exits with the code ${disableUpdateNotify.exitCode}:\n" +
+                                        disableUpdateNotify.stderr
+                            )
+                        }
+
                         val result = processRunner.runProcessAndGetOutput(
                             workingDir = outputDir,
                             command = [executable.pathString, "install"],

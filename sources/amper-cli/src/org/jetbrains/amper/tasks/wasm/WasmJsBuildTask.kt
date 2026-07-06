@@ -7,6 +7,7 @@ package org.jetbrains.amper.tasks.wasm
 import org.jetbrains.amper.BuildPrimitives
 import org.jetbrains.amper.cli.context.AmperProjectTempRoot
 import org.jetbrains.amper.cli.userReadableError
+import org.jetbrains.amper.compilation.kotlinModuleName
 import org.jetbrains.amper.core.extract.extractZip
 import org.jetbrains.amper.engine.BuildTask
 import org.jetbrains.amper.engine.TaskGraphExecutionContext
@@ -104,6 +105,10 @@ class WasmJsBuildTask(
                     )
                 }
 
+            if (taskOutputPath.path.listDirectoryEntries("index.html").isEmpty()) {
+                createIndexHtml()
+            }
+
             processNodeModulesWithImportMap(importMap, nodeModulesPath)
 
             if (skikoWasmRuntime != null) {
@@ -183,6 +188,26 @@ class WasmJsBuildTask(
                     overwrite = true,
                 )
             }
+    }
+
+    private fun createIndexHtml() {
+        val moduleName = module.kotlinModuleName(isTest)
+        taskOutputPath.path.resolve("index.html").writeText(
+            """
+            |<!DOCTYPE html>
+            |<html lang="en">
+            |<head>
+            |    <meta charset="UTF-8">
+            |    <title>Kotlin/Wasm</title>
+            |    <script src="importmap-loader.js"></script>
+            |    <script src="$moduleName.mjs" type="module"></script>
+            |</head>
+            |<body>
+            |
+            |</body>
+            |</html>
+            """.trimMargin()
+        )
     }
 
     class Result(

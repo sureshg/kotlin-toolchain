@@ -8,21 +8,61 @@ import org.jetbrains.amper.cli.test.utils.assertFileExists
 import org.jetbrains.amper.cli.test.utils.assertStdoutContains
 import org.jetbrains.amper.cli.test.utils.getTaskOutputPath
 import org.jetbrains.amper.cli.test.utils.runSlowTest
+import org.jetbrains.amper.test.AmperCliResult
+import kotlin.io.path.createParentDirectories
 import kotlin.io.path.div
 import kotlin.io.path.readText
+import kotlin.io.path.writeText
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class WasmJsProjectsTest : AmperCliTestBase() {
 
     @Test
-    fun `wasm js app compose should build`() = runSlowTest {
+    fun `wasm js app compose should build with index html`() = runSlowTest {
+
+        val projectDir = testProject("wasm-js-app-with-compose")
+
+        (projectDir / "resources" / "index.html")
+            .createParentDirectories()
+            .writeText(
+                """""
+            |<!DOCTYPE html>
+            |<html lang="en">
+            |<head>
+            |    <meta charset="UTF-8">
+            |    <title>Kotlin/Wasm</title>
+            |    <script src="importmap-loader.js"></script>
+            |    <script src="wasm-js-app-with-compose.mjs" type="module"></script>
+            |</head>
+            |<body>
+            |
+            |</body>
+            |</html>
+            """.trimMargin()
+            )
+
+        val result = runCli(
+            projectDir = projectDir,
+            "build",
+        )
+
+        result.checkComposeApplication()
+    }
+
+    @Test
+    fun `wasm js app compose should build without index html`() = runSlowTest {
         val result = runCli(
             projectDir = testProject("wasm-js-app-with-compose"),
             "build",
         )
 
-        val buildWasmJs = result.getTaskOutputPath(":wasm-js-app-with-compose:buildWasmJsAppWasmJsDebug")
+        result.checkComposeApplication()
+    }
+
+    private fun AmperCliResult.checkComposeApplication() {
+
+        val buildWasmJs = getTaskOutputPath(":wasm-js-app-with-compose:buildWasmJsAppWasmJsDebug")
 
         val baseName = "wasm-js-app-with-compose"
 
@@ -47,7 +87,7 @@ class WasmJsProjectsTest : AmperCliTestBase() {
         assertFileExists(vendors)
         assertFileExists(vendors / "@js-joda/core")
 
-        result.assertStdoutContains(
+        assertStdoutContains(
             "pnpm install completed successfully"
         )
 
