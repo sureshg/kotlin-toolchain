@@ -15,7 +15,14 @@ import org.jetbrains.amper.telemetry.spanBuilder
 import org.jetbrains.amper.telemetry.useWithoutCoroutines
 
 internal fun createMordantTerminal(): Terminal = spanBuilder("Initialize Mordant terminal").useWithoutCoroutines {
-    val defaultTerm = Terminal(theme = createAmperTerminalTheme())
+    val defaultTerm = Terminal(
+        theme = createAmperTerminalTheme(),
+        // The default of 79 is unreasonably small. The places affected by this are:
+        //   * CI build log UIs
+        //   * file containing redirected output of the Kotlin Toolchain
+        //   * our own tests (which might check stdout and expect longer lines)
+        nonInteractiveWidth = 120,
+    )
 
     // Workaround while waiting for https://github.com/ajalt/mordant/pull/290
     if (System.getenv("TERM_PROGRAM")?.lowercase() == "ghostty") {

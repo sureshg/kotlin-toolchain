@@ -5,6 +5,8 @@
 package org.jetbrains.amper.cli.commands
 
 import com.github.ajalt.clikt.core.Context
+import com.github.ajalt.clikt.core.context
+import com.github.ajalt.clikt.output.HelpFormatter.ParameterHelp
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
 import com.github.ajalt.clikt.parameters.groups.OptionGroup
@@ -14,6 +16,7 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.clikt.parameters.types.path
+import org.jetbrains.amper.cli.MultiUsageKotlinCliHelpFormatter
 import org.jetbrains.amper.cli.context.CliContext
 import org.jetbrains.amper.cli.context.GlobalCliContext
 import org.jetbrains.amper.cli.context.ProjectCliContext
@@ -37,6 +40,26 @@ import kotlin.io.path.extension
 import kotlin.io.path.notExists
 
 internal class RunCommand : AmperSubcommand(name = "run") {
+
+    init {
+        context {
+            helpFormatter = { context ->
+                object : MultiUsageKotlinCliHelpFormatter(context) {
+                    override fun listUsages(parameters: List<ParameterHelp>, programName: String): List<UsageEntry> {
+                        val normalParameters = renderUsageParametersString(parameters)
+                        val scriptParameters = normalParameters
+                            .replace("<options>", "<script_options>")
+                            .replace("<app_arguments>", "<script_arguments>")
+                        return [
+                            UsageEntry(highlight = programName, muted = normalParameters),
+                            UsageEntry(highlight = "$programName --script <script_path>", muted = scriptParameters),
+                            UsageEntry(highlight = "$programName <script_path>", muted = scriptParameters),
+                        ]
+                    }
+                }
+            }
+        }
+    }
 
     private val module by option("-m", "--module", help = "Specific module to run (run the `show modules` command to get the modules list)")
 
