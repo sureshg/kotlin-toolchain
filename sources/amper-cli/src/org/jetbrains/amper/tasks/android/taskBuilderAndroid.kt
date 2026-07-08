@@ -20,6 +20,7 @@ import org.jetbrains.amper.tasks.ProjectTasksBuilder
 import org.jetbrains.amper.tasks.ProjectTasksBuilder.Companion.getTaskOutputPath
 import org.jetbrains.amper.tasks.TaskNameFactory
 import org.jetbrains.amper.tasks.compose.isComposeEnabledFor
+import org.jetbrains.amper.tasks.getModuleDependencies
 import org.jetbrains.amper.tasks.getTaskName
 import org.jetbrains.amper.tasks.jvm.JvmClassesJarTask
 import org.jetbrains.amper.tasks.jvm.JvmCompileTask
@@ -186,7 +187,7 @@ fun ProjectTasksBuilder.setupAndroidTasks() {
                     buildOutputRoot = context.buildOutputRoot,
                     jdkProvider = context.jdkProvider,
                     buildType = buildType,
-                    platform = Platform.ANDROID,
+                    platform = platform,
                     processRunner = context.processRunner,
                     terminal = context.terminal,
                     openTelemetry = context.openTelemetry,
@@ -194,12 +195,61 @@ fun ProjectTasksBuilder.setupAndroidTasks() {
                 dependsOn = buildList {
                     add(AndroidTaskType.InstallPlatform.getTaskName(module, platform, isTest))
                     add(CommonTaskType.TransformDependencies.getTaskName(module, platform, isTest))
-                    add(CommonTaskType.Dependencies.getTaskName(module, Platform.ANDROID, isTest))
+                    add(CommonTaskType.Dependencies.getTaskName(module, platform, isTest))
                     if (module.type != ProductType.KMP_LIB && !isTest) {
-                        add(AndroidTaskType.Prepare.getTaskName(module, platform, isTest, buildType))
+                        add(AndroidTaskType.Prepare.getTaskName(module, platform, isTest = false, buildType))
+                    }
+                    if (isTest) {
+                        // test compilation depends on main classes
+                        add(CommonTaskType.Compile.getTaskName(module, platform, isTest = false, buildType))
+                    }
+                    module.getModuleDependencies(
+                        isTest = isTest,
+                        platform = platform,
+                        dependencyReason = ResolutionScope.COMPILE,
+                        userCacheRoot = context.userCacheRoot,
+                        incrementalCache = context.incrementalCache,
+                    ).forEach { dependsOn ->
+                        add(CommonTaskType.Compile.getTaskName(dependsOn, platform, isTest = false, buildType))
                     }
                 }
             )
+
+            if (!isTest) {
+                // Production always deals with JAR -> AAR, even for `ProductType.ANDROID_APP`
+                val jarTaskName = CommonTaskType.Jar.getTaskName(module, platform, isTest = false, buildType)
+                tasks.registerTask(
+                    task = JvmClassesJarTask(
+                        taskName = jarTaskName,
+                        module = module,
+                        buildType = buildType,
+                        taskOutputRoot = context.getTaskOutputPath(jarTaskName),
+                        incrementalCache = context.incrementalCache,
+                        platform = Platform.ANDROID,
+                    ),
+                    dependsOn = compileTaskName,
+                )
+
+                val aarTaskName = AndroidTaskType.Aar.getTaskName(module, platform, isTest = false, buildType)
+                tasks.registerTask(
+                    task = AndroidAarTask(
+                        taskName = aarTaskName,
+                        incrementalCache = context.incrementalCache,
+                        module = module,
+                        buildType = buildType,
+                        taskOutputRoot = context.getTaskOutputPath(aarTaskName),
+                        tempRoot = context.projectTempRoot,
+                    ),
+                    dependsOn = buildList {
+                        add(jarTaskName)
+                        if (isComposeEnabledFor(module)) {
+                            fragments.forEach { fragment ->
+                                add(AndroidFragmentTaskType.PrepareComposeResources.getTaskName(fragment))
+                            }
+                        }
+                    },
+                )
+            }
 
             val runtimeClasspathTaskName = CommonTaskType.RuntimeClasspath.getTaskName(module, platform, isTest, buildType)
             tasks.registerTask(
@@ -212,62 +262,41 @@ fun ProjectTasksBuilder.setupAndroidTasks() {
                     if (isTest) {
                         add(CommonTaskType.TransformDependencies.getTaskName(module, platform, true))
                     }
-                    add(CommonTaskType.Dependencies.getTaskName(module, Platform.ANDROID, isTest))
+                    // Third-party-dependencies
+                    add(CommonTaskType.Dependencies.getTaskName(module, platform, isTest))
                     if (isTest) {
                         add(AndroidTaskType.MockablePlatformJar.getTaskName(module, platform, false))
                     }
-                }
-            )
 
-            if (isTest) {
-                // Test depends directly on compilation output (classes)
-                tasks.registerDependency(
-                    taskName = runtimeClasspathTaskName,
-                    dependsOn = CommonTaskType.Compile.getTaskName(module, platform, true, buildType)
-                )
-            } else {
-                // Production always deals with JAR -> AAR, even for `ProductType.ANDROID_APP`
-                val jarTaskName = CommonTaskType.Jar.getTaskName(module, platform, false, buildType)
-                tasks.registerTask(
-                    task = JvmClassesJarTask(
-                        taskName = jarTaskName,
-                        module = module,
-                        buildType = buildType,
-                        taskOutputRoot = context.getTaskOutputPath(jarTaskName),
+                    // Module-dependencies
+                    module.getModuleDependencies(
+                        isTest = isTest,
+                        platform = platform,
+                        dependencyReason = ResolutionScope.RUNTIME,
+                        userCacheRoot = context.userCacheRoot,
                         incrementalCache = context.incrementalCache,
-                        platform = Platform.ANDROID,
-                    ),
-                    dependsOn = CommonTaskType.Compile.getTaskName(module, platform, false, buildType),
-                )
+                    ).forEach { dependsOn ->
+                        val archiveTask = if (!isTest) {
+                            // Production always depends on AAR for Android module dependency
+                            AndroidTaskType.Aar.getTaskName(dependsOn, platform, isTest = false, buildType)
+                        } else {
+                            // Test always depends on a JAR
+                            CommonTaskType.Jar.getTaskName(dependsOn, platform, isTest = false, buildType)
+                        }
+                        add(archiveTask)
+                    }
 
-                val aarTaskName = AndroidTaskType.Aar.getTaskName(module, platform, false, buildType)
-                tasks.registerTask(
-                    task = AndroidAarTask(
-                        taskName = aarTaskName,
-                        incrementalCache = context.incrementalCache,
-                        module = module,
-                        buildType = buildType,
-                        taskOutputRoot = context.getTaskOutputPath(aarTaskName),
-                        tempRoot = context.projectTempRoot,
-                    ),
-                    dependsOn = jarTaskName,
-                )
-
-                // Non-test runtime classpath depends on AAR, not JAR
-                tasks.registerDependency(
-                    taskName = runtimeClasspathTaskName,
-                    dependsOn = aarTaskName,
-                )
-
-                if (isComposeEnabledFor(module)) {
-                    fragments.forEach { fragment ->
-                        tasks.registerDependency(
-                            taskName = aarTaskName,
-                            dependsOn = AndroidFragmentTaskType.PrepareComposeResources.getTaskName(fragment),
-                        )
+                    if (isTest) {
+                        // Depend on the test classes
+                        add(CommonTaskType.Compile.getTaskName(module, platform, isTest = true, buildType))
+                        // Depend on the production JAR
+                        add(CommonTaskType.Jar.getTaskName(module, platform, isTest = false, buildType))
+                    } else {
+                        // Production runtime classpath depends on AAR, not JAR
+                        add(AndroidTaskType.Aar.getTaskName(module, platform, isTest = false, buildType))
                     }
                 }
-            }
+            )
         }
 
     allModules().alsoPlatforms(Platform.ANDROID).withEach {
@@ -282,39 +311,6 @@ fun ProjectTasksBuilder.setupAndroidTasks() {
             }
         }
     }
-
-    allModules()
-        .alsoPlatforms(Platform.ANDROID)
-        .alsoTests()
-        .alsoBuildTypes()
-        .selectModuleDependencies(ResolutionScope.COMPILE).withEach {
-            for (buildType in BuildType.entries) {
-                tasks.registerDependency(
-                    CommonTaskType.Compile.getTaskName(module, platform, isTest, buildType),
-                    CommonTaskType.Compile.getTaskName(dependsOn, platform, false, buildType)
-                )
-            }
-        }
-
-    allModules()
-        .alsoPlatforms(Platform.ANDROID)
-        .alsoTests()
-        .alsoBuildTypes()
-        .selectModuleDependencies(ResolutionScope.RUNTIME).withEach {
-            for (buildType in BuildType.entries) {
-                val archiveTask = if (!isTest) {
-                    // Non-test always depends on AAR for android module dependency
-                    AndroidTaskType.Aar.getTaskName(dependsOn, platform, false, buildType)
-                } else {
-                    // Test always depends on a jar
-                    CommonTaskType.Jar.getTaskName(dependsOn, platform, false, buildType)
-                }
-                tasks.registerDependency(
-                    taskName = CommonTaskType.RuntimeClasspath.getTaskName(module, platform, isTest, buildType),
-                    dependsOn = archiveTask,
-                )
-            }
-        }
 
     allModules()
         .alsoPlatforms(Platform.ANDROID)
@@ -368,16 +364,6 @@ fun ProjectTasksBuilder.setupAndroidTasks() {
                     CommonTaskType.Compile.getTaskName(module, platform, true, buildType),
                     CommonTaskType.RuntimeClasspath.getTaskName(module, platform, true, buildType),
                 ),
-            )
-
-            tasks.registerDependency(
-                taskName = CommonTaskType.Compile.getTaskName(module, platform, true, buildType),
-                dependsOn = CommonTaskType.Compile.getTaskName(module, platform, false, buildType),
-            )
-
-            tasks.registerDependency(
-                CommonTaskType.RuntimeClasspath.getTaskName(module, platform, true, buildType),
-                CommonTaskType.Jar.getTaskName(module, platform, isTest = false, buildType = buildType)
             )
         }
 
