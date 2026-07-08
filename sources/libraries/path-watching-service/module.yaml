@@ -1,0 +1,13 @@
+product: jvm/lib
+
+apply:
+  - //sources/common.module-template.yaml
+
+dependencies:
+  - $libs.kotlinx.coroutines.core
+  - $libs.tinylog.slf4j
+
+test-dependencies:
+  - //sources/libraries/system-info
+  - $libs.kotlinx.coroutines.test
+  - $libs.tinylog.impl

@@ -18,7 +18,7 @@ class GlobalCliContext(
     override val userCacheRoot: AmperUserCacheRoot,
     override val terminal: Terminal,
     override val problemReporter: ProblemReporter,
-) : CliContext() {
+) : CliContextBase() {
 
     override val processRunner: ProcessRunner by lazy {
         ProcessRunner(telemetryDir = TelemetryEnvironment.userLevelTracesDir(userCacheRoot))

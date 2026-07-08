@@ -5,73 +5,56 @@
 package org.jetbrains.amper.cli.context
 
 import com.github.ajalt.mordant.terminal.Terminal
-import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.api.OpenTelemetry
 import org.jetbrains.amper.ProcessRunner
-import org.jetbrains.amper.android.AndroidSdkDetector
 import org.jetbrains.amper.core.AmperUserCacheRoot
 import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.jdk.provisioning.JdkProvider
 import org.jetbrains.amper.problems.reporting.ProblemReporter
-import kotlin.io.path.createDirectories
 
-sealed class CliContext {
+sealed interface CliContext {
     /**
      * The name of the currently running command.
      */
-    abstract val commandName: String
+    val commandName: String
 
     /**
      * The root of the caches shared between projects, usually local to the machine.
      */
-    abstract val userCacheRoot: AmperUserCacheRoot
+    val userCacheRoot: AmperUserCacheRoot
 
     /**
      * The Mordant [Terminal] to use to interact with the user.
      */
-    abstract val terminal: Terminal
+    val terminal: Terminal
 
     /**
      * A centralized way to report diagnostics and issues.
      */
-    abstract val problemReporter: ProblemReporter
+    val problemReporter: ProblemReporter
 
     /**
      * The [ProcessRunner] to use to run any child process. It ensures we don't leak processes, and integrates them with
      * structured concurrency.
      */
-    abstract val processRunner: ProcessRunner
+    val processRunner: ProcessRunner
 
     /**
      * The centralized incremental cache mechanism.
      */
-    abstract val incrementalCache: IncrementalCache
+    val incrementalCache: IncrementalCache
 
-    /**
-     * The [OpenTelemetry] instance to use for tracing.
-     */
-    val openTelemetry: OpenTelemetry by lazy {
-        // by the time we get here, GlobalOpenTelemetry should be set
-        GlobalOpenTelemetry.get()
-    }
+    val openTelemetry: OpenTelemetry
 
     /**
      * The detected Android SDK home root to use for Android tools.
      */
-    val androidHomeRoot: AndroidHomeRoot by lazy {
-        AndroidHomeRoot(AndroidSdkDetector.detectSdkPath().createDirectories())
-    }
+    val androidHomeRoot: AndroidHomeRoot
 
     /**
      * A service that provisions JDKs on-demand. A single instance is used for the whole Kotlin Toolchain execution, so
      * we ensure that invalid `JAVA_HOME` errors are only reported once. We can also benefit from the session-specific
      * cache.
      */
-    val jdkProvider: JdkProvider by lazy {
-        JdkProvider(
-            userCacheRoot = userCacheRoot,
-            openTelemetry = openTelemetry,
-            incrementalCache = incrementalCache,
-        )
-    }
+    val jdkProvider: JdkProvider
 }

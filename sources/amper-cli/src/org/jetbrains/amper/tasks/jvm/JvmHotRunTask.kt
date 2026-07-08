@@ -8,12 +8,8 @@ import com.github.ajalt.mordant.terminal.Terminal
 import org.jetbrains.amper.ProcessRunner
 import org.jetbrains.amper.cli.context.AmperProjectRoot
 import org.jetbrains.amper.cli.context.AmperProjectTempRoot
-import org.jetbrains.amper.cli.lazyload.ExtraClasspath
 import org.jetbrains.amper.cli.userReadableError
 import org.jetbrains.amper.compilation.singleLeafFragment
-import org.jetbrains.amper.composehotreload.recompiler.ENV_AMPER_BUILD_ROOT
-import org.jetbrains.amper.composehotreload.recompiler.ENV_AMPER_BUILD_TASK
-import org.jetbrains.amper.composehotreload.recompiler.ENV_AMPER_SERVER_PORT
 import org.jetbrains.amper.core.AmperUserCacheRoot
 import org.jetbrains.amper.engine.TaskName
 import org.jetbrains.amper.frontend.AmperModule
@@ -27,12 +23,11 @@ import org.jetbrains.amper.jdk.provisioning.JdkProvisioningCriteria
 import org.jetbrains.amper.jdk.provisioning.orElse
 import org.jetbrains.amper.problems.reporting.ProblemReporter
 import org.jetbrains.amper.run.ToolingArtifactsDownloader
+import org.jetbrains.amper.tasks.ComposeHotReloadSettings
 import org.jetbrains.amper.tasks.JvmMainRunSettings
 import org.jetbrains.amper.tasks.TaskResult
-import org.jetbrains.amper.tasks.getTaskName
 import org.jetbrains.amper.util.BuildType
 import java.io.File
-import java.net.ServerSocket
 import java.nio.file.Path
 import kotlin.io.path.name
 import kotlin.io.path.pathString
@@ -48,6 +43,7 @@ class JvmHotRunTask(
     incrementalCache: IncrementalCache,
     jdkProvider: JdkProvider,
     processRunner: ProcessRunner,
+    private val hotReloadSettings: ComposeHotReloadSettings,
     private val toolingArtifactsDownloader: ToolingArtifactsDownloader = ToolingArtifactsDownloader(
         userCacheRoot,
         incrementalCache
@@ -67,8 +63,6 @@ class JvmHotRunTask(
     override val buildType: BuildType
         get() = BuildType.Debug
 
-    private val portAvailable: Int get() = ServerSocket(0).use { it.localPort }
-
     private val composeSettingsJvm by lazy {
         // Compose settings are platform-agnostic
         module.fragments
@@ -86,12 +80,12 @@ class JvmHotRunTask(
         val agent = agentClasspath.singleOrNull { it.name.startsWith("hot-reload-agent") }
                 ?: error("Can't find hot-reload-agent in agent classpath:\n${agentClasspath.joinToString("\n")}")
 
-        val recompilerExtensionClasspath = ExtraClasspath.RECOMPILER_EXTENSION.findJarsInDistribution()
-
         val devToolsClasspath = toolingArtifactsDownloader.downloadDevTools(
             hotReloadVersion = composeSettingsJvm.experimental.hotReload.version,
             composeVersion = composeSettingsJvm.version,
-        ) + recompilerExtensionClasspath
+        )
+
+        val orchestrationPort = hotReloadSettings.orchestrationPort.await()
 
         val amperJvmArgs = buildList {
             add("-ea")
@@ -103,7 +97,8 @@ class JvmHotRunTask(
             add("-Dcompose.reload.devToolsTransparencyEnabled=true")
             add("-Dcompose.reload.dirtyResolveDepthLimit=5")
             add("-Dcompose.reload.virtualMethodResolveEnabled=true")
-            add("-Damper.build.task=${HotReloadTaskType.Reload.getTaskName(module, platform, isTest = false).id.value}")
+            add("-Dcompose.reload.orchestration.port=$orchestrationPort")
+            // TODO: specify a path for a pid file here as well
         }
 
         return amperJvmArgs + runSettings.userJvmArgs
@@ -142,10 +137,4 @@ class JvmHotRunTask(
                     "provision one that matches the configured JDK version: $errorMessage")
         }
     }
-
-    override fun getEnvironment(dependenciesResult: List<TaskResult>): Map<String, String> = mapOf(
-        ENV_AMPER_SERVER_PORT to portAvailable.toString(),
-        ENV_AMPER_BUILD_TASK to HotReloadTaskType.Reload.getTaskName(module, platform, isTest = false).id.value,
-        ENV_AMPER_BUILD_ROOT to projectRoot.path.pathString,
-    )
 }

@@ -17,11 +17,8 @@ import org.jetbrains.amper.tasks.AllRunSettings
 import org.jetbrains.amper.tasks.CinteropGenSettings
 import org.jetbrains.amper.telemetry.spanBuilder
 import org.jetbrains.amper.telemetry.use
-import java.util.concurrent.atomic.AtomicReference
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
-
-private val backendInitialized = AtomicReference<Throwable>(null)
 
 internal suspend fun <T> withBackend(
     cliContext: ProjectCliContext,
@@ -34,10 +31,6 @@ internal suspend fun <T> withBackend(
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
         returnsResultOf(block)
-    }
-    val initializedException = backendInitialized.getAndSet(Throwable())
-    if (initializedException != null) {
-        throw IllegalStateException("withBackend was already called, see nested exception", initializedException)
     }
 
     // TODO think of a better place to activate it. e.g. we need it in tests too

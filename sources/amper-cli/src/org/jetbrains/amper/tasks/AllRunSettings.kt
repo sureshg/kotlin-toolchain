@@ -4,6 +4,7 @@
 
 package org.jetbrains.amper.tasks
 
+import kotlinx.coroutines.Deferred
 import org.jetbrains.amper.test.TestFilter
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -95,11 +96,27 @@ sealed interface JvmMainRunSettings : JvmRunSettings, DesktopRunSettings {
     val userJvmMainClass: String?
 
     /**
-     * Indicates that the app must be run in a special mode where code is hot-swappable. It is Compose Hot Reload
-     * specific for now
+     * Settings for Compose Hot Reload.
+     * `null` if disabled/not-applicable.
+     * WARNING: classes recompilation requests for hot reload may not have this filled-in.
      */
-    val composeHotReloadMode: Boolean
+    val composeHotReloadSettings: ComposeHotReloadSettings?
 }
+
+/**
+ * Whether the Compose Hot Reload is enabled and has to be used for this run.
+ *
+ * WARNING: classes recompilation requests for hot reload may not have this enabled.
+ */
+val JvmMainRunSettings.composeHotReloadMode: Boolean
+    get() = composeHotReloadSettings != null
+
+data class ComposeHotReloadSettings(
+    /**
+     * Orchestration server port to pass to the app under the hot reload.
+     */
+    val orchestrationPort: Deferred<Int>,
+)
 
 /**
  * Settings for JVM test runs.
@@ -140,7 +157,7 @@ data class AllRunSettings(
     override val userJvmArgs: List<String> = emptyList(),
     override val userJvmMainClass: String? = null,
     override val deviceId: String? = null,
-    override val composeHotReloadMode: Boolean = false,
+    override val composeHotReloadSettings: ComposeHotReloadSettings? = null,
     override val port: Int? = null,
 ) : JvmMainRunSettings,
     NativeDesktopRunSettings,

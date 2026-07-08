@@ -9,9 +9,6 @@ fun main() {
 
     val lines = buildList {
         add("compose.reload.devToolsEnabled=" + System.getProperty("compose.reload.devToolsEnabled"))
-        add("AMPER_SERVER_PORT=" + env["AMPER_SERVER_PORT"])
-        add("AMPER_BUILD_TASK=" + env["AMPER_BUILD_TASK"])
-        add("AMPER_BUILD_ROOT=" + env["AMPER_BUILD_ROOT"])
     }
 
     lines.forEach { println(it) }

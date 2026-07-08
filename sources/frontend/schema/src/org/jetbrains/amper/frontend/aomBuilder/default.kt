@@ -37,7 +37,13 @@ data class DefaultModel(
     override val modules: List<AmperModule>,
     override val unreadableModuleFiles: Set<VirtualFile>,
     override val amperPlugins: List<AmperPlugin>,
-) : Model
+) : Model {
+    private val moduleByName by lazy {
+        modules.associateBy { it.userReadableName }
+    }
+
+    override fun getModuleByNameOrNull(name: String): AmperModule? = moduleByName[name]
+}
 
 internal open class DefaultModule(
     override val userReadableName: @NlsSafe String,

@@ -65,7 +65,6 @@ charleskorn-kaml = { module = "com.charleskorn.kaml:kaml", version.ref = "kaml" 
 clikt = { module = "com.github.ajalt.clikt:clikt", version.ref = "clikt" }
 clikt-markdown = { module = "com.github.ajalt.clikt:clikt-markdown", version.ref = "clikt" }
 compose-hot-reload-core = { module = "org.jetbrains.compose.hot-reload:hot-reload-core", version.ref = "compose-hot-reload-version" }
-compose-hot-reload-devtools-api = { module = "org.jetbrains.compose.hot-reload:hot-reload-devtools-api", version.ref = "compose-hot-reload-version" }
 compose-hot-reload-orchestration = { module = "org.jetbrains.compose.hot-reload:hot-reload-orchestration", version.ref = "compose-hot-reload-version" }
 google-services-gradle-plugin =  { module = "com.google.gms:google-services", version.ref = "google-services" }
 gradle-api =  { module = "dev.gradleplugins:gradle-api", version.ref = "gradleplugins-gradle-api" }

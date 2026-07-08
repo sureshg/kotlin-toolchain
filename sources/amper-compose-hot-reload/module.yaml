@@ -1,0 +1,21 @@
+product: jvm/lib
+
+apply:
+  - //sources/common.module-template.yaml
+  - //sources/can-have-pre-release-flags.module-template.yaml
+
+dependencies:
+  - //sources/frontend-api: exported
+  - //sources/libraries/incremental-cache: exported
+  - //sources/libraries/path-watching-service
+  - //sources/core
+  - //sources/frontend/dr
+  - //sources/libraries/stdlib-extended
+  - $libs.kotlinx.coroutines.slf4j
+  - $libs.tinylog.impl
+  - $libs.compose.hot.reload.core
+  - $libs.compose.hot.reload.orchestration
+
+  # Needed because some `Model` APIs are `VirtualFile`s.
+  - $libs.intellij.platform.core
+  - $libs.intellij.platform.util

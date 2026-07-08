@@ -17,6 +17,7 @@ import org.jetbrains.amper.tasks.ProjectTasksBuilder
 import org.jetbrains.amper.tasks.ProjectTasksBuilder.Companion.getTaskOutputPath
 import org.jetbrains.amper.tasks.TaskNameFactory
 import org.jetbrains.amper.tasks.compose.isComposeEnabledFor
+import org.jetbrains.amper.tasks.composeHotReloadMode
 import org.jetbrains.amper.tasks.getModuleDependencies
 import org.jetbrains.amper.tasks.getTaskName
 import org.jetbrains.amper.tasks.publishTaskNameFor
@@ -136,28 +137,6 @@ fun ProjectTasksBuilder.setupJvmTasks() {
                     ),
                     classesTaskName,
                 )
-
-                if (isComposeEnabledFor(module)) {
-                    if (runSettings.composeHotReloadMode) {
-                        val reloadTaskName = HotReloadTaskType.Reload.getTaskName(module, platform, isTest = false)
-                        tasks.registerTask(
-                            JvmReloadClassesTask(reloadTaskName),
-                            dependsOn = buildList {
-                                add(CommonTaskType.Compile.getTaskName(module, platform, isTest = false))
-                                module.getModuleDependencies(
-                                    isTest = false,
-                                    platform,
-                                    ResolutionScope.RUNTIME,
-                                    context.userCacheRoot,
-                                    context.incrementalCache
-                                )
-                                    .forEach {
-                                        add(CommonTaskType.Compile.getTaskName(it, platform, isTest = false))
-                                    }
-                            }
-                        )
-                    }
-                }
             }
         }
 
@@ -178,7 +157,7 @@ fun ProjectTasksBuilder.setupJvmTasks() {
     allModules()
         .alsoPlatforms(Platform.JVM)
         .withEach {
-            if (isComposeEnabledFor(module) && runSettings.composeHotReloadMode) {
+            if (isComposeEnabledFor(module) && runSettings.composeHotReloadSettings != null) {
                 tasks.registerTask(
                     JvmHotRunTask(
                         module = module,
@@ -191,6 +170,7 @@ fun ProjectTasksBuilder.setupJvmTasks() {
                         incrementalCache = context.incrementalCache,
                         jdkProvider = context.jdkProvider,
                         processRunner = context.processRunner,
+                        hotReloadSettings = runSettings.composeHotReloadSettings,
                     ),
                     CommonTaskType.RuntimeClasspath.getTaskName(module, platform),
                 )
@@ -292,7 +272,6 @@ internal enum class HotReloadTaskType(
     override val internalName: String,
     override val operationMoniker: String,
 ) : TaskNameFactory.LeafPlatform {
-    Reload("reload", "hot reloading"),
     HotRun("hotRun", "running (hot)"),
 }
 

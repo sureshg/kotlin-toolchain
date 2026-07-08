@@ -9,6 +9,7 @@ import org.jetbrains.amper.buildinfo.AmperBuild
 import org.jetbrains.amper.cli.context.ProjectCliContext
 import org.jetbrains.amper.cli.options.UserJvmArgsOption
 import org.jetbrains.amper.cli.widgets.TaskProgressRenderer
+import org.jetbrains.amper.dependency.resolution.ResolutionScope
 import org.jetbrains.amper.engine.BuildTask
 import org.jetbrains.amper.engine.GenerateKlibsForIdeTask
 import org.jetbrains.amper.engine.MaybeBuildTypeAware
@@ -31,24 +32,28 @@ import org.jetbrains.amper.frontend.isDescendantOf
 import org.jetbrains.amper.frontend.mavenPublishRepositories
 import org.jetbrains.amper.frontend.plugins.CustomCommandFromPlugin
 import org.jetbrains.amper.frontend.schema.ProductType
+import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.system.info.Arch
 import org.jetbrains.amper.system.info.OsFamily
 import org.jetbrains.amper.system.info.SystemInfo
 import org.jetbrains.amper.tasks.AllRunSettings
 import org.jetbrains.amper.tasks.CinteropGenSettings
+import org.jetbrains.amper.tasks.CommonTaskType
 import org.jetbrains.amper.tasks.ProjectTasksBuilder
 import org.jetbrains.amper.tasks.TaskResult
 import org.jetbrains.amper.tasks.compose.GenerateResClassTask
 import org.jetbrains.amper.tasks.compose.GenerateResourceAccessorsTask
 import org.jetbrains.amper.tasks.compose.isComposeEnabledFor
+import org.jetbrains.amper.tasks.composeHotReloadMode
+import org.jetbrains.amper.tasks.getModuleDependencies
 import org.jetbrains.amper.tasks.getTaskName
 import org.jetbrains.amper.tasks.ios.IosPreBuildTask
 import org.jetbrains.amper.tasks.ios.IosTaskType
+import org.jetbrains.amper.tasks.jvm.JvmCompileTask
 import org.jetbrains.amper.tasks.jvm.JvmHotRunTask
 import org.jetbrains.amper.telemetry.spanBuilder
 import org.jetbrains.amper.telemetry.useWithoutCoroutines
 import org.jetbrains.amper.util.BuildType
-import org.jetbrains.amper.util.runnablePlatforms
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.nio.file.Path
@@ -77,10 +82,6 @@ class AmperBackend(
      */
     val backgroundScope: CoroutineScope,
 ) {
-    private val modulesByName by lazy {
-        model.modules.associateBy { it.userReadableName }
-    }
-
     internal val taskGraph: TaskGraph by lazy {
         spanBuilder("Build task graph").useWithoutCoroutines {
             ProjectTasksBuilder(
@@ -101,20 +102,6 @@ class AmperBackend(
             )
         }
     }
-
-    /**
-     * The leaf [Platform]s that can be "run" from the current host.
-     *
-     * That is, code compiled to the returned [Platform]s can be run in any of the following ways:
-     * * on this host directly
-     * * in an emulator that runs on this host
-     * * on a suitable physical device connected to this host
-     *
-     * Note: the actual presence of connected physical devices is not checked here.
-     * Platforms that correspond to connected devices are returned as part of the set based on whether it would be
-     * _possible_ to run them, should a suitable device be connected.
-     */
-    val runnablePlatforms: Set<Platform> by lazy { SystemInfo.CurrentHost.runnablePlatforms() }
 
     /**
      * Called by the 'build' command.
@@ -142,7 +129,7 @@ class AmperBackend(
         }
 
         val platformsToCompile = platforms ?: possibleCompilationPlatforms
-        val modulesToCompile = (modules?.map { resolveModule(it) } ?: model.modules).toSet()
+        val modulesToCompile = (modules?.map { model.getModuleByName(it) } ?: model.modules).toSet()
 
         val taskIds = taskGraph
             .tasks
@@ -192,7 +179,7 @@ class AmperBackend(
         }
 
         val platformsToPackage = platforms ?: possiblePlatforms
-        val modulesToPackage = (modules?.map { resolveModule(it) } ?: model.modules).toSet()
+        val modulesToPackage = (modules?.map { model.getModuleByName(it) } ?: model.modules).toSet()
         val formatsToPackage = formats ?: PackageTask.Format.entries.toSet()
 
         val taskIds = taskGraph
@@ -245,7 +232,7 @@ class AmperBackend(
 
         if (modules != null) {
             for (moduleName in modules) {
-                val module = resolveModule(moduleName)
+                val module = model.getModuleByName(moduleName)
                 if (module.mavenPublishRepositories.none { it.id == repositoryId }) {
                     userReadableError("Module '$moduleName' does not have repository with id '$repositoryId' having flag 'publish=true'")
                 }
@@ -276,7 +263,7 @@ class AmperBackend(
         require(requestedPlatforms == null || requestedPlatforms.isNotEmpty())
 
         val moduleNamesToCheck = (includeModules ?: emptySet()) + excludeModules
-        moduleNamesToCheck.forEach { resolveModule(it) }
+        moduleNamesToCheck.forEach { model.getModuleByName(it) }
 
         requestedPlatforms
             ?.filter { it !in runnablePlatforms }
@@ -352,7 +339,7 @@ class AmperBackend(
         skip: Set<String> = emptySet(),
         // TODO: arguments for tests, like buildType, filter, etc.
     ) {
-        val selectedModules = modules?.map { resolveModule(it) }?.toSet() ?: model.modules.toSet()
+        val selectedModules = modules?.map { model.getModuleByName(it) }?.toSet() ?: model.modules.toSet()
 
         val allChecks = listOf(CheckEntry.Tests) + selectedModules.flatMap { it.checksFromPlugins }
             .map(CheckEntry::Custom)
@@ -401,7 +388,7 @@ class AmperBackend(
             override val name = QualifiedName(custom.name, custom.pluginId.value)
         }
 
-        val selectedModules = modules?.map { resolveModule(it) }?.toSet() ?: model.modules.toSet()
+        val selectedModules = modules?.map { model.getModuleByName(it) }?.toSet() ?: model.modules.toSet()
 
         val allCustomCommands = selectedModules.flatMap { it.customCommandsFromPlugins }.map(::CustomCommandEntry)
 
@@ -414,13 +401,38 @@ class AmperBackend(
         taskExecutor.runTasksAndReportOnFailure(resolvedCommands)
     }
 
-    suspend fun runApplication(moduleName: String?, platform: Platform?, buildType: BuildType?) {
-        val moduleToRun = when {
-            moduleName != null -> resolveModule(moduleName)
-            // The special case for single module projects is only here to have different error messages
-            model.modules.size == 1 -> model.modules.single()
-            else -> findSingleRunnableAppModule(platform)
+    suspend fun rebuildJvmAppForHotReload(
+        module: AmperModule,
+    ) : List<IncrementalCache.Change> {
+        require(module.type == ProductType.JVM_APP)
+
+        val taskIds = buildSet {
+            add(CommonTaskType.Compile.getTaskName(module, Platform.JVM).id)
+            module.getModuleDependencies(
+                isTest = false,
+                Platform.JVM,
+                ResolutionScope.RUNTIME,
+                context.userCacheRoot,
+                context.incrementalCache
+            ).forEach { add(CommonTaskType.Compile.getTaskName(it, Platform.JVM).id) }
         }
+        return runTasks(taskIds).values
+            .filterIsInstance<JvmCompileTask.Result>()
+            .flatMap { result -> result.changes }
+    }
+
+    suspend fun runApplication(moduleName: String?, platform: Platform?, buildType: BuildType?) {
+        val moduleToRun = model.resolveModuleToRun(
+            moduleName = moduleName,
+            platform = platform,
+            hasDeviceId = runSettings.deviceId != null,
+            isComposeHotReload = false,
+        )
+        runApplication(moduleToRun, platform, buildType)
+    }
+
+    suspend fun runApplication(moduleToRun: AmperModule, platform: Platform?, buildType: BuildType?) {
+
         val platformToRun = platform?.also { checkExplicitPlatformCanBeRun(it) }
             ?: findSingleRunnablePlatform(moduleToRun)
 
@@ -476,116 +488,6 @@ class AmperBackend(
             "Module '${module.userReadableName}' of type '${module.type.value}' cannot be run directly by the Kotlin Toolchain at the moment.\n" +
                     "See the documentation for more info:\n$documentationUrl",
         )
-    }
-
-    private fun findSingleRunnableAppModule(platform: Platform?): AmperModule {
-        val appModules = model.modules
-            .filter { it.type.isApplication() }
-            .ifEmpty {
-                userReadableError("There are no application modules in the project, nothing to run")
-            }
-        val appModulesMatchingCommand = appModules
-            .filter { !runSettings.composeHotReloadMode || it.type == ProductType.JVM_APP }
-            .ifEmpty {
-                userReadableError(
-                    "There are no JVM application modules in the project, and only those support Compose Hot Reload.\n\n" +
-                            "Available application modules and their platforms:\n" +
-                            appModules.joinToString("\n") { "  ${it.userReadableName}: ${formatPlatforms(it.leafPlatforms)}" },
-                )
-            }
-            .filter { runSettings.deviceId == null || it.supportsDeviceIdSelection() }
-            .ifEmpty {
-                userReadableError(
-                    "There are no Android or iOS application modules in the project, and only those support " +
-                            "selecting a device or emulator explicitly. Please remove the '--device-id' option.\n\n" +
-                            "Available application modules and their type:\n" +
-                            appModules.joinToString("\n") { "  ${it.userReadableName}: ${it.type.value}" },
-                )
-            }
-            // we check platforms after so that the error messages make sense (they are easier to write this way)
-            .filter { platform == null || platform in it.leafPlatforms }
-            .ifEmpty {
-                userReadableError {
-                    // Note that platform can't be null here (otherwise we would not have filtered out the last modules)
-                    append("There are no application modules in the project that support the '${platform?.pretty}' platform")
-                    // The double "and" might be awkward if both --device-id and --compose-hot-reload-mode are passed,
-                    // but it's technically correct, and will realistically never happen, so let's not complicate.
-                    if (runSettings.deviceId != null) {
-                        append(" and device selection with --device-id")
-                    }
-                    if (runSettings.composeHotReloadMode) {
-                        append(" and Compose Hot Reload")
-                    }
-                    appendLine(".")
-                    appendLine()
-                    appendLine("Available application modules and their platforms:")
-                    appModules.sortedBy { it.userReadableName }.forEach { module ->
-                        appendLine("  ${module.userReadableName}: ${formatPlatforms(module.leafPlatforms)}")
-                    }
-                }
-            }
-
-        // We don't check this earlier because if there are no modules with the given platform at all,
-        // it's a more important error because the command doesn't work for this project on any host.
-        if (platform != null && platform !in runnablePlatforms) {
-            userReadableError("Code compiled for the '${platform.pretty}' platform cannot be run from the current host")
-        }
-        val runnableCandidatesIgnoringDeviceSelection = appModulesMatchingCommand
-            .filter { it.canBeRunFromCurrentHost() }
-            .ifEmpty {
-                userReadableError(
-                    "There are no application modules in the project that can be run from the current host.\n\n" +
-                            "Runnable platforms on this host: ${formatPlatforms(runnablePlatforms)}",
-                )
-            }
-        val runnableCandidates = runnableCandidatesIgnoringDeviceSelection
-            .filter { runSettings.deviceId != null || !it.requiresPhysicalDeviceToRunFromCurrentHost() }
-            .ifEmpty {
-                if (runnableCandidatesIgnoringDeviceSelection.size > 1) {
-                    userReadableError(
-                        "All runnable application modules in the project require selecting a physical device with " +
-                                "'--device-id'."
-                    )
-                } else {
-                    userReadableError(
-                        "The only runnable application module " +
-                                "'${runnableCandidatesIgnoringDeviceSelection.single().userReadableName}' requires " +
-                                "selecting a physical device with '--device-id'."
-                    )
-                }
-            }
-        if (runnableCandidates.size > 1) {
-            val canBeSelectedUsingPlatform = runnableCandidates
-                .flatMap { it.leafPlatforms intersect runnablePlatforms }
-                .let { allPlatformEntries ->
-                    // Check if there are no such two app modules that share a leaf platform
-                    allPlatformEntries.distinct().size == allPlatformEntries.size
-                }
-
-            userReadableError {
-                append("There are several matching application modules in the project. Please specify one with the ")
-                if (canBeSelectedUsingPlatform && platform == null) {
-                    append("'--platform' or '--module'")
-                } else {
-                    append("'--module'")
-                }
-                appendLine(" option.")
-                appendLine()
-                append("Runnable application modules")
-                if (platform != null) {
-                    append(" supporting the '${platform.pretty}' platform")
-                }
-                appendLine(":")
-                runnableCandidates.sortedBy { it.userReadableName }.forEach { module ->
-                    append("  ${module.userReadableName}")
-                    if (canBeSelectedUsingPlatform) {
-                        append(": ${formatPlatforms(module.leafPlatforms)}")
-                    }
-                    appendLine()
-                }
-            }
-        }
-        return runnableCandidates.single()
     }
 
     private fun checkExplicitPlatformCanBeRun(platform: Platform) {
@@ -670,19 +572,6 @@ class AmperBackend(
         return effectivelyRunnablePlatforms.single()
     }
 
-    private fun AmperModule.canBeRunFromCurrentHost(): Boolean = leafPlatforms.any { it in runnablePlatforms }
-
-    private fun AmperModule.supportsDeviceIdSelection(): Boolean = leafPlatforms.any { it.supportsDeviceSelection }
-
-    private fun AmperModule.requiresPhysicalDeviceToRunFromCurrentHost(): Boolean =
-        (leafPlatforms intersect runnablePlatforms).all { it.requiresPhysicalDeviceSelection }
-
-    private val Platform.supportsDeviceSelection: Boolean
-        get() = this == Platform.ANDROID || isDescendantOf(Platform.IOS)
-
-    private val Platform.requiresPhysicalDeviceSelection: Boolean
-        get() = isAppleDevice
-
     /**
      * Run the iOS pre-build task identified by the [platform], [buildType] and the module.
      * The module is identified by its [moduleDir].
@@ -744,23 +633,8 @@ class AmperBackend(
         runTasks(taskIds)
     }
 
-    private fun resolveModule(moduleName: String) = modulesByName[moduleName] ?: userReadableError(
-        "Unable to resolve module by name '$moduleName'.\n\n" +
-                "Available modules: ${formatModules(model.modules)}"
-    )
-
-    private fun formatModules(modules: Collection<AmperModule>) =
-        modules.map { it.userReadableName }.sorted().joinToString(" ")
-
     private fun formatTaskNames(publishTasks: Collection<TaskId>) =
         publishTasks.map { it.value }.sorted().joinToString(" ")
-
-    private fun formatPlatforms(platforms: Collection<Platform>) =
-        platforms.map { it.pretty }.sorted().joinToString(" ")
-
-    private fun formatModulePlatforms(moduleToRun: AmperModule): String {
-        return formatPlatforms(moduleToRun.leafPlatforms)
-    }
 
     private fun <T> List<T>.filterByBuildTypeAndReport(
         explicit: Set<BuildType>?,

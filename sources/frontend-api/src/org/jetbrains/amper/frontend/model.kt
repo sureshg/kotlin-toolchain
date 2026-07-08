@@ -38,6 +38,11 @@ interface Model {
      * May contain invalid plugins.
      */
     val amperPlugins: List<AmperPlugin>
+
+    /**
+     * @return a module with the given [AmperModule.userReadableName] or `null` if no such module exists.
+     */
+    fun getModuleByNameOrNull(name: String): AmperModule?
 }
 
 /**

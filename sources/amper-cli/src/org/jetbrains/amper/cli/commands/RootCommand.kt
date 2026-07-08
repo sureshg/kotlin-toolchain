@@ -76,7 +76,6 @@ internal class RootCommand : SuspendingCliktCommand(name = "kotlin") {
             PackageCommand(),
             PublishCommand(),
             RunCommand(),
-            ServerCommand(),
             ShowCommand(),
             TaskCommand(),
             TestCommand(),

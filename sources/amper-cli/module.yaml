@@ -12,6 +12,7 @@ repositories:
 
 dependencies:
   - //sources/amper-build-info
+  - //sources/amper-compose-hot-reload
   - //sources/amper-jdk-provisioning
   - //sources/amper-maven-converter
   - //sources/amper-maven-publish
@@ -23,7 +24,6 @@ dependencies:
   - //sources/frontend-api
   - //sources/frontend/schema
   - //sources/frontend/dr
-  - //sources/amper-compose-hot-reload-recompiler-extension
   - //sources/libraries/async-processes
   - //sources/libraries/compose-resources
   - //sources/libraries/compress
@@ -77,8 +77,6 @@ dependencies:
   - $libs.kotlinx.datetime
   - $libs.teamcity.serviceMessages
   - jakarta.xml.bind:jakarta.xml.bind-api:2.3.2 # required by Android SDK tools but somehow not brought transitively
-  - $libs.compose.hot.reload.core
-  - $libs.compose.hot.reload.orchestration
   - $libs.ktor.server.core
   - $libs.ktor.server.netty
   - $libs.ktor.server.sse
@@ -98,7 +96,6 @@ plugins:
     enabled: true
     extraClasspaths:
       "plugins-processor": [ //sources/extensibility/amper-schema-processor ]
-      "recompiler-extension": [ //sources/amper-compose-hot-reload-recompiler-extension ]
       "amper-jic-runner": [ //sources/java-incremental-compilation/amper-jic-runner ]
       "kotlin-build-tools-compat": [ $libs.kotlin.buildToolsCompat ]
     extraFilteredClasspaths:

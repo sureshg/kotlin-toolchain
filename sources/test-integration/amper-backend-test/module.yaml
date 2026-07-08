@@ -4,6 +4,7 @@ description: Integration test utilities for the Amper backend.
 
 dependencies:
   - //sources/amper-cli
+  - //sources/amper-compose-hot-reload
   - //sources/core
   - //sources/core-intellij
   - //sources/frontend-api

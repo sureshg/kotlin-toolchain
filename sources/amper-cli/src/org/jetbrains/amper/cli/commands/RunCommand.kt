@@ -6,6 +6,7 @@ package org.jetbrains.amper.cli.commands
 
 import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.core.context
+import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.output.HelpFormatter.ParameterHelp
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
@@ -16,10 +17,15 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.clikt.parameters.types.path
+import kotlinx.coroutines.Deferred
+import org.jetbrains.amper.cli.CliProblemReporter
 import org.jetbrains.amper.cli.MultiUsageKotlinCliHelpFormatter
+import org.jetbrains.amper.cli.UserReadableError
 import org.jetbrains.amper.cli.context.CliContext
 import org.jetbrains.amper.cli.context.GlobalCliContext
 import org.jetbrains.amper.cli.context.ProjectCliContext
+import org.jetbrains.amper.cli.context.copyWithNewProjectContext
+import org.jetbrains.amper.cli.context.findProjectContext
 import org.jetbrains.amper.cli.logging.infoNoConsole
 import org.jetbrains.amper.cli.options.ProjectLayoutOptions
 import org.jetbrains.amper.cli.options.UserJvmArgsOption
@@ -27,15 +33,19 @@ import org.jetbrains.amper.cli.options.buildTypeOption
 import org.jetbrains.amper.cli.options.leafPlatformOption
 import org.jetbrains.amper.cli.options.userJvmArgsOption
 import org.jetbrains.amper.cli.project.preparePluginsAndReadModel
+import org.jetbrains.amper.cli.resolveModuleToRun
 import org.jetbrains.amper.cli.userReadableError
 import org.jetbrains.amper.cli.widgets.withIndeterminateProgress
 import org.jetbrains.amper.cli.withBackend
 import org.jetbrains.amper.compilation.compiler.provisionKotlinCompilerCli
+import org.jetbrains.amper.compose.reload.HotReloadDelegate
+import org.jetbrains.amper.compose.reload.HotReloadLoop
 import org.jetbrains.amper.frontend.schema.DefaultVersions
 import org.jetbrains.amper.frontend.schema.DiscouragedDirectDefaultVersionAccess
 import org.jetbrains.amper.jvm.getJdkOrUserError
 import org.jetbrains.amper.processes.PrintToTerminalProcessOutputListener
 import org.jetbrains.amper.tasks.AllRunSettings
+import org.jetbrains.amper.tasks.ComposeHotReloadSettings
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.extension
@@ -110,6 +120,8 @@ internal class RunCommand : AmperSubcommand(name = "run") {
             "Note: in this mode, the Java runtime is overridden to the JetBrains Runtime, which is required for Compose Hot Reload to work.")
         .flag()
 
+    // TODO: Introduce "no filesystem watching" opt-out for compose hot reload as IDE can do it itself?
+
     private val port by option(
         "--port",
         help = """
@@ -182,20 +194,14 @@ internal class RunCommand : AmperSubcommand(name = "run") {
 
     private suspend fun runProjectApp(cliContext: ProjectCliContext) {
         setProjectSpecificState(cliContext)
-        withBackend(
-            cliContext = cliContext,
-            model = cliContext.preparePluginsAndReadModel(),
-            runSettings = AllRunSettings(
-                programArgs = programArguments,
-                workingDir = workingDir,
-                userJvmArgs = jvmArgs,
-                userJvmMainClass = jvmMainClass,
-                deviceId = deviceId,
-                composeHotReloadMode = composeHotReloadMode,
-                port = port,
-            ),
-        ) { backend ->
-            backend.runApplication(moduleName = module, platform = platform, buildType = variant)
+        if (composeHotReloadMode) {
+            // If the configuration doesn't actually support hot-reload,
+            // it will be diagnosed and the error will be thrown.
+            HotReloadLoop.run(HotReloadDelegateImpl(cliContext))
+        } else {
+            withBackend(cliContext, cliContext.preparePluginsAndReadModel(), runSettings = allRunSettings()) {
+                it.runApplication(moduleName = module, platform = platform, buildType = variant)
+            }
         }
     }
 
@@ -224,6 +230,109 @@ internal class RunCommand : AmperSubcommand(name = "run") {
             args = args,
             outputListener = PrintToTerminalProcessOutputListener(terminal),
         )
+    }
+
+    private fun allRunSettings(
+        composeHotReloadMode: ComposeHotReloadSettings? = null,
+    ) = AllRunSettings(
+        programArgs = programArguments,
+        workingDir = workingDir,
+        userJvmArgs = jvmArgs,
+        userJvmMainClass = jvmMainClass,
+        deviceId = deviceId,
+        composeHotReloadSettings = composeHotReloadMode,
+        port = port,
+    )
+
+    private inner class HotReloadDelegateImpl(
+        private val initialCliContext: ProjectCliContext,
+    ) : HotReloadDelegate<ProjectCliContext> {
+        private var modelReloadCount = 0
+
+        override suspend fun readModel() = runCatchingUserReadableError {
+            val cliContext = if (modelReloadCount++ > 0) {
+                /*
+                 Reload the `AmperProjectContext` because it encodes the project structure that might have changed.
+
+                 As refresh is not properly implemented in the default VFS implementation we use in CLI,
+                  it also recreates the IJ Project instance which has new VirtualFile instances and Psi caches
+                  to properly observe these potential changes.
+
+                 IMPORTANT: We don't support project-root change in the hot reload loop,
+                  as some machinery (logs, telemetry, default build directory) depends on it, and it doesn't make sense
+                  to reinitialize them in the context of a single CLI call.
+                 So if the user makes changes to the FS so that the root directory of the project is changed,
+                  then this throws an error, as we use explicit directories detected/specified initially.
+                */
+                initialCliContext.copyWithNewProjectContext(
+                    projectContext = context(CliProblemReporter(terminal)) {
+                        checkNotNull(
+                            findProjectContext(
+                                explicitProjectDir = initialCliContext.projectRoot.path,
+                                explicitBuildDir = initialCliContext.buildOutputRoot.path,
+                            )
+                        ) { "Not reached: must not return null with explicit directories" }
+                    }
+                )
+            } else initialCliContext
+
+            val model = cliContext.preparePluginsAndReadModel()
+
+            HotReloadLoop.State(
+                cliContext = cliContext,
+                model = model,
+                hotApp = model.resolveModuleToRun(
+                    moduleName = module,
+                    platform = platform,
+                    isComposeHotReload = true,
+                    hasDeviceId = deviceId != null,
+                ),
+            )
+        }
+
+        override suspend fun runApplication(
+            state: HotReloadLoop.State<ProjectCliContext>,
+            orchestrationPort: Deferred<Int>,
+        ) = runCatchingUserReadableError {
+            /*
+             NOTE: Technically, this coroutine will be active throughout all the reloads, so
+              multiple `rebuildClasses` are possible during this.
+
+             This means that there could be two `AmperBackend` instances and task graphs active at the same time.
+             It is not a very good precedent, as there should be a single active task graph at a time.
+             Nothing bad is happening right now, but still.
+
+             NOTE: When the actual "run app" code is no longer a task, this will stop being a problem,
+              as the task graph will only be used for *build* and running is going to be detached from that.
+            */
+            withBackend(
+                cliContext = state.cliContext,
+                model = state.model,
+                runSettings = allRunSettings(
+                    composeHotReloadMode = ComposeHotReloadSettings(
+                        orchestrationPort = orchestrationPort,
+                    )
+                ),
+            ) {
+                it.runApplication(moduleToRun = state.hotApp, platform = platform, buildType = variant)
+            }
+        }
+
+        override suspend fun rebuildClasses(
+            state: HotReloadLoop.State<ProjectCliContext>,
+        ) = runCatchingUserReadableError {
+            withBackend(
+                cliContext = state.cliContext,
+                model = state.model,
+                runSettings = allRunSettings(),
+            ) {
+                it.rebuildJvmAppForHotReload(module = state.hotApp)
+            }
+        }
+
+        private inline fun <R> runCatchingUserReadableError(block: () -> R): Result<R> =
+            // Catches only `UserReadableError` into the result, other exceptions are rethrown
+            runCatching(block).onFailure { e -> if (e !is UserReadableError) throw e }
     }
 }
 

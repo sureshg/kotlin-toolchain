@@ -9,10 +9,10 @@ import org.jetbrains.amper.cli.test.utils.runSlowTest
 import org.jetbrains.amper.telemetry.getListAttribute
 import org.jetbrains.amper.test.spans.SpansTestCollector
 import org.jetbrains.amper.test.spans.spansNamed
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Disabled
 import kotlin.test.Test
 import kotlin.test.assertContains
+import kotlin.test.assertTrue
 
 /**
  * Since on the CI there is no X11 environment, an app cannot be run because the agent also launches a desktop devtools
@@ -32,7 +32,7 @@ class ComposeHotReloadTest : AmperCliTestBase() {
             assertEmptyStdErr = false,
         )
 
-        result.readTelemetrySpans().assertHotReloadJavaExecSpan("compose-hot-reload")
+        result.readTelemetrySpans().assertHotReloadJavaExecSpan()
     }
 
     @Test
@@ -48,7 +48,7 @@ class ComposeHotReloadTest : AmperCliTestBase() {
             assertEmptyStdErr = false,
         )
 
-        result.readTelemetrySpans().assertHotReloadJavaExecSpan("compose-hot-reload-lib")
+        result.readTelemetrySpans().assertHotReloadJavaExecSpan()
     }
 
     @Test
@@ -64,7 +64,7 @@ class ComposeHotReloadTest : AmperCliTestBase() {
             assertEmptyStdErr = false,
         )
 
-        result.readTelemetrySpans().assertHotReloadJavaExecSpan("compose-hot-reload-jvm-lib")
+        result.readTelemetrySpans().assertHotReloadJavaExecSpan()
     }
 
     @Test
@@ -125,21 +125,19 @@ class ComposeHotReloadTest : AmperCliTestBase() {
             "--compose-hot-reload-mode",
         )
 
-        result.readTelemetrySpans().assertHotReloadJavaExecSpan("app-jvm")
+        result.readTelemetrySpans().assertHotReloadJavaExecSpan()
     }
 
-    private fun SpansTestCollector.assertHotReloadJavaExecSpan(moduleName: String) {
+    private fun SpansTestCollector.assertHotReloadJavaExecSpan() {
         val javaExecSpan = spansNamed("java-exec").assertSingle()
 
         val jvmArgs = javaExecSpan.getListAttribute("jvm-args")
         assertContains(jvmArgs, "-Dcompose.reload.devToolsEnabled=true")
+        assertTrue(jvmArgs.any { it.startsWith("-Dcompose.reload.orchestration.port=") })
 
         val javaAgent = jvmArgs.single { it.startsWith("-javaagent:") }
         assertContains(javaAgent, "hot-reload-agent")
-
-        val envVars = javaExecSpan.getListAttribute("env-vars")
-        assertTrue(envVars.any { it.startsWith("AMPER_SERVER_PORT=") })
-        assertTrue(envVars.any { it.startsWith("AMPER_BUILD_ROOT=") })
-        assertContains(envVars, "AMPER_BUILD_TASK=:$moduleName:reloadJvm")
     }
+
+    // TODO: Write e2e hot-reload tests?
 }
