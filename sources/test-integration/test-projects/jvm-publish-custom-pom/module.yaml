@@ -26,7 +26,7 @@ settings:
     enabled: true
     group: "amper.test.jvm-publish-custom-pom"
     version: "2.2"
-    name: artifactName
+    artifactId: artifactName
     pom:
       name: My Super Module
       url: https://example.com/my-module

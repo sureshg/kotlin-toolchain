@@ -46,5 +46,5 @@ settings:
     enabled: true
     group: "amper.test.jvm-publish"
     version: "2.2"
-    name: artifactName
+    artifactId: artifactName
     publishSources: true
