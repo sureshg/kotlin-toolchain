@@ -4,11 +4,15 @@
 
 package org.jetbrains.amper.tasks.publication
 
+import com.github.ajalt.mordant.terminal.Terminal
 import org.codehaus.plexus.PlexusContainer
 import org.eclipse.aether.artifact.Artifact
 import org.eclipse.aether.artifact.DefaultArtifact
 import org.eclipse.aether.repository.RemoteRepository
 import org.eclipse.aether.util.repository.AuthenticationBuilder
+import org.jetbrains.amper.cli.logging.infoNoConsole
+import org.jetbrains.amper.cli.terminal.printSuccessfulPublicationToMavenLocal
+import org.jetbrains.amper.cli.terminal.printSuccessfulPublicationToRemoteMaven
 import org.jetbrains.amper.cli.userReadableError
 import org.jetbrains.amper.dependency.resolution.MavenLocalRepository
 import org.jetbrains.amper.engine.PublishTask
@@ -16,6 +20,7 @@ import org.jetbrains.amper.engine.TaskGraphExecutionContext
 import org.jetbrains.amper.engine.TaskName
 import org.jetbrains.amper.frontend.AmperModule
 import org.jetbrains.amper.frontend.RepositoriesModulePart
+import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.maven.publish.createPlexusContainer
 import org.jetbrains.amper.maven.publish.deployToRemoteRepo
 import org.jetbrains.amper.maven.publish.installToMavenLocal
@@ -26,7 +31,9 @@ import org.jetbrains.amper.telemetry.spanBuilder
 import org.jetbrains.amper.telemetry.use
 import org.jetbrains.amper.telemetry.useWithoutCoroutines
 import org.slf4j.LoggerFactory
+import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.io.path.pathString
 
 private val mavenLocalRepository by lazy {
     spanBuilder("Initialize maven local repository").useWithoutCoroutines {
@@ -48,6 +55,8 @@ class MavenPublishTask(
     override val taskName: TaskName,
     override val module: AmperModule,
     val targetRepository: RepositoriesModulePart.Repository,
+    private val incrementalCache: IncrementalCache,
+    private val terminal: Terminal,
 ) : PublishTask {
 
     override val targetRepositoryId: String
@@ -80,29 +89,61 @@ class MavenPublishTask(
          * > option has been removed. Details can be found in MINSTALL-143.
          */
         spanBuilder("Maven publish").use {
+            val plexus = getPlexusContainer(executionContext)
             if (targetRepository.isMavenLocal) {
-                logger.info("Installing artifacts of module '${module.userReadableName}' to local maven repository at $localRepositoryPath")
-
-                try {
-                    getPlexusContainer(executionContext).installToMavenLocal(localRepositoryPath, artifacts)
-                } catch (e: Exception) {
-                    userReadableError("Couldn't install artifacts of module '${module.userReadableName}' to maven local: $e", e)
-                }
+                installToMavenLocal(artifacts, localRepositoryPath, plexus)
             } else {
-                val remoteRepository = targetRepository.toMavenRemoteRepository()
-
-                logger.info("Publishing artifacts of module '${module.userReadableName}' to " +
-                        "remote maven repository at ${remoteRepository.url} (id: '${remoteRepository.id}')")
-
-                try {
-                    getPlexusContainer(executionContext).deployToRemoteRepo(remoteRepository, localRepositoryPath, artifacts)
-                } catch (e: Exception) {
-                    userReadableError("Couldn't publish artifacts of module '${module.userReadableName}' to repository '${remoteRepository.id}': $e", e)
-                }
+                publishToRemoteRepo(artifacts, localRepositoryPath, plexus)
             }
         }
 
         return Result()
+    }
+
+    private suspend fun installToMavenLocal(
+        artifacts: List<Artifact>,
+        localRepositoryPath: Path,
+        plexusContainer: PlexusContainer,
+    ) {
+        try {
+            incrementalCache.execute(
+                key = taskName.id.value,
+                inputValues = mapOf(
+                    "localM2Path" to localRepositoryPath.pathString,
+                    "artifacts" to artifacts.joinToString(",") { it.toString() },
+                ),
+                inputFiles = artifacts.map { it.file.toPath() },
+            ) {
+                logger.infoNoConsole("Installing artifacts of module '${module.userReadableName}' to local maven repository at $localRepositoryPath")
+                val installedPaths = plexusContainer.installToMavenLocal(localRepositoryPath, artifacts)
+                terminal.printSuccessfulPublicationToMavenLocal(module)
+                IncrementalCache.ExecutionResult(outputFiles = installedPaths)
+            }
+        } catch (e: Exception) {
+            userReadableError("Couldn't install artifacts of module '${module.userReadableName}' to maven local: $e", e)
+        }
+    }
+
+    private fun publishToRemoteRepo(
+        artifacts: List<Artifact>,
+        localRepositoryPath: Path,
+        plexusContainer: PlexusContainer,
+    ) {
+        val remoteRepository = targetRepository.toMavenRemoteRepository()
+
+        logger.infoNoConsole(
+            "Publishing artifacts of module '${module.userReadableName}' to " +
+                    "remote maven repository at ${remoteRepository.url} (id: '${remoteRepository.id}')"
+        )
+        try {
+            plexusContainer.deployToRemoteRepo(remoteRepository, localRepositoryPath, artifacts)
+            terminal.printSuccessfulPublicationToRemoteMaven(module, targetRepository)
+        } catch (e: Exception) {
+            userReadableError(
+                "Couldn't publish artifacts of module '${module.userReadableName}' to repository '${remoteRepository.id}': $e",
+                e
+            )
+        }
     }
 
     private fun PrepareMavenPublishablesTask.Result.mavenArtifacts(): List<Artifact> =

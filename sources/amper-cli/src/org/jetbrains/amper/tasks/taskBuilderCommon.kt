@@ -189,6 +189,8 @@ fun ProjectTasksBuilder.setupCommonTasks() {
                             taskName = publishTaskName,
                             module = module,
                             targetRepository = repository,
+                            incrementalCache = context.incrementalCache,
+                            terminal = context.terminal,
                         ),
                         dependsOn = listOf(prepareMavenPublishablesTaskName),
                     )

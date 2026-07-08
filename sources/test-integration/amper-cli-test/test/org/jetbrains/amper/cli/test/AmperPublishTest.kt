@@ -8,6 +8,8 @@ import com.sun.net.httpserver.BasicAuthenticator
 import org.bouncycastle.openpgp.api.OpenPGPCertificate
 import org.bouncycastle.openpgp.api.bc.BcOpenPGPApi
 import org.jetbrains.amper.cli.test.utils.assertContainsRelativeFiles
+import org.jetbrains.amper.cli.test.utils.assertStdoutContains
+import org.jetbrains.amper.cli.test.utils.assertStdoutDoesNotContain
 import org.jetbrains.amper.cli.test.utils.getTaskOutputPath
 import org.jetbrains.amper.cli.test.utils.runSlowTest
 import org.jetbrains.amper.core.extract.extractZip
@@ -22,6 +24,7 @@ import java.util.*
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.copyToRecursively
 import kotlin.io.path.createDirectories
+import kotlin.io.path.deleteRecursively
 import kotlin.io.path.div
 import kotlin.io.path.inputStream
 import kotlin.io.path.listDirectoryEntries
@@ -135,6 +138,48 @@ class AmperPublishTest : AmperCliTestBase() {
               </dependencies>
             </project>
         """.trimIndent(), pom.readText().trim())
+    }
+
+    @Test
+    fun `publish to maven local is incremental`() = runSlowTest {
+        val projectDir = testProject("jvm-publish")
+        val mavenLocalForTest = createTempMavenLocalDir()
+        val groupDir = mavenLocalForTest.resolve("amper/test/jvm-publish")
+
+        val resultInitialPublish = runCli(
+            projectDir = projectDir,
+            "publish", "mavenLocal",
+            amperJvmArgs = listOf(mavenRepoLocalJvmArg(mavenLocalForTest)),
+            configureAndroidHome = true,
+        )
+        resultInitialPublish.assertStdoutContains("Module 'jvm-publish' published to Maven local")
+
+        groupDir.assertContainsRelativeFiles(
+            "artifactName/2.2/_remote.repositories",
+            "artifactName/2.2/artifactName-2.2-javadoc.jar",
+            "artifactName/2.2/artifactName-2.2-sources.jar",
+            "artifactName/2.2/artifactName-2.2.jar",
+            "artifactName/2.2/artifactName-2.2.pom",
+            "artifactName/maven-metadata-local.xml",
+        )
+
+        val resultCachedPublish = runCli(
+            projectDir = projectDir,
+            "publish", "mavenLocal",
+            amperJvmArgs = listOf(mavenRepoLocalJvmArg(mavenLocalForTest)),
+            configureAndroidHome = true,
+        )
+        resultCachedPublish.assertStdoutDoesNotContain("Module 'jvm-publish' published to Maven local")
+
+        groupDir.deleteRecursively()
+
+        val resultPublishWithCacheMiss = runCli(
+            projectDir = projectDir,
+            "publish", "mavenLocal",
+            amperJvmArgs = listOf(mavenRepoLocalJvmArg(mavenLocalForTest)),
+            configureAndroidHome = true,
+        )
+        resultPublishWithCacheMiss.assertStdoutContains("Module 'jvm-publish' published to Maven local")
     }
 
     @Test
@@ -547,7 +592,7 @@ class AmperPublishTest : AmperCliTestBase() {
             amperJvmArgs = listOf(mavenRepoLocalJvmArg(mavenLocalForTest)),
             configureAndroidHome = true,
         )
-        assertTrue { result.stdout.contains("1.0-SNAPSHOT") }
+        result.assertStdoutContains("Module 'main-lib' published to Maven local")
 
         // Consume 'main-lib' from mavenLocal in project `jvm-consume-mavenLocal`
         runCli(
