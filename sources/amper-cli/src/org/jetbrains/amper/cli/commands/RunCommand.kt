@@ -20,6 +20,7 @@ import org.jetbrains.amper.cli.MultiUsageKotlinCliHelpFormatter
 import org.jetbrains.amper.cli.context.CliContext
 import org.jetbrains.amper.cli.context.GlobalCliContext
 import org.jetbrains.amper.cli.context.ProjectCliContext
+import org.jetbrains.amper.cli.logging.infoNoConsole
 import org.jetbrains.amper.cli.options.ProjectLayoutOptions
 import org.jetbrains.amper.cli.options.UserJvmArgsOption
 import org.jetbrains.amper.cli.options.buildTypeOption
@@ -27,6 +28,7 @@ import org.jetbrains.amper.cli.options.leafPlatformOption
 import org.jetbrains.amper.cli.options.userJvmArgsOption
 import org.jetbrains.amper.cli.project.preparePluginsAndReadModel
 import org.jetbrains.amper.cli.userReadableError
+import org.jetbrains.amper.cli.widgets.withIndeterminateProgress
 import org.jetbrains.amper.cli.withBackend
 import org.jetbrains.amper.compilation.compiler.provisionKotlinCompilerCli
 import org.jetbrains.amper.frontend.schema.DefaultVersions
@@ -204,12 +206,17 @@ internal class RunCommand : AmperSubcommand(name = "run") {
         if (scriptPath.extension != "kts") {
             userReadableError("The given file is not a Kotlin script, please provide a file with .kts extension")
         }
-        val kotlinCompiler = context(userCacheRoot, processRunner) {
-            provisionKotlinCompilerCli(scriptOptions.kotlinVersion)
+        val kotlinCompiler = terminal.withIndeterminateProgress("Provisioning Kotlin compiler ${scriptOptions.kotlinVersion}...") {
+            context(userCacheRoot, processRunner) {
+                provisionKotlinCompilerCli(scriptOptions.kotlinVersion)
+            }
         }
-        val jdk = context(problemReporter) {
-            jdkProvider.getJdkOrUserError(majorVersion = scriptOptions.jdkMajorVersion)
+        val jdk = terminal.withIndeterminateProgress("Provisioning JDK ${scriptOptions.jdkMajorVersion}...") {
+            context(problemReporter) {
+                jdkProvider.getJdkOrUserError(majorVersion = scriptOptions.jdkMajorVersion)
+            }
         }
+        logger.infoNoConsole("Running script ${scriptOptions.scriptPath}")
         kotlinCompiler.runKotlinScript(
             scriptPath = scriptPath,
             workingDir = workingDir,
