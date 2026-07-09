@@ -19,7 +19,6 @@ import org.jetbrains.amper.compilation.serializableKotlinSettings
 import org.jetbrains.amper.compilation.singleLeafFragment
 import org.jetbrains.amper.compilation.validSourceFileExtensions
 import org.jetbrains.amper.core.AmperUserCacheRoot
-import org.jetbrains.amper.core.extract.cleanDirectory
 import org.jetbrains.amper.engine.BuildTask
 import org.jetbrains.amper.engine.TaskGraphExecutionContext
 import org.jetbrains.amper.engine.TaskName
@@ -31,6 +30,7 @@ import org.jetbrains.amper.frontend.isDescendantOf
 import org.jetbrains.amper.frontend.mavenResolveRepositories
 import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.jdk.provisioning.JdkProvider
+import org.jetbrains.amper.stdlib.io.path.clean
 import org.jetbrains.amper.tasks.ResolveExternalDependenciesTask
 import org.jetbrains.amper.tasks.SourceRoot
 import org.jetbrains.amper.tasks.TaskOutputRoot
@@ -140,7 +140,7 @@ internal class NativeCompileKlibTask(
             ),
             inputFiles = sources + libraryPaths,
         ) {
-            cleanDirectory(taskOutputRoot.path)
+            taskOutputRoot.path.clean()
 
             // in Kotlin >= 2.2, we need to list all source files (not just dirs)
             val sourceFiles = sources.flatMap { dir ->

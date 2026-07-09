@@ -17,7 +17,6 @@ import org.jetbrains.amper.compilation.kotlinNativeCompilerArgs
 import org.jetbrains.amper.compilation.serializableKotlinSettings
 import org.jetbrains.amper.compilation.singleLeafFragment
 import org.jetbrains.amper.core.AmperUserCacheRoot
-import org.jetbrains.amper.core.extract.cleanDirectory
 import org.jetbrains.amper.engine.BuildTask
 import org.jetbrains.amper.engine.TaskGraphExecutionContext
 import org.jetbrains.amper.engine.TaskName
@@ -31,6 +30,7 @@ import org.jetbrains.amper.frontend.isDescendantOf
 import org.jetbrains.amper.frontend.mavenResolveRepositories
 import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.jdk.provisioning.JdkProvider
+import org.jetbrains.amper.stdlib.io.path.clean
 import org.jetbrains.amper.tasks.ResolveExternalDependenciesTask
 import org.jetbrains.amper.tasks.TaskOutputRoot
 import org.jetbrains.amper.tasks.TaskResult
@@ -160,12 +160,12 @@ internal class NativeLinkTask(
             ),
             inputFiles = inputFiles,
         ) {
-            cleanDirectory(taskOutputRoot.path)
+            taskOutputRoot.path.clean()
 
             if (isTest) {
                 logger.debug("Linking native test executable for module '${module.userReadableName}' on platform '${platform.pretty}'...")
             } else {
-                val binaryKind = when(compilationType) {
+                val binaryKind = when (compilationType) {
                     KotlinCompilationType.IOS_FRAMEWORK -> "framework"
                     else -> "executable"
                 }

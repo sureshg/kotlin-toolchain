@@ -12,7 +12,6 @@ import org.jetbrains.amper.compilation.downloadNativeCompiler
 import org.jetbrains.amper.compilation.serializableKotlinSettings
 import org.jetbrains.amper.concurrency.mapConcurrently
 import org.jetbrains.amper.core.AmperUserCacheRoot
-import org.jetbrains.amper.core.extract.cleanDirectory
 import org.jetbrains.amper.engine.BuildTask
 import org.jetbrains.amper.engine.GenerateKlibsForIdeTask
 import org.jetbrains.amper.engine.TaskGraphExecutionContext
@@ -23,6 +22,7 @@ import org.jetbrains.amper.frontend.Platform
 import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.jdk.provisioning.JdkProvider
 import org.jetbrains.amper.stdlib.collections.distinctBy
+import org.jetbrains.amper.stdlib.io.path.clean
 import org.jetbrains.amper.stdlib.io.path.cleanDirectoryExcept
 import org.jetbrains.amper.tasks.EmptyTaskResult
 import org.jetbrains.amper.tasks.TaskResult
@@ -104,7 +104,7 @@ internal class NativeCInteropGenerateKlibTask(
 
         if (inputDefFiles.isEmpty()) {
             logger.debug("No .def files found, bailing out")
-            cleanDirectory(outputKlibsDirectoryArtifact.path)
+            outputKlibsDirectoryArtifact.path.clean()
             return EmptyTaskResult
         }
 
@@ -126,7 +126,7 @@ internal class NativeCInteropGenerateKlibTask(
                         name = cinteropName,
                         defOriginFragment = associatedWith,
                     )
-                    cleanDirectory(outputKlib.parent)
+                    outputKlib.parent.clean()
 
                     val nativeCompiler =
                         downloadNativeCompiler(kotlinCompilerVersion, userCacheRoot, jdkProvider)

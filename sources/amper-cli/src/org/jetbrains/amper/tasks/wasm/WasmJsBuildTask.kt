@@ -7,7 +7,6 @@ package org.jetbrains.amper.tasks.wasm
 import org.jetbrains.amper.BuildPrimitives
 import org.jetbrains.amper.cli.context.AmperProjectTempRoot
 import org.jetbrains.amper.cli.userReadableError
-import org.jetbrains.amper.core.extract.cleanDirectory
 import org.jetbrains.amper.core.extract.extractZip
 import org.jetbrains.amper.engine.BuildTask
 import org.jetbrains.amper.engine.TaskGraphExecutionContext
@@ -18,6 +17,7 @@ import org.jetbrains.amper.frontend.Platform
 import org.jetbrains.amper.frontend.isDescendantOf
 import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.incrementalcache.executeForFiles
+import org.jetbrains.amper.stdlib.io.path.clean
 import org.jetbrains.amper.tasks.ResolveExternalDependenciesTask
 import org.jetbrains.amper.tasks.TaskOutputRoot
 import org.jetbrains.amper.tasks.TaskResult
@@ -87,7 +87,7 @@ class WasmJsBuildTask(
             inputValues = importMap.mapValues { it.value.invariantSeparatorsPathString },
             inputFiles = listOfNotNull(linkedDir, skikoWasmRuntime) + resourcesPaths,
         ) {
-            cleanDirectory(taskOutputPath.path)
+            taskOutputPath.path.clean()
 
             BuildPrimitives.copy(
                 from = linkedDir,

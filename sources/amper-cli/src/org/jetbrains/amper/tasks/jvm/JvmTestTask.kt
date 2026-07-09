@@ -12,7 +12,6 @@ import org.jetbrains.amper.cli.context.AmperProjectTempRoot
 import org.jetbrains.amper.cli.userReadableError
 import org.jetbrains.amper.core.AmperUserCacheRoot
 import org.jetbrains.amper.core.downloader.Downloader
-import org.jetbrains.amper.core.extract.cleanDirectory
 import org.jetbrains.amper.dependency.resolution.MavenRepository
 import org.jetbrains.amper.engine.TaskGraphExecutionContext
 import org.jetbrains.amper.engine.TaskName
@@ -26,6 +25,7 @@ import org.jetbrains.amper.jvm.getJdkOrUserError
 import org.jetbrains.amper.processes.ArgsMode
 import org.jetbrains.amper.processes.PrintToTerminalProcessOutputListener
 import org.jetbrains.amper.processes.runJava
+import org.jetbrains.amper.stdlib.io.path.clean
 import org.jetbrains.amper.tasks.EmptyTaskResult
 import org.jetbrains.amper.tasks.JvmTestRunSettings
 import org.jetbrains.amper.tasks.TaskOutputRoot
@@ -110,10 +110,10 @@ class JvmTestTask(
 
         val jdk = jdkProvider.getJdkOrUserError(module.testJdkSettings)
 
-        cleanDirectory(taskOutputRoot.path)
+        taskOutputRoot.path.clean()
 
         val reportsDir = buildOutputRoot.path / "reports" / module.userReadableName / platform.schemaValue
-        cleanDirectory(reportsDir)
+        reportsDir.clean()
 
         val junitArgs = buildList {
             add("--disable-banner")
@@ -231,7 +231,7 @@ class JvmTestTask(
             inputFiles = emptyList(),
         ) {
             val listenersDir = tempRoot.path.resolve("amper-junit-listeners").createDirectories()
-            cleanDirectory(listenersDir) // we don't want to keep old dependencies that were potentially removed
+            listenersDir.clean() // we don't want to keep old dependencies that were potentially removed
             val jarNames = classpathList.lines()
             jarNames.forEach { jarName ->
                 val jarResource = javaClass.getResourceAsStream("/junit-listeners/$jarName")

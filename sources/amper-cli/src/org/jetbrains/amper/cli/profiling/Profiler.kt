@@ -6,8 +6,8 @@ package org.jetbrains.amper.cli.profiling
 
 import one.profiler.AsyncProfiler
 import org.jetbrains.amper.core.AmperUserCacheRoot
-import org.jetbrains.amper.core.extract.cleanDirectory
 import org.jetbrains.amper.stdlib.hashing.sha256String
+import org.jetbrains.amper.stdlib.io.path.clean
 import org.jetbrains.amper.system.info.Arch
 import org.jetbrains.amper.system.info.OsFamily
 import org.slf4j.LoggerFactory
@@ -48,7 +48,7 @@ internal object Profiler {
         // on Windows you can't overwrite an open file or a loaded library
         if (!libFile.isRegularFile() || libFile.fileSize() != libBytes.size.toLong()) {
             logger.info("Extracting async profiler lib to $libFile (only for the first run)")
-            cleanDirectory(libFile.parent)
+            libFile.parent.clean()
             libFile.writeBytes(libBytes)
         }
         logger.info("Loading async profiler from $libFile")

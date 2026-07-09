@@ -16,6 +16,7 @@ import org.jetbrains.amper.core.AmperUserCacheRoot
 import org.jetbrains.amper.filechannels.readText
 import org.jetbrains.amper.filechannels.writeText
 import org.jetbrains.amper.stdlib.hashing.sha256String
+import org.jetbrains.amper.stdlib.io.path.clean
 import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.io.InputStream
@@ -34,7 +35,6 @@ import kotlin.io.path.copyTo
 import kotlin.io.path.createDirectories
 import kotlin.io.path.createParentDirectories
 import kotlin.io.path.createSymbolicLinkPointingTo
-import kotlin.io.path.deleteRecursively
 import kotlin.io.path.exists
 import kotlin.io.path.inputStream
 import kotlin.io.path.isDirectory
@@ -105,7 +105,7 @@ private fun extractFileWithFlag(
 
     if (targetDirectory.exists()) {
         check(targetDirectory.isDirectory()) { "Target '$targetDirectory' exists, but it's not a directory. Please delete it manually" }
-        cleanDirectory(targetDirectory)
+        targetDirectory.clean()
     }
 
     LOG.debug("Extracting {} to {}", archiveFile, targetDirectory)
@@ -358,13 +358,6 @@ ${archiveFile.toRealPath(LinkOption.NOFOLLOW_LINKS)}
 topLevelEntries:$numberOfTopLevelEntries
 options:${getExtractOptionsShortString(options)}
 """
-}
-
-fun cleanDirectory(directory: Path) {
-    directory.createDirectories()
-    directory.listDirectoryEntries().forEach {
-        it.deleteRecursively()
-    }
 }
 
 private fun checkFlagFile(

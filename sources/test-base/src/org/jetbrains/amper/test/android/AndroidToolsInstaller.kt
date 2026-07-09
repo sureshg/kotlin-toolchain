@@ -7,7 +7,6 @@ package org.jetbrains.amper.test.android
 import org.jetbrains.amper.core.AmperUserCacheRoot
 import org.jetbrains.amper.core.downloader.Downloader
 import org.jetbrains.amper.core.downloader.suspendingRetryWithExponentialBackOff
-import org.jetbrains.amper.core.extract.cleanDirectory
 import org.jetbrains.amper.core.extract.extractZip
 import org.jetbrains.amper.frontend.schema.DefaultVersions
 import org.jetbrains.amper.frontend.schema.JdkSelectionMode
@@ -17,6 +16,7 @@ import org.jetbrains.amper.jdk.provisioning.JdkProvider
 import org.jetbrains.amper.jdk.provisioning.JdkProvisioningCriteria
 import org.jetbrains.amper.jdk.provisioning.orThrow
 import org.jetbrains.amper.problems.reporting.NoopProblemReporter
+import org.jetbrains.amper.stdlib.io.path.clean
 import org.jetbrains.amper.system.info.Arch
 import org.jetbrains.amper.system.info.OsFamily
 import org.jetbrains.amper.test.processes.PrefixPrintOutputListener
@@ -86,7 +86,7 @@ internal object AndroidToolsInstaller {
             ),
             inputFiles = emptyList()
         ) {
-            cleanDirectory(androidSdkHome)
+            androidSdkHome.clean()
             extractZip(archiveFile = commandLineToolsZip, target = androidSdkHome / "cmdline-tools", stripRoot = true)
 
             // we need a JDK to run the Java-based Android command line tools

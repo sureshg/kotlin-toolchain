@@ -2,11 +2,11 @@
  * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
-import org.jetbrains.amper.core.extract.cleanDirectory
 import org.jetbrains.amper.plugins.Classpath
 import org.jetbrains.amper.plugins.Input
 import org.jetbrains.amper.plugins.Output
 import org.jetbrains.amper.plugins.TaskAction
+import org.jetbrains.amper.stdlib.io.path.clean
 import org.jetbrains.amper.wrapper.AmperWrappers
 import java.nio.file.Path
 import kotlin.io.path.copyToRecursively
@@ -21,7 +21,7 @@ fun buildUnpackedDist(
     @Input extraFilteredClasspaths: Map<String, FilteredClasspath> = emptyMap(),
     @Input thirdPartyStagingDir: Path,
 ) {
-    cleanDirectory(outputDir)
+    outputDir.clean()
 
     (outputDir / "kotlin-cli.args").writeText(argFileContents())
 

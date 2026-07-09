@@ -23,7 +23,6 @@ import org.jetbrains.amper.compilation.serializableKotlinSettings
 import org.jetbrains.amper.compilation.singleLeafFragment
 import org.jetbrains.amper.compilation.validSourceFileExtensions
 import org.jetbrains.amper.core.AmperUserCacheRoot
-import org.jetbrains.amper.core.extract.cleanDirectory
 import org.jetbrains.amper.engine.BuildTask
 import org.jetbrains.amper.engine.TaskGraphExecutionContext
 import org.jetbrains.amper.engine.TaskName
@@ -40,8 +39,7 @@ import org.jetbrains.amper.jdk.provisioning.Jdk
 import org.jetbrains.amper.jdk.provisioning.JdkProvider
 import org.jetbrains.amper.jvm.getJdkOrUserError
 import org.jetbrains.amper.processes.ArgsMode
-import org.jetbrains.amper.processes.LoggingProcessOutputListener
-import org.jetbrains.amper.processes.runJava
+import org.jetbrains.amper.stdlib.io.path.clean
 import org.jetbrains.amper.tasks.ResolveExternalDependenciesTask
 import org.jetbrains.amper.tasks.SourceRoot
 import org.jetbrains.amper.tasks.TaskOutputRoot
@@ -58,7 +56,6 @@ import org.jetbrains.amper.telemetry.use
 import org.jetbrains.amper.util.BuildType
 import org.slf4j.LoggerFactory
 import java.nio.file.Path
-import kotlin.io.path.Path
 import kotlin.io.path.extension
 import kotlin.io.path.pathString
 import kotlin.io.path.walk
@@ -155,7 +152,7 @@ internal abstract class WebCompileKlibTask(
             ),
             inputFiles = sources + libraryPaths,
         ) {
-            cleanDirectory(taskOutputRoot.path)
+            taskOutputRoot.path.clean()
 
             val artifact = taskOutputRoot.path
 

@@ -1,16 +1,16 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.tasks.ios
 
 import org.jetbrains.amper.BuildPrimitives
 import org.jetbrains.amper.core.AmperUserCacheRoot
-import org.jetbrains.amper.core.extract.cleanDirectory
 import org.jetbrains.amper.engine.TaskGraphExecutionContext
 import org.jetbrains.amper.engine.TaskName
 import org.jetbrains.amper.frontend.LeafFragment
 import org.jetbrains.amper.incrementalcache.IncrementalCache
+import org.jetbrains.amper.stdlib.io.path.clean
 import org.jetbrains.amper.tasks.EmptyTaskResult
 import org.jetbrains.amper.tasks.TaskOutputRoot
 import org.jetbrains.amper.tasks.TaskResult
@@ -56,7 +56,7 @@ class IosComposeResourcesTask(
             inputValues = emptyMap(),
             inputFiles = results.map { it.path },
         ) {
-            cleanDirectory(outputPath)
+            outputPath.clean()
             results.forEach { result ->
                 BuildPrimitives.copy(
                     from = result.path,

@@ -5,12 +5,12 @@
 package org.jetbrains.amper.tasks.jvm
 
 import org.jetbrains.amper.BuildPrimitives
-import org.jetbrains.amper.core.extract.cleanDirectory
 import org.jetbrains.amper.engine.Task
 import org.jetbrains.amper.engine.TaskGraphExecutionContext
 import org.jetbrains.amper.engine.TaskName
 import org.jetbrains.amper.frontend.AmperModule
 import org.jetbrains.amper.incrementalcache.IncrementalCache
+import org.jetbrains.amper.stdlib.io.path.clean
 import org.jetbrains.amper.tasks.TaskOutputRoot
 import org.jetbrains.amper.tasks.TaskResult
 import java.nio.file.Path
@@ -39,7 +39,7 @@ class JvmMergedClassesTask(
             inputFiles = inputDirs,
         ) {
             // TODO: Do it incrementally?
-            cleanDirectory(outputDir)
+            outputDir.clean()
             inputDirs.forEach { inputDir ->
                 BuildPrimitives.copy(from = inputDir, to = outputDir)
             }

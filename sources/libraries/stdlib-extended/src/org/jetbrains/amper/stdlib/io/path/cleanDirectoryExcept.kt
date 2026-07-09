@@ -6,11 +6,26 @@ package org.jetbrains.amper.stdlib.io.path
 
 import java.nio.file.FileVisitResult
 import java.nio.file.Path
+import kotlin.io.path.createDirectories
 import kotlin.io.path.deleteExisting
 import kotlin.io.path.deleteRecursively
 import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
+import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.visitFileTree
+
+/**
+ * Removes all the contents of the directory located at this [Path], without deleting the directory itself.
+ *
+ * If the directory doesn't already exist, it is created.
+ */
+fun Path.clean() {
+    createDirectories()
+    listDirectoryEntries().forEach {
+        it.deleteRecursively()
+    }
+}
+
 
 /**
  * Cleans the [directory] but keeps the files/subtrees from the [keepPaths].
@@ -22,8 +37,9 @@ fun cleanDirectoryExcept(
     directory: Path,
     keepPaths: List<Path>,
 ) {
-    if (!directory.exists())
+    if (!directory.exists()) {
         return
+    }
 
     check(directory.isDirectory()) { "Expected a directory at '$directory'" }
 

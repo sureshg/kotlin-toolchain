@@ -23,7 +23,6 @@ import org.jetbrains.amper.compilation.kotlinModuleName
 import org.jetbrains.amper.compilation.kotlinNativeCompilerArgs
 import org.jetbrains.amper.compilation.serializableKotlinSettings
 import org.jetbrains.amper.core.AmperUserCacheRoot
-import org.jetbrains.amper.core.extract.cleanDirectory
 import org.jetbrains.amper.dependency.resolution.ResolutionPlatform
 import org.jetbrains.amper.dependency.resolution.ResolutionScope
 import org.jetbrains.amper.engine.BuildTask
@@ -50,6 +49,7 @@ import org.jetbrains.amper.jdk.provisioning.JdkProvider
 import org.jetbrains.amper.jvm.getJdkOrUserError
 import org.jetbrains.amper.problems.reporting.ProblemReporter
 import org.jetbrains.amper.processes.ArgsMode
+import org.jetbrains.amper.stdlib.io.path.clean
 import org.jetbrains.amper.tasks.artifacts.ArtifactTaskBase
 import org.jetbrains.amper.tasks.artifacts.KotlinJavaSourceDirArtifact
 import org.jetbrains.amper.tasks.artifacts.Selectors
@@ -179,7 +179,7 @@ internal class MetadataCompileTask(
         val inputFiles = sourceDirs + fragmentClasspath + refinesPaths + friendPaths
 
         incrementalCache.execute(taskName.id.value, inputValues, inputFiles) {
-            cleanDirectory(taskOutputRoot.path)
+            taskOutputRoot.path.clean()
 
             val existingSourceDirs = sourceDirs.filter { it.exists() }
             if (existingSourceDirs.isNotEmpty()) {
@@ -374,7 +374,7 @@ internal class MetadataCompileTask(
         val inputFiles = sourceDirs + fragmentClasspath + refinesPaths + friendPaths
 
         incrementalCache.execute(taskName.id.value, inputValues, inputFiles) {
-            cleanDirectory(taskOutputRoot.path)
+            taskOutputRoot.path.clean()
 
             val existingSourceDirs = sourceDirs.filter { it.exists() }
             if (existingSourceDirs.isNotEmpty()) {
