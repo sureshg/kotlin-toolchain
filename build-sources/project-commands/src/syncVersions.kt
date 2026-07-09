@@ -17,12 +17,13 @@ import kotlin.io.path.div
 import kotlin.io.path.name
 import kotlin.io.path.visitFileTree
 
-/*
- * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
- */
-
 @TaskAction(ExecutionAvoidance.Disabled) // we can't track all outputs
-fun syncVersions(@Input amperRootDir: Path, versions: Versions) {
+fun syncVersions(
+    // Disable dependency inference here as depending on the project root will make this depend on **EVERYTHING**,
+    //  as the build-directory is inside the project-root.
+    @Input(inferTaskDependency = false) amperRootDir: Path,
+    versions: Versions,
+) {
     VersionUpdater(amperRootDir).syncVersions(versions)
 }
 
