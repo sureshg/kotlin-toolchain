@@ -14,13 +14,19 @@ import com.github.ajalt.mordant.widgets.progress.text
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Displays the given [message] with an infinitely spinning spinner while the given [block] is running.
  * The message is removed as soon as [block] completes (successfully or not).
+ *
+ * The spinner is only shown after [initialDelay], so fast operations that cancel the progress quickly are less likely
+ * to see flickering.
  *
  * If this [Terminal] is not interactive (e.g. on CI, or when redirecting the output), the [messageNonInteractive] is
  * simply printed before running [block]. By default, [messageNonInteractive] is the same as [message].
@@ -30,6 +36,7 @@ import kotlin.contracts.contract
 suspend fun <T> Terminal.withIndeterminateProgress(
     message: String,
     messageNonInteractive: String? = message,
+    initialDelay: Duration = 200.milliseconds,
     block: suspend CoroutineScope.() -> T,
 ): T {
     contract {
@@ -38,7 +45,7 @@ suspend fun <T> Terminal.withIndeterminateProgress(
     }
     return coroutineScope {
         if (terminalInfo.interactive) {
-            val animationJob = launchIndeterminateProgress(message)
+            val animationJob = launchIndeterminateProgress(message, initialDelay = initialDelay)
             try {
                 block()
             } finally {
@@ -58,10 +65,13 @@ suspend fun <T> Terminal.withIndeterminateProgress(
 /**
  * Displays the given [message] with an infinitely spinning spinner.
  *
+ * The spinner is only shown after [initialDelay], so fast operations that cancel the progress quickly are less likely
+ * to see flickering.
+ *
  * To stop the spinner and hide the message, cancel the [Job] returned by this function.
  */
 context(scope: CoroutineScope)
-private fun Terminal.launchIndeterminateProgress(message: String): Job {
+private fun Terminal.launchIndeterminateProgress(message: String, initialDelay: Duration): Job {
     val platformProgress = PlatformProgressReporter(terminal = this)
 
     val animator = progressBarLayout(align = TextAlign.LEFT) {
@@ -71,6 +81,7 @@ private fun Terminal.launchIndeterminateProgress(message: String): Job {
 
     return scope.launch {
         try {
+            delay(initialDelay)
             platformProgress.update(PlatformProgressReporter.Progress.Indeterminate)
             animator.execute()
         } finally {
