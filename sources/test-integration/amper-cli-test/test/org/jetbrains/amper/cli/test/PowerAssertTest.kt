@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.cli.test
@@ -65,6 +65,43 @@ class PowerAssertTest : AmperCliTestBase() {
                          |      |     ed
                          |      fred
                          george
+        """.trimIndent())
+    }
+
+    // This test is here to check the correct addition of the PowerAssert runtime library, which is apparently needed
+    // for this specific behavior. See discussion:
+    // https://youtrack.jetbrains.com/issue/KT-69036/Power-Assert-indent-multiline-values#focus=Comments-27-14010784.0-0
+    @Test
+    fun `power-assert errors handle multiline strings`() = runSlowTest {
+        val result = runCli(
+            testProject(name = "kotlin-powerassert"),
+            "test",
+            "--include-module=multiline-strings",
+            expectedExitCode = 1,
+            assertEmptyStdErr = false,
+        )
+
+        result.assertStdoutContains("""
+            assert((prefixValue + str.substring(0, 8)).length == 0)
+                    |           | |   |                |      |
+                    "Hello:"    | |   |                14     false
+                                | |   ""${'"'}
+                                | |   This
+                                | |    Is
+                                | |   ""${'"'}
+                                | ""${'"'}
+                                | This
+                                |  Is
+                                |   A
+                                |    Long
+                                |   Multiple
+                                |  Line
+                                | String
+                                | ""${'"'}
+                                ""${'"'}
+                                Hello:This
+                                 Is
+                                ""${'"'}
         """.trimIndent())
     }
 }

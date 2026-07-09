@@ -1,3 +1,4 @@
 modules:
   - custom-functions
   - default-functions
+  - multiline-strings

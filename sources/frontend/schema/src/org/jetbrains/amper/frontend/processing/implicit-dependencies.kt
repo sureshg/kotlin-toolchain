@@ -196,6 +196,17 @@ private fun Fragment.calculateImplicitDependencies(): List<MavenDependencyBase> 
             dependencyTrace = jsPlainObjectsDependencyTrace,
         ))
     }
+    if (settings.kotlin.powerAssert.enabled) {
+        val powerAssertDependencyTrace = TransformedValueTrace(
+            description = "because PowerAssert is enabled",
+            sourceValue = settings.kotlin.powerAssert.enabledDelegate,
+        )
+        add(kotlinDependencyOf(
+            artifactId = "kotlin-power-assert-runtime",
+            version = kotlinVersion,
+            dependencyTrace = powerAssertDependencyTrace,
+        ))
+    }
     if (settings.android.parcelize.enabled && setOf(Platform.JVM, Platform.ANDROID).containsAll(platforms)) {
         val parcelizeDependencyTrace = TransformedValueTrace(
             description = "because Android Parcelize is enabled",
