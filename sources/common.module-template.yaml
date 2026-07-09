@@ -37,7 +37,6 @@ settings:
   kotlin:
     version: 2.4.0
     progressiveMode: true
-    powerAssert: enabled
     freeCompilerArgs:
       - -Wextra
       - -Xcollection-literals
@@ -67,5 +66,6 @@ settings:
 
 test-settings:
   kotlin:
+    powerAssert: enabled
     freeCompilerArgs:
       - -Xallow-returns-result-of
