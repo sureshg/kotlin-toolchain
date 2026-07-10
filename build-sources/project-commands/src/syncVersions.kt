@@ -63,6 +63,7 @@ class VersionUpdater(val amperRootDir: Path) {
             text
                 .replaceDefaultVersionVariable(variableName = "compose", newValue = defaultVersions.compose)
                 .replaceDefaultVersionVariable(variableName = "composeHotReload", newValue = defaultVersions.composeHotReload)
+                .replaceDefaultVersionVariable(variableName = "dataframe", newValue = defaultVersions.dataframe)
                 .replaceDefaultVersionIntVariable(variableName = "jdk", newValue = defaultVersions.jdk)
                 .replaceDefaultVersionVariable(variableName = "junitPlatform", newValue = defaultVersions.junitPlatform)
                 .replaceDefaultVersionVariable(variableName = "kotlin", newValue = defaultVersions.kotlin)

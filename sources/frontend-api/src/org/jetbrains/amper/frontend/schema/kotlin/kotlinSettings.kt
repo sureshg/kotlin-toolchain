@@ -20,6 +20,7 @@ import org.jetbrains.amper.frontend.api.TraceableString
 import org.jetbrains.amper.frontend.schema.DefaultVersions
 import org.jetbrains.amper.frontend.schema.KspSettings
 import org.jetbrains.amper.frontend.schema.kotlin.plugins.AllOpenSettings
+import org.jetbrains.amper.frontend.schema.kotlin.plugins.DataFrameSettings
 import org.jetbrains.amper.frontend.schema.kotlin.plugins.JsPlainObjectsSettings
 import org.jetbrains.amper.frontend.schema.kotlin.plugins.KotlinxRpcSettings
 import org.jetbrains.amper.frontend.schema.kotlin.plugins.NoArgSettings
@@ -148,6 +149,10 @@ class KotlinSettings : SchemaNode() {
     @PlatformAgnostic
     @SchemaDoc("Configure the [Kotlin all-open compiler plugin](https://kotlinlang.org/docs/all-open-plugin.html)")
     val allOpen: AllOpenSettings by nested()
+
+    @PlatformAgnostic
+    @SchemaDoc("Configure the [Kotlin Dataframe](https://kotlin.github.io/dataframe/home.html) compiler plugin")
+    val dataframe: DataFrameSettings by nested()
 
     @PlatformSpecific(Platform.JS)
     @SchemaDoc("Configure the [Kotlin JS plain objects compiler plugin](https://kotlinlang.org/docs/js-plain-objects.html)")

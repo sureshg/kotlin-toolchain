@@ -95,6 +95,10 @@ Fragments:
         compileIncrementally: <default> false
         compilerPlugins: <default> [
         ]
+        dataframe: <default> {
+          enabled: <default> false
+          version: <default> 1.0.0-Beta5
+        }
         debug: <default> null
         freeCompilerArgs: <default> null
         jsPlainObjects: <default> {
@@ -286,6 +290,10 @@ Fragments:
         compileIncrementally: <default> false
         compilerPlugins: <default> [
         ]
+        dataframe: <default> {
+          enabled: <default> false
+          version: <default> 1.0.0-Beta5
+        }
         debug: <default> null
         freeCompilerArgs: <default> null
         jsPlainObjects: <default> {
@@ -473,6 +481,10 @@ Fragments:
         compileIncrementally: <default> false
         compilerPlugins: <default> [
         ]
+        dataframe: <default> {
+          enabled: <default> false
+          version: <default> 1.0.0-Beta5
+        }
         debug: <default> null
         freeCompilerArgs: <default> null
         jsPlainObjects: <default> {
@@ -663,6 +675,10 @@ Fragments:
         compileIncrementally: <default> false
         compilerPlugins: <default> [
         ]
+        dataframe: <default> {
+          enabled: <default> false
+          version: <default> 1.0.0-Beta5
+        }
         debug: <default> null
         freeCompilerArgs: <default> null
         jsPlainObjects: <default> {
@@ -849,6 +865,10 @@ Fragments:
         compileIncrementally: <default> false
         compilerPlugins: <default> [
         ]
+        dataframe: <default> {
+          enabled: <default> false
+          version: <default> 1.0.0-Beta5
+        }
         debug: <default> null
         freeCompilerArgs: <default> null
         jsPlainObjects: <default> {
@@ -1038,6 +1058,10 @@ Fragments:
         compileIncrementally: <default> false
         compilerPlugins: <default> [
         ]
+        dataframe: <default> {
+          enabled: <default> false
+          version: <default> 1.0.0-Beta5
+        }
         debug: <default> null
         freeCompilerArgs: <default> null
         jsPlainObjects: <default> {
@@ -1225,6 +1249,10 @@ Fragments:
         compileIncrementally: <default> false
         compilerPlugins: <default> [
         ]
+        dataframe: <default> {
+          enabled: <default> false
+          version: <default> 1.0.0-Beta5
+        }
         debug: <default> null
         freeCompilerArgs: <default> null
         jsPlainObjects: <default> {
@@ -1412,6 +1440,10 @@ Fragments:
         compileIncrementally: <default> false
         compilerPlugins: <default> [
         ]
+        dataframe: <default> {
+          enabled: <default> false
+          version: <default> 1.0.0-Beta5
+        }
         debug: <default> null
         freeCompilerArgs: <default> null
         jsPlainObjects: <default> {
@@ -1602,6 +1634,10 @@ Fragments:
         compileIncrementally: <default> false
         compilerPlugins: <default> [
         ]
+        dataframe: <default> {
+          enabled: <default> false
+          version: <default> 1.0.0-Beta5
+        }
         debug: <default> null
         freeCompilerArgs: <default> null
         jsPlainObjects: <default> {
@@ -1792,6 +1828,10 @@ Fragments:
         compileIncrementally: <default> false
         compilerPlugins: <default> [
         ]
+        dataframe: <default> {
+          enabled: <default> false
+          version: <default> 1.0.0-Beta5
+        }
         debug: <default> null
         freeCompilerArgs: <default> null
         jsPlainObjects: <default> {
@@ -1979,6 +2019,10 @@ Fragments:
         compileIncrementally: <default> false
         compilerPlugins: <default> [
         ]
+        dataframe: <default> {
+          enabled: <default> false
+          version: <default> 1.0.0-Beta5
+        }
         debug: <default> null
         freeCompilerArgs: <default> null
         jsPlainObjects: <default> {
@@ -2169,6 +2213,10 @@ Fragments:
         compileIncrementally: <default> false
         compilerPlugins: <default> [
         ]
+        dataframe: <default> {
+          enabled: <default> false
+          version: <default> 1.0.0-Beta5
+        }
         debug: <default> null
         freeCompilerArgs: <default> null
         jsPlainObjects: <default> {
@@ -2356,6 +2404,10 @@ Fragments:
         compileIncrementally: <default> false
         compilerPlugins: <default> [
         ]
+        dataframe: <default> {
+          enabled: <default> false
+          version: <default> 1.0.0-Beta5
+        }
         debug: <default> null
         freeCompilerArgs: <default> null
         jsPlainObjects: <default> {
@@ -2545,6 +2597,10 @@ Fragments:
         compileIncrementally: <default> false
         compilerPlugins: <default> [
         ]
+        dataframe: <default> {
+          enabled: <default> false
+          version: <default> 1.0.0-Beta5
+        }
         debug: <default> null
         freeCompilerArgs: <default> null
         jsPlainObjects: <default> {
@@ -2732,6 +2788,10 @@ Fragments:
         compileIncrementally: <default> false
         compilerPlugins: <default> [
         ]
+        dataframe: <default> {
+          enabled: <default> false
+          version: <default> 1.0.0-Beta5
+        }
         debug: <default> null
         freeCompilerArgs: <default> null
         jsPlainObjects: <default> {
@@ -2922,6 +2982,10 @@ Fragments:
         compileIncrementally: <default> false
         compilerPlugins: <default> [
         ]
+        dataframe: <default> {
+          enabled: <default> false
+          version: <default> 1.0.0-Beta5
+        }
         debug: <default> null
         freeCompilerArgs: <default> null
         jsPlainObjects: <default> {
@@ -3109,6 +3173,10 @@ Fragments:
         compileIncrementally: <default> false
         compilerPlugins: <default> [
         ]
+        dataframe: <default> {
+          enabled: <default> false
+          version: <default> 1.0.0-Beta5
+        }
         debug: <default> null
         freeCompilerArgs: <default> null
         jsPlainObjects: <default> {
@@ -3299,6 +3367,10 @@ Fragments:
         compileIncrementally: <default> false
         compilerPlugins: <default> [
         ]
+        dataframe: <default> {
+          enabled: <default> false
+          version: <default> 1.0.0-Beta5
+        }
         debug: <default> null
         freeCompilerArgs: <default> null
         jsPlainObjects: <default> {
@@ -3486,6 +3558,10 @@ Fragments:
         compileIncrementally: <default> false
         compilerPlugins: <default> [
         ]
+        dataframe: <default> {
+          enabled: <default> false
+          version: <default> 1.0.0-Beta5
+        }
         debug: <default> null
         freeCompilerArgs: <default> null
         jsPlainObjects: <default> {
@@ -3676,6 +3752,10 @@ Fragments:
         compileIncrementally: <default> false
         compilerPlugins: <default> [
         ]
+        dataframe: <default> {
+          enabled: <default> false
+          version: <default> 1.0.0-Beta5
+        }
         debug: <default> null
         freeCompilerArgs: <default> null
         jsPlainObjects: <default> {

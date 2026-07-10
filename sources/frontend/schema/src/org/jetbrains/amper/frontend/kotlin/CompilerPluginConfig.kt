@@ -7,6 +7,8 @@ package org.jetbrains.amper.frontend.kotlin
 import org.jetbrains.amper.core.UsedInIdePlugin
 import org.jetbrains.amper.core.downloader.KOTLIN_GROUP_ID
 import org.jetbrains.amper.frontend.kotlin.CompilerPluginConfig.Option
+import java.nio.file.Path
+import kotlin.io.path.pathString
 
 /**
  * The configuration for a Kotlin compiler plugin.
@@ -84,6 +86,26 @@ data class NoArgCompilerPluginConfig(
     override val mavenCoordinates = CompilerPluginConfig.MavenCoordinates(
         groupId = KOTLIN_GROUP_ID,
         artifactId = "kotlin-noarg-compiler-plugin-embeddable",
+        version = kotlinVersion,
+    )
+}
+
+data class DataFrameCompilerPluginConfig(
+    val kotlinVersion: String,
+) : CompilerPluginConfig {
+    // https://github.com/JetBrains/kotlin/blob/1b436477389b6087581cd6fd8cf95c40c6982519/plugins/kotlin-dataframe/kotlin-dataframe.cli/src/org/jetbrains/kotlinx/dataframe/plugin/FirDataFrameComponentRegistrar.kt#L127
+    override val id = "org.jetbrains.kotlin.dataframe"
+
+    // We don't support any option yet:
+    // * 'disableTopLevelExtensionProperties' is an obsolete compatibility mode and will likely to be removed.
+    // * 'schemasPath' is part of a feature that is not ready yet, and might be renamed.
+    // See: https://youtrack.jetbrains.com/issue/AMPER-4881/Support-dataframe-compiler-plugin#focus=Comments-27-14024808.0-0
+    override val options: List<Option> = []
+
+    override val mavenCoordinates = CompilerPluginConfig.MavenCoordinates(
+        groupId = KOTLIN_GROUP_ID,
+        // https://github.com/JetBrains/kotlin/blob/1b436477389b6087581cd6fd8cf95c40c6982519/plugins/kotlin-dataframe/build.gradle.kts#L59
+        artifactId = "kotlin-dataframe-compiler-plugin-experimental",
         version = kotlinVersion,
     )
 }

@@ -50,6 +50,11 @@ private fun kotlinxSerializationFormatDependency(format: String, version: Tracea
         trace = dependencyTrace,
     )
 
+private fun kotlinxDataFrameCoreDependency(version: TraceableString, dependencyTrace: Trace) = MavenDependency(
+    coordinates = coords("org.jetbrains.kotlinx", "dataframe-core", version),
+    trace = dependencyTrace,
+)
+
 private fun composeRuntimeDependency(composeVersion: TraceableString, dependencyTrace: Trace) = MavenDependency(
     coordinates = coords("org.jetbrains.compose.runtime", "runtime", composeVersion),
     trace = dependencyTrace,
@@ -184,6 +189,17 @@ private fun Fragment.calculateImplicitDependencies(): List<MavenDependencyBase> 
                 dependencyTrace = serializationFormatTrace,
             ))
         }
+    }
+    if (settings.kotlin.dataframe.enabled) {
+        val dataframeVersion = settings.kotlin.dataframe.versionDelegate.asTraceableValue()
+        val dataframeDependencyTrace = TransformedValueTrace(
+            description = "because Kotlin DataFrame is enabled",
+            sourceValue = settings.kotlin.dataframe.enabledDelegate,
+        )
+        add(kotlinxDataFrameCoreDependency(
+            version = dataframeVersion,
+            dependencyTrace = dataframeDependencyTrace,
+        ))
     }
     if (settings.kotlin.jsPlainObjects.enabled && setOf(Platform.JS) == platforms) {
         val jsPlainObjectsDependencyTrace = TransformedValueTrace(

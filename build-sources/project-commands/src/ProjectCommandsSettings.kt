@@ -48,6 +48,7 @@ interface AmperJre {
 interface DefaultVersions {
     val compose: String
     val composeHotReload: String
+    val dataframe: String
     val jdk: String
     val junitPlatform: String
     val kotlin: String

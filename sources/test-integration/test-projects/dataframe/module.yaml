@@ -1,0 +1,10 @@
+product: jvm/app
+
+dependencies:
+  - $kotlin.dataframe.csv
+  - org.slf4j:slf4j-simple:2.0.18
+
+settings:
+  kotlin:
+    version: 2.4.0
+    dataframe: enabled

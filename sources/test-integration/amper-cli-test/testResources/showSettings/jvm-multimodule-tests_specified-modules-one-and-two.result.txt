@@ -41,6 +41,9 @@ settings@jvm:
     apiVersion: null  # default, from ${languageVersion}
     compileIncrementally: false  # default, based on ${version}: enabled for Kotlin compiler >= 2.4.0
     compilerPlugins: []  # default
+    dataframe:
+      enabled: false  # default
+      version: 1.0.0-Beta5  # default
     freeCompilerArgs: null  # default
     ksp:
       processorOptions: {}  # default
@@ -150,6 +153,9 @@ settings@jvm:
     apiVersion: null  # default, from ${languageVersion}
     compileIncrementally: false  # default, based on ${version}: enabled for Kotlin compiler >= 2.4.0
     compilerPlugins: []  # default
+    dataframe:
+      enabled: false  # default
+      version: 1.0.0-Beta5  # default
     freeCompilerArgs: null  # default
     ksp:
       processorOptions: {}  # default

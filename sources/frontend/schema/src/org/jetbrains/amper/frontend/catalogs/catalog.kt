@@ -26,6 +26,8 @@ import org.jetbrains.amper.system.info.SystemInfo
 context(problemReporter: ProblemReporter)
 internal fun Settings.builtInCatalog(): VersionCatalog = BuiltInCatalog(
     kotlinVersion = kotlin.versionDelegate.asTraceableVersion(DefaultVersions.kotlin),
+    dataframeVersion = kotlin.dataframe.versionDelegate.asTraceableVersion(DefaultVersions.dataframe)
+        .takeIf { kotlin.dataframe.enabled },
     serializationVersion = kotlin.serialization.versionDelegate.asTraceableVersion(DefaultVersions.kotlinxSerialization)
         .takeIf { kotlin.serialization.enabled },
     rpcVersion = kotlin.rpc.versionDelegate.asTraceableVersion(DefaultVersions.kotlinxRpc)
@@ -63,6 +65,7 @@ private fun SchemaValueDelegate<String>.asTraceableVersion(fallbackVersion: Stri
 
 private class BuiltInCatalog(
     kotlinVersion: TraceableVersion,
+    dataframeVersion: TraceableVersion?,
     serializationVersion: TraceableVersion?,
     rpcVersion: TraceableVersion?,
     composeVersion: TraceableVersion?,
@@ -78,6 +81,17 @@ private class BuiltInCatalog(
         put("kotlin.test.junit", library("org.jetbrains.kotlin:kotlin-test-junit", kotlinVersion))
         put("kotlin.test.junit5", library("org.jetbrains.kotlin:kotlin-test-junit5", kotlinVersion))
         put("kotlin.reflect", library("org.jetbrains.kotlin:kotlin-reflect", kotlinVersion))
+
+        if (dataframeVersion != null) {
+            put("kotlin.dataframe.json", library("org.jetbrains.kotlinx:dataframe-json", dataframeVersion))
+            put("kotlin.dataframe.csv", library("org.jetbrains.kotlinx:dataframe-csv", dataframeVersion))
+            put("kotlin.dataframe.excel", library("org.jetbrains.kotlinx:dataframe-excel", dataframeVersion))
+            put("kotlin.dataframe.jdbc", library("org.jetbrains.kotlinx:dataframe-jdbc", dataframeVersion))
+            put("kotlin.dataframe.arrow", library("org.jetbrains.kotlinx:dataframe-arrow", dataframeVersion))
+            put("kotlin.dataframe.geo", library("org.jetbrains.kotlinx:dataframe-geo", dataframeVersion))
+            put("kotlin.dataframe.openapi", library("org.jetbrains.kotlinx:dataframe-openapi", dataframeVersion))
+            put("kotlin.dataframe.openapi-generator", library("org.jetbrains.kotlinx:dataframe-openapi-generator", dataframeVersion))
+        }
 
         if (serializationVersion != null) {
             put("kotlin.serialization.core", library("org.jetbrains.kotlinx:kotlinx-serialization-core", serializationVersion))

@@ -58,6 +58,10 @@ fun Settings.compilerPluginsConfigurations(): List<CompilerPluginConfig> = build
         )
     }
 
+    if (kotlin.dataframe.enabled) {
+        add(DataFrameCompilerPluginConfig(kotlinVersion = kotlin.version))
+    }
+
     if (kotlin.jsPlainObjects.enabled) {
         add(
             JsPlainObjectsCompilerPluginConfig(kotlinVersion = kotlin.version)
