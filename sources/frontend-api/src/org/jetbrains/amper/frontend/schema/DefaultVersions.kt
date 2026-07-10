@@ -13,8 +13,11 @@ package org.jetbrains.amper.frontend.schema
 annotation class DiscouragedDirectDefaultVersionAccess
 
 /**
- * Default versions used in settings. These values are automatically updated via `syncVersions.main.kts`.
+ * Default versions used in settings. These values are automatically updated via `do syncVersions`.
  * The /*managed_default*/ markers are used to find the version.
+ *
+ * **IMPORTANT** If you add a new version here, also add configure the `syncVersions` command in `project-commands`
+ * accordingly.
  */
 @DiscouragedDirectDefaultVersionAccess
 object DefaultVersions {
