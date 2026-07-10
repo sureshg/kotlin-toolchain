@@ -23,7 +23,7 @@ annotation class DiscouragedDirectDefaultVersionAccess
 object DefaultVersions {
 
     /*managed_default*/ val compose = "1.10.3"
-    /*managed_default*/ val composeHotReload = "1.1.1"
+    /*managed_default*/ val composeHotReload = "1.2.0-rc01"
     /*managed_default*/ val dataframe = "1.0.0-Beta5"
     /*managed_default*/ val jdk = 21
     /*managed_default*/ val junitPlatform = "6.0.3"
