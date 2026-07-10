@@ -1,0 +1,8 @@
+product: jvm/lib
+
+apply:
+  - //sources/common.module-template.yaml
+
+settings:
+  kotlin:
+    serialization: enabled

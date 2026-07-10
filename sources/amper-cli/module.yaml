@@ -26,6 +26,7 @@ dependencies:
   - //sources/amper-compose-hot-reload-recompiler-extension
   - //sources/libraries/async-processes
   - //sources/libraries/compose-resources
+  - //sources/libraries/compress
   - //sources/libraries/concurrency
   - //sources/libraries/incremental-cache
   - //sources/libraries/maven-central-configuration

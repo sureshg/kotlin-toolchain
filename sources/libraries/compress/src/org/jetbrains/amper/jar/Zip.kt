@@ -13,36 +13,13 @@ import java.util.zip.ZipEntry.STORED
 import java.util.zip.ZipOutputStream
 import kotlin.io.path.PathWalkOption
 import kotlin.io.path.div
+import kotlin.io.path.fileSize
 import kotlin.io.path.inputStream
 import kotlin.io.path.isDirectory
 import kotlin.io.path.outputStream
 import kotlin.io.path.readAttributes
 import kotlin.io.path.relativeTo
 import kotlin.io.path.walk
-
-/**
- * Compression strategy for zip entries.
- */
-@Serializable
-sealed class CompressionStrategy {
-    /** Compress all entries */
-    @Serializable
-    data object CompressAll : CompressionStrategy()
-
-    /** Store all entries uncompressed */
-    @Serializable
-    data object StoreAll : CompressionStrategy()
-
-    /** Compress most entries but store specific entries (like lib/ for Spring Boot) uncompressed */
-    @Serializable
-    data class Selective(
-        /**
-         * Patterns for entry paths that should be stored uncompressed.
-         * These should be in regex format and will be matched against the path of each entry relative to the root of the zip.
-         */
-        val uncompressedPatterns: List<String>,
-    ) : CompressionStrategy()
-}
 
 @Serializable
 data class ZipConfig(
@@ -57,7 +34,6 @@ data class ZipConfig(
      * This must be disabled in order to get reproducible archives.
      */
     val preserveFileTimestamps: Boolean = false,
-
     /**
      * Defines the compression strategy for entries in the archive.
      * Default is CompressAll for regular zip/jar files.
@@ -66,6 +42,36 @@ data class ZipConfig(
      */
     val compressionStrategy: CompressionStrategy = CompressionStrategy.CompressAll,
 )
+
+/**
+ * Compression strategy for zip entries.
+ */
+@Serializable
+sealed class CompressionStrategy {
+    /**
+     * Compress all entries.
+     */
+    @Serializable
+    data object CompressAll : CompressionStrategy()
+
+    /**
+     * Store all entries uncompressed.
+     */
+    @Serializable
+    data object StoreAll : CompressionStrategy()
+
+    /**
+     * Compress most entries but store specific entries (like lib/ for Spring Boot) uncompressed.
+     */
+    @Serializable
+    data class Selective(
+        /**
+         * Patterns for entry paths that should be stored uncompressed.
+         * These should be in regex format and will be matched against the path of each entry relative to the root of the zip.
+         */
+        val uncompressedPatterns: List<String>,
+    ) : CompressionStrategy()
+}
 
 /**
  * An input file or directory to place in a zip file.
@@ -163,9 +169,8 @@ private fun ZipOutputStream.writeZipEntry(entryName: String, file: Path, config:
         // For uncompressed entries, we need to pre-calculate CRC and size
         zipEntry.method = STORED
         // STORED method requires calculating the size and crc32
-        val attributes = file.readAttributes<BasicFileAttributes>()
-        zipEntry.size = attributes.size()
-        zipEntry.crc = file.crc32
+        zipEntry.size = file.fileSize()
+        zipEntry.crc = file.crc32()
     }
 
     if (config.preserveFileTimestamps) {
@@ -184,7 +189,7 @@ private fun ZipOutputStream.writeZipEntry(entryName: String, file: Path, config:
     closeEntry()
 }
 
-private val Path.crc32: Long get() {
+private fun Path.crc32(): Long {
     val crc = CRC32()
     inputStream().use { input ->
         val buffer = ByteArray(8192)

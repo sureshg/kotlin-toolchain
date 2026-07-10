@@ -52,6 +52,7 @@ modules:
   - sources/libraries/async-processes
   - sources/libraries/binary-compatibility-validation
   - sources/libraries/compose-resources
+  - sources/libraries/compress
   - sources/libraries/concurrency
   - sources/libraries/incremental-cache
   - sources/libraries/jetbrains-jdk-list
