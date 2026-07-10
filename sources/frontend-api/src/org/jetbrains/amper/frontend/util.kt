@@ -5,6 +5,7 @@
 package org.jetbrains.amper.frontend
 
 import org.jetbrains.amper.buildinfo.AmperBuild
+import org.jetbrains.amper.frontend.schema.ProductType
 
 fun String.doCapitalize() = replaceFirstChar { it.titlecase() }
 
@@ -16,6 +17,12 @@ val AmperModule.mavenPublishRepositories: List<RepositoriesModulePart.Repository
 
 private val AmperModule.mavenRepositories: List<RepositoriesModulePart.Repository>
     get() = parts.find<RepositoriesModulePart>()?.mavenRepositories ?: emptyList()
+
+fun getComposeHotReloadVersionForJvmApp(module: AmperModule): String {
+    require(module.type == ProductType.JVM_APP) { "Expected JVM_APP, got ${module.type}" }
+    return module.leafFragments.first { it.platform == Platform.JVM && !it.isTest }
+        .settings.compose.experimental.hotReload.version
+}
 
 /**
  * Simple class to associate enum values by some string key.

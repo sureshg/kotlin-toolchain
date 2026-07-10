@@ -14,7 +14,7 @@ internal class ProjectLayoutOptions : OptionGroup("Project layout options") {
      * The explicit project root directory provided by the user, or null if the root should be discovered.
      */
     val explicitProjectDir by option(
-        projectDirOptionName,
+        PROJECT_DIR_OPTION_NAME,
         help = "The root directory of the project. By default, this is discovered automatically by looking up the " +
                 "file tree starting from the current directory.",
     ).path(mustExist = true, canBeFile = false, canBeDir = true)
@@ -24,7 +24,7 @@ internal class ProjectLayoutOptions : OptionGroup("Project layout options") {
      * current project root.
      */
     val explicitBuildDir by option(
-        "--build-dir",
+        BUILD_DIR_OPTION_NAME,
         help = "The root directory for all build outputs. " +
                 "By default, this is the `build` directory under the project root.",
         envvar = "AMPER_BUILD_DIR",
@@ -32,6 +32,7 @@ internal class ProjectLayoutOptions : OptionGroup("Project layout options") {
         .path(mustExist = false, canBeFile = false, canBeDir = true)
 
     companion object {
-        internal const val projectDirOptionName = "--project-dir"
+        internal const val PROJECT_DIR_OPTION_NAME = "--project-dir"
+        internal const val BUILD_DIR_OPTION_NAME = "--build-dir"
     }
 }

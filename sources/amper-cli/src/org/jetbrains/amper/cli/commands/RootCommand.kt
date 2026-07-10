@@ -67,6 +67,7 @@ internal class RootCommand : SuspendingCliktCommand(name = "kotlin") {
             CheckCommand(),
             CleanCommand(),
             CleanSharedCachesCommand(),
+            ComposeHotReloadMcpServerCommand(),
             DoCustomCommand(),
             SuspendingCompletionCommand(
                 help = "Generate a tab-completion script for the Kotlin CLI for the given shell (bash, zsh, or fish)",

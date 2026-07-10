@@ -29,7 +29,7 @@ internal abstract class AmperProjectAwareCommand(name: String) : AmperSubcommand
             is GlobalCliContext -> userReadableError(
                 "No Kotlin project found in the current directory or above. " +
                         "Make sure you have a project file or a module file at the root of your project, or specify " +
-                        "`${ProjectLayoutOptions.projectDirOptionName}` explicitly to run apps from a project " +
+                        "`${ProjectLayoutOptions.PROJECT_DIR_OPTION_NAME}` explicitly to run apps from a project " +
                         "located elsewhere."
             )
         }

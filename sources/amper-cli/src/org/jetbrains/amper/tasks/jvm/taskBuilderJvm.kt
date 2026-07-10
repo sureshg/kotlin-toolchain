@@ -163,6 +163,7 @@ fun ProjectTasksBuilder.setupJvmTasks() {
                         module = module,
                         userCacheRoot = context.userCacheRoot,
                         projectRoot = context.projectRoot,
+                        buildOutputRoot = context.buildOutputRoot,
                         taskName = HotReloadTaskType.HotRun.getTaskName(module, platform),
                         runSettings = runSettings,
                         terminal = context.terminal,

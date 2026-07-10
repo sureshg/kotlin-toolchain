@@ -37,6 +37,13 @@ class ToolingArtifactsDownloader(
             ),
         )
 
+    suspend fun downloadHotReloadMcp(hotReloadVersion: String): List<Path> =
+        downloadToolingArtifacts(
+            listOf(
+                MavenCoordinates("org.jetbrains.compose.hot-reload", "hot-reload-mcp", hotReloadVersion),
+            ),
+        )
+
     suspend fun downloadDevTools(
         hotReloadVersion: String,
         composeVersion: String,

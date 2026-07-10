@@ -113,7 +113,7 @@ internal class RunCommand : AmperSubcommand(name = "run") {
         .path(mustExist = true, canBeFile = false, canBeDir = true)
         .default(Path("."))
 
-    private val composeHotReloadMode by option("--compose-hot-reload-mode", help = "Enable Compose Hot Reload " +
+    private val composeHotReloadMode by option(COMPOSE_HOT_RELOAD_OPTION_NAME, help = "Enable Compose Hot Reload " +
             "mode for Compose Multiplatform applications (for desktop applications and libraries which have jvm platform). " +
             "This mode makes the application reloadable while running, which significantly reduces the development round-trip" +
             " to see code changes in action. \n\n" +
@@ -333,6 +333,10 @@ internal class RunCommand : AmperSubcommand(name = "run") {
         private inline fun <R> runCatchingUserReadableError(block: () -> R): Result<R> =
             // Catches only `UserReadableError` into the result, other exceptions are rethrown
             runCatching(block).onFailure { e -> if (e !is UserReadableError) throw e }
+    }
+
+    companion object {
+        const val COMPOSE_HOT_RELOAD_OPTION_NAME = "--compose-hot-reload-mode"
     }
 }
 

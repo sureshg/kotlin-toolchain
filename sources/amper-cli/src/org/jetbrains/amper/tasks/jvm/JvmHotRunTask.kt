@@ -6,6 +6,7 @@ package org.jetbrains.amper.tasks.jvm
 
 import com.github.ajalt.mordant.terminal.Terminal
 import org.jetbrains.amper.ProcessRunner
+import org.jetbrains.amper.cli.context.AmperBuildOutputRoot
 import org.jetbrains.amper.cli.context.AmperProjectRoot
 import org.jetbrains.amper.cli.context.AmperProjectTempRoot
 import org.jetbrains.amper.cli.userReadableError
@@ -29,6 +30,8 @@ import org.jetbrains.amper.tasks.TaskResult
 import org.jetbrains.amper.util.BuildType
 import java.io.File
 import java.nio.file.Path
+import kotlin.io.path.absolutePathString
+import kotlin.io.path.div
 import kotlin.io.path.name
 import kotlin.io.path.pathString
 
@@ -43,6 +46,7 @@ class JvmHotRunTask(
     incrementalCache: IncrementalCache,
     jdkProvider: JdkProvider,
     processRunner: ProcessRunner,
+    private val buildOutputRoot: AmperBuildOutputRoot,
     private val hotReloadSettings: ComposeHotReloadSettings,
     private val toolingArtifactsDownloader: ToolingArtifactsDownloader = ToolingArtifactsDownloader(
         userCacheRoot,
@@ -87,19 +91,18 @@ class JvmHotRunTask(
 
         val orchestrationPort = hotReloadSettings.orchestrationPort.await()
 
-        val amperJvmArgs = buildList {
-            add("-ea")
-//            add("-agentlib:jdwp=transport=dt_socket,server=n,address=localhost:5007,suspend=y")
-            add("-XX:+AllowEnhancedClassRedefinition")
-            add("-javaagent:${agent.pathString}")
-            add("-Dcompose.reload.devToolsClasspath=${devToolsClasspath.joinToString(File.pathSeparator)}")
-            add("-Dcompose.reload.devToolsEnabled=true")
-            add("-Dcompose.reload.devToolsTransparencyEnabled=true")
-            add("-Dcompose.reload.dirtyResolveDepthLimit=5")
-            add("-Dcompose.reload.virtualMethodResolveEnabled=true")
-            add("-Dcompose.reload.orchestration.port=$orchestrationPort")
-            // TODO: specify a path for a pid file here as well
-        }
+        val amperJvmArgs = [
+            "-ea",
+            "-XX:+AllowEnhancedClassRedefinition",
+            "-javaagent:${agent.pathString}",
+            "-Dcompose.reload.devToolsClasspath=${devToolsClasspath.joinToString(File.pathSeparator)}",
+            "-Dcompose.reload.devToolsEnabled=true",
+            "-Dcompose.reload.devToolsTransparencyEnabled=true",
+            "-Dcompose.reload.dirtyResolveDepthLimit=5",
+            "-Dcompose.reload.virtualMethodResolveEnabled=true",
+            "-Dcompose.reload.orchestration.port=$orchestrationPort",
+            "-Dcompose.reload.pidFile=${pidFilePath(buildOutputRoot).absolutePathString()}",
+        ]
 
         return amperJvmArgs + runSettings.userJvmArgs
     }
@@ -135,6 +138,12 @@ class JvmHotRunTask(
         ).orElse { errorMessage ->
             userReadableError("Compose Hot Reload requires a JetBrains Runtime (JBR) to run, but the Kotlin Toolchain could not " +
                     "provision one that matches the configured JDK version: $errorMessage")
+        }
+    }
+
+    companion object {
+        fun pidFilePath(buildOutputRoot: AmperBuildOutputRoot): Path {
+            return buildOutputRoot.path / "hot-reload-app.pid"
         }
     }
 }
