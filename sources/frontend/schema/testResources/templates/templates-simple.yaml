@@ -11,5 +11,4 @@ dependencies:
 settings:
   kotlin:
     apiVersion: 2.0
-    languageFeatures:
-      - contextReceivers
+    freeCompilerArgs: [ -XcontextReceivers ]

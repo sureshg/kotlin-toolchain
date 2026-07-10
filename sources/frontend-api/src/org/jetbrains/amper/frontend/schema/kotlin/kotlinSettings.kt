@@ -9,6 +9,7 @@ import org.jetbrains.amper.frontend.EnumMap
 import org.jetbrains.amper.frontend.Platform
 import org.jetbrains.amper.frontend.SchemaEnum
 import org.jetbrains.amper.frontend.api.CanBeReferenced
+import org.jetbrains.amper.frontend.api.DeprecatedSchema
 import org.jetbrains.amper.frontend.api.EnumOrderSensitive
 import org.jetbrains.amper.frontend.api.EnumValueFilter
 import org.jetbrains.amper.frontend.api.Misnomers
@@ -127,8 +128,9 @@ class KotlinSettings : SchemaNode() {
     @SchemaDoc("Enables the [progressive mode for the compiler](https://kotlinlang.org/docs/compiler-reference.html#progressive)")
     val progressiveMode by value(false)
 
-    // TODO Add doc
-    // @SchemaDoc("")
+    @DeprecatedSchema("This kind of compiler arguments is advised against by the Kotlin team, so the convenience of " +
+            "this property will be removed in a future version. " +
+            "Use `freeCompilerArgs: [-XXLanguage:+feature]` instead if you really must.", isError = true)
     val languageFeatures by nullableValue<List<TraceableString>>()
     
     @SchemaDoc("Usages of API that [requires opt-in](https://kotlinlang.org/docs/opt-in-requirements.html) with a requirement annotation with the given fully qualified name")

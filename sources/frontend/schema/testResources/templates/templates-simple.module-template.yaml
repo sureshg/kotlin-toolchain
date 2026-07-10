@@ -5,5 +5,5 @@ settings:
   kotlin:
     apiVersion: 2.0
     languageVersion: 2.0
-    languageFeatures:
-      - dataObjects
+    freeCompilerArgs:
+      - -XXLanguage:+dataObjects
