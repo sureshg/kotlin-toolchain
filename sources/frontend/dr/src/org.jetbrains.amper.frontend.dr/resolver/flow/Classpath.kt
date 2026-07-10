@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.frontend.dr.resolver.flow
@@ -22,10 +22,11 @@ import org.jetbrains.amper.frontend.dr.resolver.DependenciesFlowType
 import org.jetbrains.amper.frontend.dr.resolver.DependencyNodeHolderWithNotationAndContext
 import org.jetbrains.amper.frontend.dr.resolver.ModuleDependencyNodeWithModuleAndContext
 import org.jetbrains.amper.frontend.fragmentsTargeting
+import org.jetbrains.amper.frontend.fragmentsToDependOnFromOtherModuleFragmentWith
 
 /**
  * Performs the initial resolution of module classpath dependencies.
- * The resulting graph contains a node for every module dependency matching the resoution scope
+ * The resulting graph contains a node for every module dependency matching the resolution scope
  * as well as direct maven dependencies of that module.
  *
  * It doesn't download anything.
@@ -91,12 +92,16 @@ internal class Classpath(
 
         val resolutionPlatforms = moduleContext.settings.platforms
 
-        // If a module test graph is resolved, then all module test fragments are taken into account
-        // as well as all main fragments from other modules referenced by the module test fragments.
-        val filterTestFragments = directDependencies && flowType.isTest
-
         val platforms = resolutionPlatforms.map { it.toPlatform() }.toSet()
-        val allMatchingFragments = this.fragmentsTargeting(platforms, filterTestFragments)
+        val allMatchingFragments = if (directDependencies) {
+            // If we are collecting direct dependencies then we collect strictly fragments targeting the resolution
+            // parameters.
+            this.fragmentsTargeting(platforms, isTest = flowType.isTest)
+        } else {
+            // If we are collecting dependencies transitively, we have different contract on how those are picked
+            // which matches the external Maven dependency resolution rules.
+            this.fragmentsToDependOnFromOtherModuleFragmentWith(platforms)
+        }
 
         if (initialFragment != null && initialFragment.module.userReadableName != this.userReadableName)
             error ("Given initialFragment doesn't belong to given module")

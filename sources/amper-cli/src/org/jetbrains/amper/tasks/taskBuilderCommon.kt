@@ -102,8 +102,7 @@ fun ProjectTasksBuilder.setupCommonTasks() {
                         // todo (AB) : [AMPER-721] Check that native-only and mixed metadata-compilation
                         //  works with this compile dependencies classpath. Perhaps, all true native compile dependencies
                         //  should be used instead (including all transitive dependencies).
-                        it.getSymbolsVisibilityFragmentsDependencies(moduleDependenciesMap[it.module]!!,
-                            it.isTest, it.platforms)
+                        it.getSymbolsVisibilityFragmentsDependencies(moduleDependenciesMap[it.module]!!)
                     }
                     addAll(allFragmentDependencies.map{ CommonFragmentTaskType.CompileMetadata.getTaskName(it) })
 

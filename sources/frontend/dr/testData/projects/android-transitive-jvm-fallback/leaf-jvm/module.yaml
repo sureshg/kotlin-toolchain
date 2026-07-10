@@ -1,0 +1,6 @@
+product:
+  type: kmp/lib
+  platforms: [ jvm ]
+
+dependencies:
+  - org.projectlombok:lombok:1.18.32: exported

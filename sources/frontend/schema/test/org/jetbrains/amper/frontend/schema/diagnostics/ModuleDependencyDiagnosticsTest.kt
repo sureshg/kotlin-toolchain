@@ -15,7 +15,11 @@ class ModuleDependencyDiagnosticsTest : FrontendTestCaseBase(Path("testResources
     fun `product with unsupported type`() {
         diagnosticsTest(
             "needed-platforms/module",
-            additionalFiles = listOf("needed-platforms/sub-module/module.yaml"),
+            additionalFiles = listOf(
+                "needed-platforms/sub-module/module.yaml",
+                "needed-platforms/jvm-sub-module/module.yaml",
+                "needed-platforms/jvm-wasm-sub-module/module.yaml",
+            ),
         )
     }
 

@@ -1,0 +1,9 @@
+product:
+  type: kmp/lib
+  platforms: [ jvm, android ]
+
+dependencies@android:
+  - ../leaf-jvm: exported
+
+dependencies@jvm:
+  - org.objenesis:objenesis-test:3.4: exported

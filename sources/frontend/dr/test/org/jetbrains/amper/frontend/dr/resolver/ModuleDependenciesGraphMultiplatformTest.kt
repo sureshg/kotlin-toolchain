@@ -186,6 +186,20 @@ class ModuleDependenciesGraphMultiplatformTest : BaseModuleDrTest() {
         assertFiles(testInfo, sharedAndroidFragmentDeps)
     }
 
+    @Test
+    fun `test android transitive module dependencies fallback to jvm`(testInfo: TestInfo) = runModuleDependenciesTest {
+        val aom = getTestProjectModel("android-transitive-jvm-fallback", testDataRoot)
+
+        val androidAppDeps = doTestByFile(
+            testInfo,
+            aom,
+            ideSyncTestResolutionInput,
+            module = "android-app",
+            filter = ideSyncModuleResolutionFilter.copy(scope = ResolutionScope.COMPILE),
+        )
+        assertFiles(testInfo, androidAppDeps)
+    }
+
     /**
      * Publishing of a KMP library involves publishing various variants of this library for different platforms.
      * DR provides API [MavenDependencyNode.getMavenCoordinatesForPublishing]

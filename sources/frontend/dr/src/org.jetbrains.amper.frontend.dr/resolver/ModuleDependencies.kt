@@ -46,7 +46,7 @@ import org.jetbrains.amper.frontend.allFragmentDependencies
 import org.jetbrains.amper.frontend.dr.resolver.ModuleDependencies.Companion.resolveProjectDependencies
 import org.jetbrains.amper.frontend.dr.resolver.flow.Classpath
 import org.jetbrains.amper.frontend.dr.resolver.flow.toResolutionPlatform
-import org.jetbrains.amper.frontend.fragmentsTargeting
+import org.jetbrains.amper.frontend.fragmentsToDependOnFromOtherModuleFragmentWith
 import org.jetbrains.amper.frontend.isDescendantOf
 import org.jetbrains.amper.frontend.schema.Repository.Companion.SpecialMavenLocalUrl
 import org.jetbrains.amper.incrementalcache.IncrementalCache
@@ -710,8 +710,6 @@ class ModuleDependencies private constructor(
          */
         fun Fragment.getSymbolsVisibilityFragmentsDependencies(
             moduleDependencies: ModuleDependencies,
-            isTest: Boolean,
-            platforms: Set<Platform>,
         ): Sequence<Fragment> {
             if (module != moduleDependencies.module)
                 error("Given fragment $name belongs to module ${module.userReadableName}, " +
@@ -719,7 +717,7 @@ class ModuleDependencies private constructor(
 
             val otherModules = moduleDependencies.getSymbolsVisibilityDependentAmperModules(isTest, platforms).toSet()
             return allFragmentDependencies() +
-                    otherModules.flatMap { module -> module.fragmentsTargeting(platforms, isTest = isTest) }
+                    otherModules.flatMap { module -> module.fragmentsToDependOnFromOtherModuleFragmentWith(platforms) }
         }
 
         /**

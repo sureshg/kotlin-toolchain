@@ -30,7 +30,7 @@ data class AmperModuleFileSource(val buildFile: Path) {
 sealed interface ModulePart<SelfT>
 
 data class RepositoriesModulePart(
-    val mavenRepositories: List<Repository>
+    val mavenRepositories: List<Repository>,
 ) : ModulePart<RepositoriesModulePart> {
     data class Repository(
         val id: String,
@@ -123,7 +123,7 @@ interface AmperModule {
 
     @UsedInIdePlugin
     val usedTemplates: List<VirtualFile>
-    
+
     val leafFragments get() = fragments.filterIsInstance<LeafFragment>()
 
     val leafPlatforms: Set<Platform> get() = leafFragments.map { it.platform }.toSet()
@@ -153,12 +153,46 @@ interface AmperModule {
 /**
  * Returns all fragments in this module that target at least the given set of [platforms].
  * If [isTest] is false, only production fragments are returned, otherwise - only test fragments are returned.
+ *
+ * When collecting dependencies, note that there is also [fragmentsToDependOnFromOtherModuleFragmentWith] with slightly
+ * different semantics.
  */
-fun AmperModule.fragmentsTargeting(platforms: Set<Platform>, isTest: Boolean = false): List<Fragment> =
-    fragments.filter { isTest == it.isTest && it.platforms.containsAll(platforms) }
+fun AmperModule.fragmentsTargeting(platforms: Set<Platform>, isTest: Boolean = false): List<Fragment> {
+    return fragments.filter { isTest == it.isTest && it.platforms.containsAll(platforms) }
+}
 
+/**
+ * Returns all fragments in this module that target at least the given [platform].
+ * If [isTest] is false, only production fragments are returned, otherwise - only test fragments are returned.
+ *
+ * When collecting dependencies, note that there is also [fragmentsToDependOnFromOtherModuleFragmentWith] with slightly
+ * different semantics.
+ */
 fun AmperModule.fragmentsTargeting(platform: Platform, isTest: Boolean = false): List<Fragment> =
     fragmentsTargeting(setOf(platform), isTest)
+
+/**
+ * Returns all fragments in this module that should be consumed when __depending__ on it from a fragment 
+ * from a __different module__ with the given [platforms].
+ *
+ * This might look similar to [fragmentsTargeting] but has few differences:
+ * - Only non-test fragments are resolved as we don't allow depending on test fragments in any way
+ *   (for test fixtures see AMPER-5066).
+ * - It has a fallback for Android scenario to JVM, when [this module][this] doesn't have support for it.
+ *   This aligns with how the dependency resolution works for Maven dependencies.
+ */
+fun AmperModule.fragmentsToDependOnFromOtherModuleFragmentWith(platforms: Set<Platform>): List<Fragment> {
+    val alignedPlatforms = if (
+        Platform.ANDROID in platforms && Platform.ANDROID !in leafPlatforms && Platform.JVM in leafPlatforms
+    ) {
+        // If we want to find fragments targeting Android, but the module doesn't support it, then (and only then) we can fall back to JVM
+        platforms - Platform.ANDROID + Platform.JVM
+    } else {
+        platforms
+    }
+
+    return fragments.filter { !it.isTest && it.platforms.containsAll(alignedPlatforms) }
+}
 
 /**
  * Returns the publishing settings for this module (which are platform-agnostic).

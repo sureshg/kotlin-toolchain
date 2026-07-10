@@ -16,6 +16,7 @@ import org.jetbrains.amper.frontend.Platform
 import org.jetbrains.amper.frontend.schema.ProductType
 import org.jetbrains.amper.system.info.Arch
 import org.jetbrains.amper.tasks.CommonTaskType
+import org.jetbrains.amper.tasks.ModuleSequenceCtx
 import org.jetbrains.amper.tasks.ProjectTasksBuilder
 import org.jetbrains.amper.tasks.ProjectTasksBuilder.Companion.getTaskOutputPath
 import org.jetbrains.amper.tasks.TaskNameFactory
@@ -210,7 +211,15 @@ fun ProjectTasksBuilder.setupAndroidTasks() {
                         userCacheRoot = context.userCacheRoot,
                         incrementalCache = context.incrementalCache,
                     ).forEach { dependsOn ->
-                        add(CommonTaskType.Compile.getTaskName(dependsOn, platform, isTest = false, buildType))
+                        val isAndroidDependency = platform in dependsOn.leafPlatforms
+                        if (isAndroidDependency) {
+                            add(CommonTaskType.Compile.getTaskName(dependsOn, platform, isTest = false, buildType))
+                        } else {
+                            // Fallback to depend on classes produced by the JVM fragment of the dependency
+                            // to allow supporting Android -> JVM dependencies (see AMPER-5502).
+                            checkDependencySupportsJvm(dependsOn)
+                            add(CommonTaskType.Compile.getTaskName(dependsOn, Platform.JVM, isTest = false))
+                        }
                     }
                 }
             )
@@ -276,12 +285,17 @@ fun ProjectTasksBuilder.setupAndroidTasks() {
                         userCacheRoot = context.userCacheRoot,
                         incrementalCache = context.incrementalCache,
                     ).forEach { dependsOn ->
-                        val archiveTask = if (!isTest) {
+                        val isAndroidDependency = platform in dependsOn.leafPlatforms
+                        if (!isAndroidDependency) checkDependencySupportsJvm(dependsOn)
+
+                        val archiveTask = if (!isTest && isAndroidDependency) {
                             // Production always depends on AAR for Android module dependency
                             AndroidTaskType.Aar.getTaskName(dependsOn, platform, isTest = false, buildType)
                         } else {
-                            // Test always depends on a JAR
-                            CommonTaskType.Jar.getTaskName(dependsOn, platform, isTest = false, buildType)
+                            // Depend on JAR in case of test dependency or if we depend on a JVM module
+                            val jarTaskPlatform = if (isAndroidDependency) platform else Platform.JVM
+                            val jarBuildType = if (isAndroidDependency) buildType else null
+                            CommonTaskType.Jar.getTaskName(dependsOn, jarTaskPlatform, isTest = false, jarBuildType)
                         }
                         add(archiveTask)
                     }
@@ -431,7 +445,6 @@ private fun TaskGraphBuilder.setupDownloadBuildToolsTask(
     )
 }
 
-
 private fun TaskGraphBuilder.setupDownloadPlatformToolsTask(
     module: AmperModule,
     androidSdkPath: Path,
@@ -469,7 +482,6 @@ private fun TaskGraphBuilder.setupDownloadSystemImageTask(
     )
 }
 
-
 private fun TaskGraphBuilder.setupAndroidCommandlineTools(
     module: AmperModule,
     androidSdkPath: Path,
@@ -489,6 +501,14 @@ private fun getAndroidFragment(module: AmperModule, isTest: Boolean): LeafFragme
     .fragments
     .filterIsInstance<LeafFragment>()
     .filter { it.isTest == isTest }.firstOrNull { Platform.ANDROID in it.platforms }
+
+private fun ModuleSequenceCtx.checkDependencySupportsJvm(dependsOn: AmperModule) {
+    check(Platform.JVM in dependsOn.leafPlatforms) {
+        "Module ${dependsOn.userReadableName} has neither Android nor JVM as supported platforms " +
+                "but mentioned as a dependency of ${module.userReadableName}. " +
+                "Should've been forbidden on the frontend level."
+    }
+}
 
 private enum class AndroidTaskType(
     override val internalName: String,

@@ -29,9 +29,10 @@ object ModuleDependencyDoesntHaveNeededPlatformsFactory : AomSingleModuleDiagnos
             val localDependencies = fragment.externalDependencies.filterIsInstance<LocalModuleDependency>()
             for (localDependency in localDependencies) {
                 val localDependencyPlatforms = localDependency.module.leafPlatforms
-                if (fragmentPlatforms.any { it !in localDependencyPlatforms } && reportedPlaces.add(localDependency.trace)) {
+                val unsupportedPlatforms = findUnsupportedPlatforms(fragmentPlatforms, localDependencyPlatforms)
+                if (unsupportedPlatforms.isNotEmpty() && reportedPlaces.add(localDependency.trace)) {
                     problemReporter.reportMessage(
-                        ModuleDependencyDoesntHaveNeededPlatforms(localDependency, fragment)
+                        ModuleDependencyDoesntHaveNeededPlatforms(localDependency, fragment, unsupportedPlatforms)
                     )
                 }
             }
@@ -39,10 +40,23 @@ object ModuleDependencyDoesntHaveNeededPlatformsFactory : AomSingleModuleDiagnos
     }
 }
 
+private fun findUnsupportedPlatforms(
+    dependingPlatforms: Set<Platform>,
+    dependencyPlatforms: Set<Platform>,
+): Set<Platform> = dependingPlatforms.filterTo(mutableSetOf()) { platform ->
+    platform !in dependencyPlatforms && !isAllowedJvmDependencyForAndroid(platform, dependencyPlatforms)
+}
+
+private fun isAllowedJvmDependencyForAndroid(
+    dependingPlatform: Platform,
+    dependencyPlatforms: Set<Platform>,
+): Boolean = dependingPlatform == Platform.ANDROID && Platform.JVM in dependencyPlatforms
+
 class ModuleDependencyDoesntHaveNeededPlatforms(
     val dependency: LocalModuleDependency,
     @field:UsedInIdePlugin
     val dependingFragment: Fragment,
+    val unsupportedPlatforms: Set<Platform>,
 ) : PsiBuildProblem(Level.Error, BuildProblemType.InconsistentConfiguration) {
 
     override val element: PsiElement
@@ -56,6 +70,4 @@ class ModuleDependencyDoesntHaveNeededPlatforms(
             dependency.module.userReadableName,
             unsupportedPlatforms.map { "`${it.pretty}`" },
         )
-
-    val unsupportedPlatforms: Set<Platform> = dependingFragment.platforms - dependency.module.leafPlatforms
 }

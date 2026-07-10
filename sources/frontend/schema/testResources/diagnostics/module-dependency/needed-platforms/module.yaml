@@ -11,5 +11,9 @@ dependencies:
 dependencies@jvm:
   - <![Error] Module `sub-module` does not support compiling to platforms [`jvm`]!>./sub-module<!>
 
+dependencies@android:
+  - ./jvm-sub-module
+  - ./jvm-wasm-sub-module
+
 dependencies@js:
   - ./sub-module
