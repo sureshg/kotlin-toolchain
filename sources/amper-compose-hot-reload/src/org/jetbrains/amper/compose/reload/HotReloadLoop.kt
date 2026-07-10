@@ -20,10 +20,12 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.jetbrains.amper.frontend.AmperModule
 import org.jetbrains.amper.frontend.Model
+import org.jetbrains.amper.frontend.getComposeHotReloadVersionForJvmApp
 import org.jetbrains.amper.fswatching.watchPaths
 import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.compose.reload.DelicateHotReloadApi
@@ -64,7 +66,7 @@ class HotReloadLoop<Context : HotReloadProjectContext> private constructor(
     /** Incremental info to pass to the hot reload agent to reload the changed classes */
     typealias ClasspathChanges = List<IncrementalCache.Change>
 
-    enum class LoopResult {
+    private enum class LoopResult {
         /** App exited - hot reload should exit as well */
         Exit,
         /** Dev-tools requested the app restart explicitly. Must restart the whole [HotReloadLoop]. */
@@ -133,6 +135,7 @@ class HotReloadLoop<Context : HotReloadProjectContext> private constructor(
         }
     }
 
+    context(scope: CoroutineScope)
     private suspend fun modelLoadingService() {
         /*
          First initial model load;
@@ -144,6 +147,8 @@ class HotReloadLoop<Context : HotReloadProjectContext> private constructor(
         logger.debug("Initial reading model")
         stateFlow.value = InternalState(delegate.readModel().getOrThrow())
 
+        val lastValidStateFlow = validStateFlow.stateIn(scope)
+
         // Subscribe to rebuild events
         // NOTE: We don't use `collectLatest` here as model reloads should be fast.
         rebuildEventsFlow.collect { rebuild ->
@@ -153,7 +158,9 @@ class HotReloadLoop<Context : HotReloadProjectContext> private constructor(
                     ?.takeUnless { rebuild.what == RebuildEvent.What.Everything }
                     ?: HotReloadLogWriter.captureLogsForHotReload {
                         logger.debug("Reloading model")
-                        delegate.readModel()
+                        readModelAndCheckReloadability(
+                            oldValidState = lastValidStateFlow.value,
+                        )
                     }.getOrElse { e ->
                         orchestration send createBuildTaskResultFailure(e)
                         old?.recompileRequestId?.let {
@@ -293,6 +300,26 @@ class HotReloadLoop<Context : HotReloadProjectContext> private constructor(
         orchestration send OrchestrationMessage.BuildFinished()
         logger.debug("Rebuild finished")
         return changes
+    }
+
+    private suspend fun readModelAndCheckReloadability(
+        oldValidState: State<*>,
+    ): Result<State<Context>> {
+        val result = delegate.readModel()
+        if (result.isFailure) return result
+
+        val oldVersion = getComposeHotReloadVersionForJvmApp(oldValidState.hotApp)
+        val currentVersion = getComposeHotReloadVersionForJvmApp(result.getOrThrow().hotApp)
+
+        // We can't reload the hot-reload agent itself without restarting.
+        return if (oldVersion != currentVersion) {
+            val e = Exception(
+                "The hot reload version is changed from $oldVersion -> $currentVersion. " +
+                        "This is not possible to reload live. " +
+                        "Please try restarting the app or revert the changes to continue this session."
+            )
+            Result.failure(e)
+        } else result
     }
 
     /**
