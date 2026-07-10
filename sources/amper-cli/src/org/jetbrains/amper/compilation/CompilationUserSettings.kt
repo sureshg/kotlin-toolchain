@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
 import org.jetbrains.amper.frontend.Fragment
 import org.jetbrains.amper.frontend.LeafFragment
 import org.jetbrains.amper.frontend.api.TraceableString
-import org.jetbrains.amper.frontend.schema.KotlinVersion
+import org.jetbrains.amper.frontend.schema.kotlin.KotlinVersion
 
 @Serializable // makes it convenient to include in the input properties of the incremental cache state
 internal data class CompilationUserSettings(

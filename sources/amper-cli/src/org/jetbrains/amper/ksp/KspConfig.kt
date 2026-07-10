@@ -1,12 +1,12 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.ksp
 
 import org.jetbrains.amper.compilation.CompilationUserSettings
 import org.jetbrains.amper.compilation.JavaVersion
-import org.jetbrains.amper.frontend.schema.KotlinCompilerVersionPattern
+import org.jetbrains.amper.frontend.schema.kotlin.KotlinCompilerVersionPattern
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.pathString

@@ -8,8 +8,8 @@ import org.apache.maven.model.ConfigurationContainer
 import org.apache.maven.model.Plugin
 import org.apache.maven.project.MavenProject
 import org.codehaus.plexus.util.xml.Xpp3Dom
-import org.jetbrains.amper.frontend.schema.AllOpenPreset
-import org.jetbrains.amper.frontend.schema.NoArgPreset
+import org.jetbrains.amper.frontend.schema.kotlin.plugins.AllOpenPreset
+import org.jetbrains.amper.frontend.schema.kotlin.plugins.NoArgPreset
 import org.jetbrains.amper.frontend.tree.ObjectBuilderContext
 import org.jetbrains.amper.frontend.tree.add
 import org.jetbrains.amper.frontend.tree.invoke

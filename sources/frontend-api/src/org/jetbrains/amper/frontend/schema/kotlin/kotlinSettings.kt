@@ -2,14 +2,13 @@
  * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
-package org.jetbrains.amper.frontend.schema
+package org.jetbrains.amper.frontend.schema.kotlin
 
 import org.apache.maven.artifact.versioning.ComparableVersion
 import org.jetbrains.amper.frontend.EnumMap
 import org.jetbrains.amper.frontend.Platform
 import org.jetbrains.amper.frontend.SchemaEnum
 import org.jetbrains.amper.frontend.api.CanBeReferenced
-import org.jetbrains.amper.frontend.api.DefaultTrace
 import org.jetbrains.amper.frontend.api.EnumOrderSensitive
 import org.jetbrains.amper.frontend.api.EnumValueFilter
 import org.jetbrains.amper.frontend.api.Misnomers
@@ -17,8 +16,16 @@ import org.jetbrains.amper.frontend.api.PlatformAgnostic
 import org.jetbrains.amper.frontend.api.PlatformSpecific
 import org.jetbrains.amper.frontend.api.SchemaDoc
 import org.jetbrains.amper.frontend.api.SchemaNode
-import org.jetbrains.amper.frontend.api.Shorthand
 import org.jetbrains.amper.frontend.api.TraceableString
+import org.jetbrains.amper.frontend.schema.DefaultVersions
+import org.jetbrains.amper.frontend.schema.KspSettings
+import org.jetbrains.amper.frontend.schema.kotlin.plugins.AllOpenSettings
+import org.jetbrains.amper.frontend.schema.kotlin.plugins.JsPlainObjectsSettings
+import org.jetbrains.amper.frontend.schema.kotlin.plugins.KotlinxRpcSettings
+import org.jetbrains.amper.frontend.schema.kotlin.plugins.NoArgSettings
+import org.jetbrains.amper.frontend.schema.kotlin.plugins.PowerAssertSettings
+import org.jetbrains.amper.frontend.schema.kotlin.plugins.SerializationSettings
+import org.jetbrains.amper.frontend.schema.kotlin.plugins.ThirdPartyCompilerPlugin
 import org.jetbrains.amper.frontend.tree.ReferenceNode
 import org.jetbrains.amper.frontend.tree.RefinedTreeNode
 import org.jetbrains.amper.frontend.tree.StringNode
@@ -47,104 +54,6 @@ enum class KotlinVersion(override val schemaValue: String, override val outdated
 
     override fun toString(): String = schemaValue
     companion object Index : EnumMap<KotlinVersion, String>(KotlinVersion::values, KotlinVersion::schemaValue)
-}
-
-@SchemaDoc("Preset options for the all-open compiler plugin")
-enum class AllOpenPreset(override val schemaValue: String, override val outdated: Boolean = false) : SchemaEnum {
-    @SchemaDoc("Automatically adds annotations used by the Spring framework")
-    Spring("spring"),
-    
-    @SchemaDoc("Automatically adds annotations used by the Micronaut framework")
-    Micronaut("micronaut"),
-    
-    @SchemaDoc("Automatically adds annotations used by the Quarkus framework")
-    Quarkus("quarkus");
-    
-    companion object Index : EnumMap<AllOpenPreset, String>(AllOpenPreset::values, AllOpenPreset::schemaValue)
-}
-
-@SchemaDoc("Preset options for the no-arg compiler plugin")
-enum class NoArgPreset(override val schemaValue: String, override val outdated: Boolean = false) : SchemaEnum {
-    @SchemaDoc("Automatically adds no-arg constructors to JPA entity classes")
-    Jpa("jpa");
-    
-    companion object Index : EnumMap<NoArgPreset, String>(NoArgPreset::values, NoArgPreset::schemaValue)
-}
-
-class NoArgSettings : SchemaNode() {
-    @Shorthand
-    @SchemaDoc("Enables the Kotlin no-arg compiler plugin")
-    val enabled by value(false)
-
-    @SchemaDoc("List of annotations that trigger no-arg constructor generation. Classes annotated with these annotations will have a no-arg constructor generated.")
-    val annotations by nullableValue<List<TraceableString>>()
-
-    @SchemaDoc("Whether to call initializers in the synthesized constructor. By default, initializers are not called.")
-    val invokeInitializers by value(false)
-    
-    @SchemaDoc("Predefined sets of annotations. Currently only 'jpa' preset is supported, which automatically includes JPA entity annotations.")
-    val presets by nullableValue<List<NoArgPreset>>()
-}
-
-class AllOpenSettings : SchemaNode() {
-    @Shorthand
-    @SchemaDoc("Enables the Kotlin all-open compiler plugin")
-    val enabled by value(false)
-
-    @SchemaDoc("List of annotations that trigger open class/method generation. Classes/methods annotated with these annotations will be automatically made open.")
-    val annotations by nullableValue<List<TraceableString>>()
-    
-    @SchemaDoc("Predefined sets of annotations for common frameworks. Each preset automatically includes annotations specific to that framework.")
-    val presets by nullableValue<List<AllOpenPreset>>()
-}
-
-class JsPlainObjectsSettings : SchemaNode() {
-    @Shorthand
-    @SchemaDoc("Enables the Kotlin JS plain objects compiler plugin")
-    val enabled by value(false)
-}
-
-class PowerAssertSettings : SchemaNode() {
-    @Shorthand
-    @SchemaDoc("Enables the Kotlin power-assert compiler plugin")
-    val enabled by value(false)
-
-    @SchemaDoc("A list of fully-qualified function names that the Power-assert plugin should transform. " +
-            "If not specified, only kotlin.assert() calls will be transformed by default.")
-    val functions by value(listOf(TraceableString("kotlin.assert", DefaultTrace)))
-}
-
-class KotlinxRpcSettings : SchemaNode() {
-    @Shorthand
-    @SchemaDoc("Enables the kotlinx.rpc compiler plugin")
-    val enabled by value(false)
-
-    @SchemaDoc("Applies the kotlinx.rpc BOM to enforce dependency version alignment")
-    val applyBom by value(true)
-
-    @SchemaDoc("The version of kotlinx.rpc to use")
-    val version by value(DefaultVersions.kotlinxRpc)
-
-    @SchemaDoc("Controls `@Rpc` [annotation type-safety](https://github.com/Kotlin/kotlinx-rpc/pull/240) " +
-            "compile-time checkers.\n" +
-            "CAUTION: Disabling is considered unsafe. This option is only needed to prevent cases where type-safety " +
-            "analysis fails and valid code can't be compiled.")
-    val annotationTypeSafetyEnabled by value(true)
-}
-
-class ThirdPartyCompilerPlugin : SchemaNode() {
-    @SchemaDoc("The ID of this compiler plugin, used to pass options. " +
-            "It is defined by the `pluginId` property in the `CommandLineProcessor` implementation of the plugin. " +
-            "If the plugin is also implemented as a Gradle plugin, its ID can also be found in " +
-            "`getCompilerPluginId()` in the corresponding `KotlinCompilerPluginSupportPlugin` subclass.")
-    val id by value<String>()
-
-    @SchemaDoc("The compiler plugin dependency, in the form of `groupId:artifactId:version` Maven coordinates, or " +
-            "a catalog reference.")
-    val dependency by value<UnscopedExternalDependency>() // only external maven dependencies are supported, not modules
-
-    @SchemaDoc("The options to pass to this compiler plugin, as a key-value map.")
-    val options by value<Map<TraceableString, TraceableString>>(emptyMap())
 }
 
 class KotlinSettings : SchemaNode() {

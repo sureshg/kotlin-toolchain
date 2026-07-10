@@ -7,12 +7,12 @@ package org.jetbrains.amper.frontend.kotlin
 import org.jetbrains.amper.core.UsedInIdePlugin
 import org.jetbrains.amper.frontend.MavenCoordinates
 import org.jetbrains.amper.frontend.kotlin.CompilerPluginConfig.*
-import org.jetbrains.amper.frontend.schema.AllOpenPreset
-import org.jetbrains.amper.frontend.schema.NoArgPreset
 import org.jetbrains.amper.frontend.schema.Settings
 import org.jetbrains.amper.frontend.schema.UnscopedCatalogDependency
 import org.jetbrains.amper.frontend.schema.UnscopedExternalDependency
 import org.jetbrains.amper.frontend.schema.UnscopedExternalMavenDependency
+import org.jetbrains.amper.frontend.schema.kotlin.plugins.AllOpenPreset
+import org.jetbrains.amper.frontend.schema.kotlin.plugins.NoArgPreset
 import org.jetbrains.amper.frontend.schema.toMavenCoordinates
 
 /**

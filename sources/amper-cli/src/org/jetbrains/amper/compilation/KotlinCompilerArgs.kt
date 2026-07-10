@@ -14,7 +14,7 @@ import org.jetbrains.amper.frontend.FragmentDependencyType
 import org.jetbrains.amper.frontend.Platform
 import org.jetbrains.amper.frontend.dr.resolver.flow.toPlatform
 import org.jetbrains.amper.frontend.isDescendantOf
-import org.jetbrains.amper.frontend.schema.KotlinVersion
+import org.jetbrains.amper.frontend.schema.kotlin.KotlinVersion
 import org.jetbrains.amper.tasks.SourceRoot
 import org.jetbrains.amper.tasks.ios.IosConventions
 import org.jetbrains.amper.tasks.wasm.WasmTarget

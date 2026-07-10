@@ -2,8 +2,8 @@ Fragments:
   common
     External dependencies:
       MavenDependency(coordinates=org.jetbrains.kotlin:kotlin-stdlib:2.3.21, trace=DefaultTrace, compile=true, runtime=true, exported=false)
-      MavenDependency(coordinates=org.jetbrains.kotlinx:kotlinx-serialization-core:1.5.1, trace=TransformedValueTrace(description=because Kotlinx Serialization is enabled, sourceValue=SchemaValue(property = org.jetbrains.amper.frontend.schema.SerializationSettings.enabled, value = true), definitionTrace=DefaultTrace, precedingValue=null), compile=true, runtime=true, exported=false)
-      MavenDependency(coordinates=org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1, trace=TransformedValueTrace(description=because kotlin.serialization.format=json, sourceValue=SchemaValue(property = org.jetbrains.amper.frontend.schema.SerializationSettings.format, value = json), definitionTrace=DefaultTrace, precedingValue=null), compile=true, runtime=true, exported=false)
+      MavenDependency(coordinates=org.jetbrains.kotlinx:kotlinx-serialization-core:1.5.1, trace=TransformedValueTrace(description=because Kotlinx Serialization is enabled, sourceValue=SchemaValue(property = org.jetbrains.amper.frontend.schema.kotlin.plugins.SerializationSettings.enabled, value = true), definitionTrace=DefaultTrace, precedingValue=null), compile=true, runtime=true, exported=false)
+      MavenDependency(coordinates=org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1, trace=TransformedValueTrace(description=because kotlin.serialization.format=json, sourceValue=SchemaValue(property = org.jetbrains.amper.frontend.schema.kotlin.plugins.SerializationSettings.format, value = json), definitionTrace=DefaultTrace, precedingValue=null), compile=true, runtime=true, exported=false)
     Src folders:
       src
     Fragment dependencies:
@@ -24,8 +24,8 @@ Fragments:
     External dependencies:
       MavenDependency(coordinates=org.jetbrains.kotlin:kotlin-stdlib:2.3.21, trace=DefaultTrace, compile=true, runtime=true, exported=false)
       MavenDependency(coordinates=org.jetbrains.kotlin:kotlin-test-junit5:2.3.21, trace=TransformedValueTrace(description=because the test engine is junit-5, sourceValue=SchemaValue(property = org.jetbrains.amper.frontend.schema.Settings.junit, value = JUNIT5), definitionTrace=DefaultTrace, precedingValue=null), compile=true, runtime=true, exported=false)
-      MavenDependency(coordinates=org.jetbrains.kotlinx:kotlinx-serialization-core:1.5.1, trace=TransformedValueTrace(description=because Kotlinx Serialization is enabled, sourceValue=SchemaValue(property = org.jetbrains.amper.frontend.schema.SerializationSettings.enabled, value = true), definitionTrace=DefaultTrace, precedingValue=null), compile=true, runtime=true, exported=false)
-      MavenDependency(coordinates=org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1, trace=TransformedValueTrace(description=because kotlin.serialization.format=json, sourceValue=SchemaValue(property = org.jetbrains.amper.frontend.schema.SerializationSettings.format, value = json), definitionTrace=DefaultTrace, precedingValue=null), compile=true, runtime=true, exported=false)
+      MavenDependency(coordinates=org.jetbrains.kotlinx:kotlinx-serialization-core:1.5.1, trace=TransformedValueTrace(description=because Kotlinx Serialization is enabled, sourceValue=SchemaValue(property = org.jetbrains.amper.frontend.schema.kotlin.plugins.SerializationSettings.enabled, value = true), definitionTrace=DefaultTrace, precedingValue=null), compile=true, runtime=true, exported=false)
+      MavenDependency(coordinates=org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1, trace=TransformedValueTrace(description=because kotlin.serialization.format=json, sourceValue=SchemaValue(property = org.jetbrains.amper.frontend.schema.kotlin.plugins.SerializationSettings.format, value = json), definitionTrace=DefaultTrace, precedingValue=null), compile=true, runtime=true, exported=false)
     Src folders:
       test
     Fragment dependencies:
@@ -46,8 +46,8 @@ Fragments:
   jvm
     External dependencies:
       MavenDependency(coordinates=org.jetbrains.kotlin:kotlin-stdlib:2.3.21, trace=DefaultTrace, compile=true, runtime=true, exported=false)
-      MavenDependency(coordinates=org.jetbrains.kotlinx:kotlinx-serialization-core:1.5.1, trace=TransformedValueTrace(description=because Kotlinx Serialization is enabled, sourceValue=SchemaValue(property = org.jetbrains.amper.frontend.schema.SerializationSettings.enabled, value = true), definitionTrace=DefaultTrace, precedingValue=null), compile=true, runtime=true, exported=false)
-      MavenDependency(coordinates=org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1, trace=TransformedValueTrace(description=because kotlin.serialization.format=json, sourceValue=SchemaValue(property = org.jetbrains.amper.frontend.schema.SerializationSettings.format, value = json), definitionTrace=DefaultTrace, precedingValue=null), compile=true, runtime=true, exported=false)
+      MavenDependency(coordinates=org.jetbrains.kotlinx:kotlinx-serialization-core:1.5.1, trace=TransformedValueTrace(description=because Kotlinx Serialization is enabled, sourceValue=SchemaValue(property = org.jetbrains.amper.frontend.schema.kotlin.plugins.SerializationSettings.enabled, value = true), definitionTrace=DefaultTrace, precedingValue=null), compile=true, runtime=true, exported=false)
+      MavenDependency(coordinates=org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1, trace=TransformedValueTrace(description=because kotlin.serialization.format=json, sourceValue=SchemaValue(property = org.jetbrains.amper.frontend.schema.kotlin.plugins.SerializationSettings.format, value = json), definitionTrace=DefaultTrace, precedingValue=null), compile=true, runtime=true, exported=false)
     Src folders:
       src@jvm
     Fragment dependencies:
@@ -69,8 +69,8 @@ Fragments:
     External dependencies:
       MavenDependency(coordinates=org.jetbrains.kotlin:kotlin-stdlib:2.3.21, trace=DefaultTrace, compile=true, runtime=true, exported=false)
       MavenDependency(coordinates=org.jetbrains.kotlin:kotlin-test-junit5:2.3.21, trace=TransformedValueTrace(description=because the test engine is junit-5, sourceValue=SchemaValue(property = org.jetbrains.amper.frontend.schema.Settings.junit, value = JUNIT5), definitionTrace=DefaultTrace, precedingValue=null), compile=true, runtime=true, exported=false)
-      MavenDependency(coordinates=org.jetbrains.kotlinx:kotlinx-serialization-core:1.5.1, trace=TransformedValueTrace(description=because Kotlinx Serialization is enabled, sourceValue=SchemaValue(property = org.jetbrains.amper.frontend.schema.SerializationSettings.enabled, value = true), definitionTrace=DefaultTrace, precedingValue=null), compile=true, runtime=true, exported=false)
-      MavenDependency(coordinates=org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1, trace=TransformedValueTrace(description=because kotlin.serialization.format=json, sourceValue=SchemaValue(property = org.jetbrains.amper.frontend.schema.SerializationSettings.format, value = json), definitionTrace=DefaultTrace, precedingValue=null), compile=true, runtime=true, exported=false)
+      MavenDependency(coordinates=org.jetbrains.kotlinx:kotlinx-serialization-core:1.5.1, trace=TransformedValueTrace(description=because Kotlinx Serialization is enabled, sourceValue=SchemaValue(property = org.jetbrains.amper.frontend.schema.kotlin.plugins.SerializationSettings.enabled, value = true), definitionTrace=DefaultTrace, precedingValue=null), compile=true, runtime=true, exported=false)
+      MavenDependency(coordinates=org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1, trace=TransformedValueTrace(description=because kotlin.serialization.format=json, sourceValue=SchemaValue(property = org.jetbrains.amper.frontend.schema.kotlin.plugins.SerializationSettings.format, value = json), definitionTrace=DefaultTrace, precedingValue=null), compile=true, runtime=true, exported=false)
     Src folders:
       test@jvm
     Fragment dependencies:

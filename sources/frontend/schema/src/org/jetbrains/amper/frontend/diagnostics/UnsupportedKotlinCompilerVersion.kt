@@ -12,8 +12,8 @@ import org.jetbrains.amper.frontend.contexts.MinimalModule
 import org.jetbrains.amper.frontend.diagnostics.helpers.visitStringProperties
 import org.jetbrains.amper.frontend.messages.PsiBuildProblem
 import org.jetbrains.amper.frontend.messages.extractPsiElementOrNull
-import org.jetbrains.amper.frontend.schema.KotlinCompilerVersionPattern
-import org.jetbrains.amper.frontend.schema.KotlinSettings
+import org.jetbrains.amper.frontend.schema.kotlin.KotlinCompilerVersionPattern
+import org.jetbrains.amper.frontend.schema.kotlin.KotlinSettings
 import org.jetbrains.amper.frontend.tree.TreeNode
 import org.jetbrains.amper.problems.reporting.BuildProblemType
 import org.jetbrains.amper.problems.reporting.DiagnosticId

@@ -6,10 +6,10 @@ package org.jetbrains.amper.frontend.processing
 
 import org.jetbrains.amper.frontend.api.Trace
 import org.jetbrains.amper.frontend.api.TransformedValueTrace
-import org.jetbrains.amper.frontend.schema.AllOpenPreset
 import org.jetbrains.amper.frontend.schema.DependencyMode
-import org.jetbrains.amper.frontend.schema.NoArgPreset
 import org.jetbrains.amper.frontend.schema.SpringBootSettings
+import org.jetbrains.amper.frontend.schema.kotlin.plugins.AllOpenPreset
+import org.jetbrains.amper.frontend.schema.kotlin.plugins.NoArgPreset
 import org.jetbrains.amper.frontend.tree.MappingNode
 import org.jetbrains.amper.frontend.tree.add
 import org.jetbrains.amper.frontend.tree.buildTree

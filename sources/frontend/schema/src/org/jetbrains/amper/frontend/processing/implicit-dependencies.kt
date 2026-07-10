@@ -25,7 +25,7 @@ import org.jetbrains.amper.frontend.api.isExplicitlySet
 import org.jetbrains.amper.frontend.schema.JUnitVersion
 import org.jetbrains.amper.frontend.schema.ProductType
 import org.jetbrains.amper.frontend.schema.Repository.Companion.SpecialMavenLocalUrl
-import org.jetbrains.amper.frontend.schema.legacySerializationFormatNone
+import org.jetbrains.amper.frontend.schema.kotlin.plugins.legacySerializationFormatNone
 import org.jetbrains.amper.frontend.toClassBasedSet
 import org.jetbrains.amper.frontend.types.generated.*
 
