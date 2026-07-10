@@ -32,7 +32,10 @@ internal fun createLogMessage(
     throwableStacktrace = throwable?.stackTrace?.toList(),
 )
 
-internal fun createBuildTaskResultFailure(error: Throwable) = OrchestrationMessage.BuildTaskResult(
+internal fun createBuildTaskResultFailure(
+    failureMessagePrefix: String,
+    error: Throwable,
+) = OrchestrationMessage.BuildTaskResult(
     taskId = KOTLIN_BUILD_TAG,
     isSuccess = false,
     isSkipped = false,
@@ -40,8 +43,8 @@ internal fun createBuildTaskResultFailure(error: Throwable) = OrchestrationMessa
     endTime = null,
     failures = [
         OrchestrationMessage.BuildTaskResult.BuildTaskFailure(
-            message = "BUILD FAILED",
-            description = error.message,
+            message = error.message?.let { "$failureMessagePrefix: $it" } ?: failureMessagePrefix,
+            description = null,
         ),
     ],
 )

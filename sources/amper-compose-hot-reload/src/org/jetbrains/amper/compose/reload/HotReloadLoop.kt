@@ -162,7 +162,7 @@ class HotReloadLoop<Context : HotReloadProjectContext> private constructor(
                             oldValidState = lastValidStateFlow.value,
                         )
                     }.getOrElse { e ->
-                        orchestration send createBuildTaskResultFailure(e)
+                        orchestration send createBuildTaskResultFailure("MODEL RELOAD FAILED", e)
                         old?.recompileRequestId?.let {
                             orchestration send OrchestrationMessage.RecompileResult(it, exitCode = 1)
                         }
@@ -288,7 +288,7 @@ class HotReloadLoop<Context : HotReloadProjectContext> private constructor(
         val changes = block().onSuccess {
             orchestration send createBuildTaskResultSuccess()
         }.onFailure { e ->
-            orchestration send createBuildTaskResultFailure(e)
+            orchestration send createBuildTaskResultFailure("BUILD FAILED", e)
         }.getOrNull()
 
         if (recompileRequestId != null) {
