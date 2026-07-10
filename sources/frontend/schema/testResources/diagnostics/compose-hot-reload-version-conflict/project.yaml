@@ -1,0 +1,4 @@
+modules:
+  - app-a
+  - app-b
+  - app-c
