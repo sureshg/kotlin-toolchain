@@ -24,7 +24,10 @@ import kotlin.io.path.walk
 import kotlin.io.path.writeText
 
 @TaskAction(ExecutionAvoidance.Disabled) // we can't track all outputs
-fun updateGoldFiles(@Input amperRootDir: Path, versions: Versions) {
+fun updateGoldFiles(
+    @Input(inferTaskDependency = false) amperRootDir: Path,
+    versions: Versions,
+) {
     runBlocking {
         syncVersions(amperRootDir, versions)
         AmperGoldUpdater(amperRootDir).updateGoldFiles()
