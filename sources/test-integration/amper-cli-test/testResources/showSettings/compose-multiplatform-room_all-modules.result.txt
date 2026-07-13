@@ -250,7 +250,9 @@ settings@jvm+android:
     targetSdk: 37  # default, from ${compileSdk}
   compose:
     enabled: true  # module.yaml
-    experimental: {}  # default
+    experimental:
+      hotReload:
+        version: 1.2.0-rc01  # default
     resources:
       exposedAccessors: false  # default
       nameOfResClass: Res  # default
@@ -362,7 +364,9 @@ settings@jvm+android:
 settings@jvm:
   compose:
     enabled: true  # module.yaml
-    experimental: {}  # default
+    experimental:
+      hotReload:
+        version: 1.2.0-rc01  # default
     resources:
       exposedAccessors: false  # default
       nameOfResClass: Res  # default

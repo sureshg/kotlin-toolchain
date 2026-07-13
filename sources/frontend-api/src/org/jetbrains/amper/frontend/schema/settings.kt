@@ -130,7 +130,7 @@ class ComposeResourcesSettings : SchemaNode() {
 
 class ComposeExperimentalSettings: SchemaNode() {
 
-    @ProductTypeSpecific(ProductType.JVM_APP) // we can only use Hot Reload on JVM for now, better warn users about it
+    @PlatformSpecific(Platform.JVM) // we can only use Hot Reload on JVM for now, better warn users about it
     @SchemaDoc("Experimental Compose hot-reload settings")
     val hotReload: ComposeExperimentalHotReloadSettings by nested()
 }
