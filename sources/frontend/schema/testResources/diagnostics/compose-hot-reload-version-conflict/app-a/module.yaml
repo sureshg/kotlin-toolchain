@@ -1,4 +1,4 @@
-product: jvm/app
+product: jvm/lib
 
 settings:
   compose:

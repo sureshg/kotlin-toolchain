@@ -10,8 +10,7 @@ import org.jetbrains.amper.cli.context.ProjectCliContext
 import org.jetbrains.amper.cli.options.ProjectLayoutOptions
 import org.jetbrains.amper.cli.project.preparePluginsAndReadModel
 import org.jetbrains.amper.cli.userReadableError
-import org.jetbrains.amper.frontend.getComposeHotReloadVersionForJvmApp
-import org.jetbrains.amper.frontend.schema.ProductType
+import org.jetbrains.amper.frontend.getComposeHotReloadVersion
 import org.jetbrains.amper.jvm.getDefaultJdk
 import org.jetbrains.amper.processes.runProcessWithInheritedIO
 import org.jetbrains.amper.processes.withJavaArgFile
@@ -54,8 +53,8 @@ internal class ComposeHotReloadMcpServerCommand : AmperProjectAwareCommand(name 
         val model = cliContext.preparePluginsAndReadModel()
 
         val hotReloadVersion = model.modules
-            .filter { it.type == ProductType.JVM_APP && isComposeEnabledFor(it) }
-            .map { getComposeHotReloadVersionForJvmApp(it) }
+            .filter { isComposeEnabledFor(it) }
+            .map { getComposeHotReloadVersion(it) }
             .maxOfOrNull { ComparableVersion(it) }
             // We have a diagnostic that reports if there are multiple different versions across the project
             ?: userReadableError("No modules supporting Compose Hot Reload detected")

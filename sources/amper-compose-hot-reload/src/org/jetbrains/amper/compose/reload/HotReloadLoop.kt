@@ -25,7 +25,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.jetbrains.amper.frontend.AmperModule
 import org.jetbrains.amper.frontend.Model
-import org.jetbrains.amper.frontend.getComposeHotReloadVersionForJvmApp
+import org.jetbrains.amper.frontend.getComposeHotReloadVersion
 import org.jetbrains.amper.fswatching.watchPaths
 import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.compose.reload.DelicateHotReloadApi
@@ -308,8 +308,8 @@ class HotReloadLoop<Context : HotReloadProjectContext> private constructor(
         val result = delegate.readModel()
         if (result.isFailure) return result
 
-        val oldVersion = getComposeHotReloadVersionForJvmApp(oldValidState.hotApp)
-        val currentVersion = getComposeHotReloadVersionForJvmApp(result.getOrThrow().hotApp)
+        val oldVersion = getComposeHotReloadVersion(oldValidState.hotApp)
+        val currentVersion = getComposeHotReloadVersion(result.getOrThrow().hotApp)
 
         // We can't reload the hot-reload agent itself without restarting.
         return if (oldVersion != currentVersion) {

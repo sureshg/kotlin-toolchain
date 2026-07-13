@@ -9,7 +9,6 @@ import org.jetbrains.amper.frontend.Platform
 import org.jetbrains.amper.frontend.SchemaBundle
 import org.jetbrains.amper.frontend.api.Traceable
 import org.jetbrains.amper.frontend.asBuildProblemSource
-import org.jetbrains.amper.frontend.schema.ProductType
 import org.jetbrains.amper.frontend.types.generated.*
 import org.jetbrains.amper.problems.reporting.BuildProblem
 import org.jetbrains.amper.problems.reporting.BuildProblemSource
@@ -29,9 +28,7 @@ object ComposeHotReloadVersionConflictFactory : AomModelDiagnosticFactory {
         model: Model,
         problemReporter: ProblemReporter,
     ) {
-        val versions = model.modules.filter {
-            it.type == ProductType.JVM_APP
-        }.mapNotNull { module ->
+        val versions = model.modules.mapNotNull { module ->
             module.leafFragments.find { it.platform == Platform.JVM && !it.isTest }
                 ?.takeIf { it.settings.compose.enabled }
         }.map { jvmAppFragment ->
