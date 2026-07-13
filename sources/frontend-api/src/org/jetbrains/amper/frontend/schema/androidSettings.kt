@@ -107,7 +107,7 @@ class AndroidSettings : SchemaNode() {
     @Misnomers("minApiLevel")
     @SchemaDoc("Minimum API level needed to run the application. " +
             "[Read more](https://developer.android.com/guide/topics/manifest/uses-sdk-element.html)")
-    val minSdk by value(AndroidVersion.VERSION_23)
+    val minSdk by value(AndroidVersion.VERSION_24)
 
     @Misnomers("maxApiLevel")
     @SchemaDoc("Maximum API level on which the application can run. " +
