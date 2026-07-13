@@ -20,6 +20,8 @@ import org.jetbrains.amper.engine.TaskGraphExecutionContext
 import org.jetbrains.amper.engine.TaskName
 import org.jetbrains.amper.frontend.AmperModule
 import org.jetbrains.amper.frontend.RepositoriesModulePart
+import org.jetbrains.amper.frontend.publishingSettings
+import org.jetbrains.amper.frontend.schema.Checksum
 import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.maven.publish.createPlexusContainer
 import org.jetbrains.amper.maven.publish.deployToRemoteRepo
@@ -89,21 +91,22 @@ class MavenPublishTask(
          * > option has been removed. Details can be found in MINSTALL-143.
          */
         spanBuilder("Maven publish").use {
-            val plexus = getPlexusContainer(executionContext)
-            if (targetRepository.isMavenLocal) {
-                installToMavenLocal(artifacts, localRepositoryPath, plexus)
-            } else {
-                publishToRemoteRepo(artifacts, localRepositoryPath, plexus)
+            context(getPlexusContainer(executionContext)) {
+                if (targetRepository.isMavenLocal) {
+                    installToMavenLocal(artifacts, localRepositoryPath)
+                } else {
+                    publishToRemoteRepo(artifacts, localRepositoryPath, module.publishingSettings.checksums)
+                }
             }
         }
 
         return Result()
     }
 
+    context(plexusContainer: PlexusContainer)
     private suspend fun installToMavenLocal(
         artifacts: List<Artifact>,
         localRepositoryPath: Path,
-        plexusContainer: PlexusContainer,
     ) {
         try {
             incrementalCache.execute(
@@ -124,10 +127,11 @@ class MavenPublishTask(
         }
     }
 
+    context(plexusContainer: PlexusContainer)
     private fun publishToRemoteRepo(
         artifacts: List<Artifact>,
         localRepositoryPath: Path,
-        plexusContainer: PlexusContainer,
+        checksums: List<Checksum>,
     ) {
         val remoteRepository = targetRepository.toMavenRemoteRepository()
 
@@ -136,7 +140,7 @@ class MavenPublishTask(
                     "remote maven repository at ${remoteRepository.url} (id: '${remoteRepository.id}')"
         )
         try {
-            plexusContainer.deployToRemoteRepo(remoteRepository, localRepositoryPath, artifacts)
+            plexusContainer.deployToRemoteRepo(remoteRepository, localRepositoryPath, artifacts, checksums)
             terminal.printSuccessfulPublicationToRemoteMaven(module, targetRepository)
         } catch (e: Exception) {
             userReadableError(

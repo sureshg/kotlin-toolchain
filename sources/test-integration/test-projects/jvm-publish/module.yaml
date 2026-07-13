@@ -48,3 +48,4 @@ settings:
     version: "2.2"
     artifactId: artifactName
     publishSources: true
+    #{{ADDITIONAL_PUBLISHING_SETTINGS}}

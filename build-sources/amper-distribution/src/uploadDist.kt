@@ -9,6 +9,7 @@ import org.eclipse.aether.repository.RemoteRepository
 import org.eclipse.aether.util.repository.AuthenticationBuilder
 import org.jetbrains.amper.buildinfo.AmperBuild
 import org.jetbrains.amper.dependency.resolution.LocalM2RepositoryFinder
+import org.jetbrains.amper.frontend.schema.Checksum
 import org.jetbrains.amper.maven.publish.createPlexusContainer
 import org.jetbrains.amper.maven.publish.deployToRemoteRepo
 import org.jetbrains.amper.maven.publish.installToMavenLocal
@@ -44,6 +45,7 @@ fun uploadDist(
                 remoteRepository = JetBrainsTeamAmperRepository,
                 localRepositoryPath = localMavenRepoPath,
                 artifacts = artifacts,
+                checksumAlgorithms = Checksum.entries,
             )
         }
     } finally {

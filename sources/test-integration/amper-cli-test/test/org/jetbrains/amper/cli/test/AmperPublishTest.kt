@@ -13,6 +13,7 @@ import org.jetbrains.amper.cli.test.utils.assertStdoutDoesNotContain
 import org.jetbrains.amper.cli.test.utils.getTaskOutputPath
 import org.jetbrains.amper.cli.test.utils.runSlowTest
 import org.jetbrains.amper.core.extract.extractZip
+import org.jetbrains.amper.frontend.schema.Checksum
 import org.jetbrains.amper.frontend.schema.DefaultVersions
 import org.jetbrains.amper.test.assertEqualsWithDiff
 import org.jetbrains.amper.test.server.Request
@@ -630,23 +631,51 @@ class AmperPublishTest : AmperCliTestBase() {
             "amper/test/jvm-publish/artifactName/2.2/artifactName-2.2-javadoc.jar",
             "amper/test/jvm-publish/artifactName/2.2/artifactName-2.2-javadoc.jar.md5",
             "amper/test/jvm-publish/artifactName/2.2/artifactName-2.2-javadoc.jar.sha1",
-            "amper/test/jvm-publish/artifactName/2.2/artifactName-2.2-javadoc.jar.sha256",
-            "amper/test/jvm-publish/artifactName/2.2/artifactName-2.2-javadoc.jar.sha512",
             "amper/test/jvm-publish/artifactName/2.2/artifactName-2.2-sources.jar",
             "amper/test/jvm-publish/artifactName/2.2/artifactName-2.2-sources.jar.md5",
             "amper/test/jvm-publish/artifactName/2.2/artifactName-2.2-sources.jar.sha1",
-            "amper/test/jvm-publish/artifactName/2.2/artifactName-2.2-sources.jar.sha256",
-            "amper/test/jvm-publish/artifactName/2.2/artifactName-2.2-sources.jar.sha512",
             "amper/test/jvm-publish/artifactName/2.2/artifactName-2.2.jar",
             "amper/test/jvm-publish/artifactName/2.2/artifactName-2.2.jar.md5",
             "amper/test/jvm-publish/artifactName/2.2/artifactName-2.2.jar.sha1",
-            "amper/test/jvm-publish/artifactName/2.2/artifactName-2.2.jar.sha256",
-            "amper/test/jvm-publish/artifactName/2.2/artifactName-2.2.jar.sha512",
             "amper/test/jvm-publish/artifactName/2.2/artifactName-2.2.pom",
             "amper/test/jvm-publish/artifactName/2.2/artifactName-2.2.pom.md5",
             "amper/test/jvm-publish/artifactName/2.2/artifactName-2.2.pom.sha1",
-            "amper/test/jvm-publish/artifactName/2.2/artifactName-2.2.pom.sha256",
-            "amper/test/jvm-publish/artifactName/2.2/artifactName-2.2.pom.sha512",
+            "amper/test/jvm-publish/artifactName/maven-metadata.xml",
+            "amper/test/jvm-publish/artifactName/maven-metadata.xml.md5",
+            "amper/test/jvm-publish/artifactName/maven-metadata.xml.sha1",
+        )
+    }
+
+    @Test
+    fun `publish to remote repo without auth - all checksums`(testReporter: TestReporter) = runSlowTest {
+        val www = tempRoot.resolve("www-root").also { it.createDirectories() }
+
+        val requestHistory = withFileServer(www, testReporter) { baseUrl ->
+            publishJvmProject("2.3", baseUrl, overrideChecksums = Checksum.entries)
+        }
+        assertPublishedArtifacts(
+            repoRoot = www,
+            requestHistory = requestHistory,
+            "amper/test/jvm-publish/artifactName/2.3/artifactName-2.3-javadoc.jar",
+            "amper/test/jvm-publish/artifactName/2.3/artifactName-2.3-javadoc.jar.md5",
+            "amper/test/jvm-publish/artifactName/2.3/artifactName-2.3-javadoc.jar.sha1",
+            "amper/test/jvm-publish/artifactName/2.3/artifactName-2.3-javadoc.jar.sha256",
+            "amper/test/jvm-publish/artifactName/2.3/artifactName-2.3-javadoc.jar.sha512",
+            "amper/test/jvm-publish/artifactName/2.3/artifactName-2.3-sources.jar",
+            "amper/test/jvm-publish/artifactName/2.3/artifactName-2.3-sources.jar.md5",
+            "amper/test/jvm-publish/artifactName/2.3/artifactName-2.3-sources.jar.sha1",
+            "amper/test/jvm-publish/artifactName/2.3/artifactName-2.3-sources.jar.sha256",
+            "amper/test/jvm-publish/artifactName/2.3/artifactName-2.3-sources.jar.sha512",
+            "amper/test/jvm-publish/artifactName/2.3/artifactName-2.3.jar",
+            "amper/test/jvm-publish/artifactName/2.3/artifactName-2.3.jar.md5",
+            "amper/test/jvm-publish/artifactName/2.3/artifactName-2.3.jar.sha1",
+            "amper/test/jvm-publish/artifactName/2.3/artifactName-2.3.jar.sha256",
+            "amper/test/jvm-publish/artifactName/2.3/artifactName-2.3.jar.sha512",
+            "amper/test/jvm-publish/artifactName/2.3/artifactName-2.3.pom",
+            "amper/test/jvm-publish/artifactName/2.3/artifactName-2.3.pom.md5",
+            "amper/test/jvm-publish/artifactName/2.3/artifactName-2.3.pom.sha1",
+            "amper/test/jvm-publish/artifactName/2.3/artifactName-2.3.pom.sha256",
+            "amper/test/jvm-publish/artifactName/2.3/artifactName-2.3.pom.sha512",
             "amper/test/jvm-publish/artifactName/maven-metadata.xml",
             "amper/test/jvm-publish/artifactName/maven-metadata.xml.md5",
             "amper/test/jvm-publish/artifactName/maven-metadata.xml.sha1",
@@ -668,28 +697,18 @@ class AmperPublishTest : AmperCliTestBase() {
             "amper/test/jvm-publish/artifactName/2.2/artifactName-2.2-javadoc.jar",
             "amper/test/jvm-publish/artifactName/2.2/artifactName-2.2-javadoc.jar.md5",
             "amper/test/jvm-publish/artifactName/2.2/artifactName-2.2-javadoc.jar.sha1",
-            "amper/test/jvm-publish/artifactName/2.2/artifactName-2.2-javadoc.jar.sha256",
-            "amper/test/jvm-publish/artifactName/2.2/artifactName-2.2-javadoc.jar.sha512",
             "amper/test/jvm-publish/artifactName/2.2/artifactName-2.2-sources.jar",
             "amper/test/jvm-publish/artifactName/2.2/artifactName-2.2-sources.jar.md5",
             "amper/test/jvm-publish/artifactName/2.2/artifactName-2.2-sources.jar.sha1",
-            "amper/test/jvm-publish/artifactName/2.2/artifactName-2.2-sources.jar.sha256",
-            "amper/test/jvm-publish/artifactName/2.2/artifactName-2.2-sources.jar.sha512",
             "amper/test/jvm-publish/artifactName/2.2/artifactName-2.2.jar",
             "amper/test/jvm-publish/artifactName/2.2/artifactName-2.2.jar.md5",
             "amper/test/jvm-publish/artifactName/2.2/artifactName-2.2.jar.sha1",
-            "amper/test/jvm-publish/artifactName/2.2/artifactName-2.2.jar.sha256",
-            "amper/test/jvm-publish/artifactName/2.2/artifactName-2.2.jar.sha512",
             "amper/test/jvm-publish/artifactName/2.2/artifactName-2.2.pom",
             "amper/test/jvm-publish/artifactName/2.2/artifactName-2.2.pom.md5",
             "amper/test/jvm-publish/artifactName/2.2/artifactName-2.2.pom.sha1",
-            "amper/test/jvm-publish/artifactName/2.2/artifactName-2.2.pom.sha256",
-            "amper/test/jvm-publish/artifactName/2.2/artifactName-2.2.pom.sha512",
             "amper/test/jvm-publish/artifactName/maven-metadata.xml",
             "amper/test/jvm-publish/artifactName/maven-metadata.xml.md5",
             "amper/test/jvm-publish/artifactName/maven-metadata.xml.sha1",
-            "amper/test/jvm-publish/artifactName/maven-metadata.xml.sha256",
-            "amper/test/jvm-publish/artifactName/maven-metadata.xml.sha512",
         )
     }
 
@@ -815,14 +834,28 @@ class AmperPublishTest : AmperCliTestBase() {
             """.trimIndent(), metadataXml)
     }
 
-    private suspend fun publishJvmProject(version: String, repoUrl: String) {
+    private suspend fun publishJvmProject(
+        version: String,
+        repoUrl: String,
+        overrideChecksums: List<Checksum>? = null,
+    ) {
+        val projectDir = testProject("jvm-publish")
+        val moduleYaml = projectDir.resolve("module.yaml")
+        moduleYaml.writeText(moduleYaml.readText()
+            .replace("REPO_URL", repoUrl)
+            .replace("2.2", version)
+            .let { moduleYamlText ->
+                if (overrideChecksums != null) {
+                    val checksumsList = overrideChecksums.joinToString(", ") { it.schemaValue }
+                    moduleYamlText.replace("#{{ADDITIONAL_PUBLISHING_SETTINGS}}", "checksums: [$checksumsList]")
+                } else {
+                    moduleYamlText
+                }
+            }
+        )
         runCli(
-            projectDir = testProject("jvm-publish"),
+            projectDir = projectDir,
             "publish", "repoId",
-            modifyProjectBeforeRun = { root ->
-                val moduleYaml = root.resolve("module.yaml")
-                moduleYaml.writeText(moduleYaml.readText().replace("REPO_URL", repoUrl).replace("2.2", version))
-            },
             amperJvmArgs = listOf(mavenRepoLocalJvmArg(createTempMavenLocalDir()))
         )
     }

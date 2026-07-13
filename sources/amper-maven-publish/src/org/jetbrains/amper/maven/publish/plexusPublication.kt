@@ -24,6 +24,7 @@ import org.eclipse.aether.deployment.DeployRequest
 import org.eclipse.aether.installation.InstallRequest
 import org.eclipse.aether.internal.impl.Maven2RepositoryLayoutFactory
 import org.eclipse.aether.repository.RemoteRepository
+import org.jetbrains.amper.frontend.schema.Checksum
 import org.jetbrains.amper.mavencentral.MavenCentralDefaultConfiguration
 import org.slf4j.LoggerFactory
 import java.nio.file.Path
@@ -67,6 +68,7 @@ fun PlexusContainer.deployToRemoteRepo(
     remoteRepository: RemoteRepository,
     localRepositoryPath: Path,
     artifacts: List<Artifact>,
+    checksumAlgorithms: List<Checksum>,
 ) {
     val deployRequest = DeployRequest()
     deployRequest.repository = remoteRepository
@@ -75,7 +77,7 @@ fun PlexusContainer.deployToRemoteRepo(
         deployRequest.addArtifact(artifact)
     }
 
-    val repositorySession = createRepositorySession(localRepositoryPath)
+    val repositorySession = createRepositorySession(localRepositoryPath, checksumAlgorithms)
     repositorySystem.deploy(repositorySession, deployRequest)
 }
 
@@ -100,10 +102,20 @@ fun PlexusContainer.installToMavenLocal(localRepositoryPath: Path, artifacts: Li
     }
 }
 
-fun PlexusContainer.createRepositorySession(localRepositoryPath: Path): RepositorySystemSession {
+fun PlexusContainer.createRepositorySession(
+    localRepositoryPath: Path,
+    checksumAlgorithms: List<Checksum> = [Checksum.MD5, Checksum.SHA1],
+): RepositorySystemSession {
     val request = mavenRepositorySystem.createMavenExecutionRequest(localRepositoryPath)
     val session = repositorySystemSessionFactory.newRepositorySession(request)
-    session.setConfigProperty(Maven2RepositoryLayoutFactory.CONFIG_PROP_CHECKSUMS_ALGORITHMS, "MD5,SHA-1,SHA-256,SHA-512")
+    // We let the user choose which checksums to publish
+    // Note: in more recent versions of the resolver, we could customize aether.checksums.uploadChecksumAlgorithms
+    // independently. We're using an old one right now.
+    session.setConfigProperty(
+        Maven2RepositoryLayoutFactory.CONFIG_PROP_CHECKSUMS_ALGORITHMS,
+        checksumAlgorithms.joinToString(",") { it.algorithmName },
+    )
+
     // Disable caching HTTP connection pooling between sessions, to allow closing the connection pool later.
     // If we don't do this, the connection manager is stored in a GlobalState and the LocalState doesn't delegate close()
     session.setConfigProperty("aether.connector.http.cacheState", false)
