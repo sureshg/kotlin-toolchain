@@ -16,6 +16,7 @@ import org.jetbrains.amper.frontend.dr.resolver.toIncrementalCacheResult
 import org.jetbrains.amper.frontend.schema.DefaultVersions
 import org.jetbrains.amper.frontend.schema.DiscouragedDirectDefaultVersionAccess
 import org.jetbrains.amper.incrementalcache.IncrementalCache
+import org.jetbrains.amper.problems.reporting.ProblemReporter
 import org.jetbrains.amper.system.info.SystemInfo
 import java.nio.file.Path
 
@@ -29,6 +30,7 @@ class ToolingArtifactsDownloader(
 
     private val mavenResolver = CliReportingMavenResolver(userCacheRoot, incrementalCache)
 
+    context(_: ProblemReporter)
     suspend fun downloadHotReloadAgent(hotReloadVersion: String): List<Path> =
         downloadToolingArtifacts(
             listOf(
@@ -37,6 +39,7 @@ class ToolingArtifactsDownloader(
             ),
         )
 
+    context(_: ProblemReporter)
     suspend fun downloadHotReloadMcp(hotReloadVersion: String): List<Path> =
         downloadToolingArtifacts(
             listOf(
@@ -44,6 +47,7 @@ class ToolingArtifactsDownloader(
             ),
         )
 
+    context(_: ProblemReporter)
     suspend fun downloadDevTools(
         hotReloadVersion: String,
         composeVersion: String,
@@ -57,6 +61,7 @@ class ToolingArtifactsDownloader(
         }
     )
 
+    context(_: ProblemReporter)
     suspend fun downloadComposeDesktop(composeVersion: String): List<Path> = downloadToolingArtifacts(
         listOf(
             MavenCoordinates(
@@ -69,12 +74,14 @@ class ToolingArtifactsDownloader(
     )
 
     @OptIn(DiscouragedDirectDefaultVersionAccess::class)
+    context(_: ProblemReporter)
     suspend fun downloadSpringBootLoader(): Path = downloadToolingArtifacts(
         listOf(
             MavenCoordinates("org.springframework.boot", "spring-boot-loader", DefaultVersions.springBoot)
         )
     ).single()
 
+    context(_: ProblemReporter)
     private suspend fun downloadToolingArtifacts(
         coordinates: List<MavenCoordinates>,
         repositories: List<Repository> = listOf(MavenCentral),

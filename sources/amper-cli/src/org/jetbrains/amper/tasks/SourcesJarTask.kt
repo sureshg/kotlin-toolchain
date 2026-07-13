@@ -10,6 +10,7 @@ import org.jetbrains.amper.frontend.Platform
 import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.jar.JarConfig
 import org.jetbrains.amper.jar.ZipInput
+import org.jetbrains.amper.problems.reporting.ProblemReporter
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.div
@@ -26,6 +27,7 @@ class SourcesJarTask(
     incrementalCache: IncrementalCache,
 ) : AbstractJarTask(taskName, incrementalCache) {
 
+    context(_: ProblemReporter)
     override suspend fun assembleInputDirs(dependenciesResult: List<TaskResult>): List<ZipInput> =
         module.fragments
             .asSequence()

@@ -13,6 +13,7 @@ import org.jetbrains.amper.engine.TaskName
 import org.jetbrains.amper.frontend.AmperModule
 import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.jdk.provisioning.JdkProvider
+import org.jetbrains.amper.problems.reporting.ProblemReporter
 import org.jetbrains.amper.tasks.JvmMainRunSettings
 import org.jetbrains.amper.tasks.TaskResult
 import org.jetbrains.amper.util.BuildType
@@ -46,10 +47,12 @@ class ExecutableJarRunTask(
 ) {
     override val buildType get() = BuildType.Release
 
+    context(_: ProblemReporter)
     override suspend fun getJvmArgs(dependenciesResult: List<TaskResult>): List<String> =
         // Add -jar and the jar path to JVM args
         runSettings.userJvmArgs + listOf("-ea", "-jar", findExecutableJarPath(dependenciesResult).toString())
 
+    context(_: ProblemReporter)
     override suspend fun getClasspath(dependenciesResult: List<TaskResult>): List<Path> =
         // When using -jar, the classpath is ignored, so we return an empty list
         emptyList()

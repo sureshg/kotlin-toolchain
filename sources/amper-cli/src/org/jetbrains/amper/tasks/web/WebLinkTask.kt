@@ -37,6 +37,7 @@ import org.jetbrains.amper.incrementalcache.executeForFiles
 import org.jetbrains.amper.jdk.provisioning.Jdk
 import org.jetbrains.amper.jdk.provisioning.JdkProvider
 import org.jetbrains.amper.jvm.getJdkOrUserError
+import org.jetbrains.amper.problems.reporting.ProblemReporter
 import org.jetbrains.amper.processes.ArgsMode
 import org.jetbrains.amper.stdlib.io.path.clean
 import org.jetbrains.amper.tasks.ResolveExternalDependenciesTask
@@ -170,6 +171,7 @@ internal abstract class WebLinkTask(
         )
     }
 
+    context(_: ProblemReporter)
     private suspend fun compileSources(
         jdk: Jdk,
         kotlinUserSettings: KotlinUserSettings,

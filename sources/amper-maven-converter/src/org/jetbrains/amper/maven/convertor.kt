@@ -19,6 +19,7 @@ import org.jetbrains.amper.maven.contributor.contributeSpringBootPlugin
 import org.jetbrains.amper.maven.contributor.contributeSurefirePlugin
 import org.jetbrains.amper.maven.contributor.contributeUnknownPlugins
 import org.jetbrains.amper.maven.contributor.filterJarProjects
+import org.jetbrains.amper.problems.reporting.ProblemReporter
 import org.jetbrains.amper.telemetry.spanBuilder
 import org.jetbrains.amper.telemetry.use
 import org.slf4j.LoggerFactory
@@ -46,6 +47,7 @@ object MavenProjectConvertor {
      * @param codeVersion Code version for the cache.
      * @param enableCompatibilityPlugins If true, compatibility plugins are generated with `enabled: true` instead of `enabled: false`.
      */
+    context(_: ProblemReporter)
     suspend fun convert(
         pomXml: Path,
         overwrite: Boolean = false,

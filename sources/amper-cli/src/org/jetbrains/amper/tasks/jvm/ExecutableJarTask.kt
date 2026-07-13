@@ -14,6 +14,7 @@ import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.jar.JarConfig
 import org.jetbrains.amper.jar.ZipInput
 import org.jetbrains.amper.jvm.findEffectiveJvmMainClass
+import org.jetbrains.amper.problems.reporting.ProblemReporter
 import org.jetbrains.amper.tasks.AbstractJarTask
 import org.jetbrains.amper.tasks.TaskOutputRoot
 import org.jetbrains.amper.tasks.TaskResult
@@ -37,6 +38,7 @@ class ExecutableJarTask(
 
     private val assembler = ExecutableJarAssembler(userCacheRoot, incrementalCache)
 
+    context(_: ProblemReporter)
     override suspend fun assembleInputDirs(dependenciesResult: List<TaskResult>): List<ZipInput> {
         val compiledClasses = dependenciesResult
             .filterIsInstance<JvmCompileTask.Result>()

@@ -44,6 +44,7 @@ import org.jetbrains.amper.frontend.plugins.TaskFromPluginDescription
 import org.jetbrains.amper.frontend.schema.ProductType
 import org.jetbrains.amper.frontend.schema.Settings
 import org.jetbrains.amper.incrementalcache.IncrementalCache
+import org.jetbrains.amper.problems.reporting.ProblemReporter
 import org.jetbrains.amper.tasks.ResolveExternalDependenciesTask
 import org.jetbrains.amper.tasks.TaskResult
 import org.jetbrains.amper.tasks.toIncrementalCacheResult
@@ -113,6 +114,7 @@ internal class ResolveCustomExternalDependenciesTask(
         )
     }
 
+    context(_: ProblemReporter)
     private suspend fun AmperModule.resolveModuleDependencies(): List<Path> {
         val moduleDependencies = with(ModuleDependencies) {
             val resolutionSettings = AmperResolutionSettings(userCacheRoot, incrementalCache, GlobalOpenTelemetry.get())
@@ -134,6 +136,7 @@ internal class ResolveCustomExternalDependenciesTask(
         }
     }
 
+    context(_: ProblemReporter)
     private suspend fun resolveExternalMavenDependencies(externalDependencies: List<MavenCoordinates>): List<Path> {
         val repositories = module.mavenResolveRepositories.map { it.toRepository() }
 

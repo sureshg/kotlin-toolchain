@@ -5,7 +5,6 @@
 package org.jetbrains.amper.tasks.jvm
 
 import com.github.ajalt.mordant.terminal.Terminal
-import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.trace.SpanBuilder
 import kotlinx.serialization.json.Json
@@ -59,6 +58,7 @@ import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.jdk.provisioning.Jdk
 import org.jetbrains.amper.jdk.provisioning.JdkProvider
 import org.jetbrains.amper.jvm.getJdkOrUserError
+import org.jetbrains.amper.problems.reporting.ProblemReporter
 import org.jetbrains.amper.processes.LoggingProcessOutputListener
 import org.jetbrains.amper.processes.withJavaArgFile
 import org.jetbrains.amper.tasks.ClasspathProvider
@@ -346,6 +346,7 @@ internal class JvmCompileTask(
         )
     }
 
+    context(_: ProblemReporter)
     private suspend fun compileSources(
         jdk: Jdk,
         sourceDirectories: List<Path>,
@@ -405,6 +406,7 @@ internal class JvmCompileTask(
         )
     }
 
+    context(_: ProblemReporter)
     private suspend fun compileKotlinSources(
         userSettings: CompilationUserSettings,
         isMultiplatform: Boolean,

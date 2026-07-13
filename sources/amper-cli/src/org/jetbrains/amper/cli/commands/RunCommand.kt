@@ -18,7 +18,6 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.clikt.parameters.types.path
 import kotlinx.coroutines.Deferred
-import org.jetbrains.amper.cli.CliProblemReporter
 import org.jetbrains.amper.cli.MultiUsageKotlinCliHelpFormatter
 import org.jetbrains.amper.cli.UserReadableError
 import org.jetbrains.amper.cli.context.CliContext
@@ -26,6 +25,7 @@ import org.jetbrains.amper.cli.context.GlobalCliContext
 import org.jetbrains.amper.cli.context.ProjectCliContext
 import org.jetbrains.amper.cli.context.copyWithNewProjectContext
 import org.jetbrains.amper.cli.context.findProjectContext
+import org.jetbrains.amper.cli.createProblemReporterForCli
 import org.jetbrains.amper.cli.logging.infoNoConsole
 import org.jetbrains.amper.cli.options.ProjectLayoutOptions
 import org.jetbrains.amper.cli.options.UserJvmArgsOption
@@ -265,7 +265,7 @@ internal class RunCommand : AmperSubcommand(name = "run") {
                   then this throws an error, as we use explicit directories detected/specified initially.
                 */
                 initialCliContext.copyWithNewProjectContext(
-                    projectContext = context(CliProblemReporter(terminal)) {
+                    projectContext = context(createProblemReporterForCli(terminal)) {
                         checkNotNull(
                             findProjectContext(
                                 explicitProjectDir = initialCliContext.projectRoot.path,

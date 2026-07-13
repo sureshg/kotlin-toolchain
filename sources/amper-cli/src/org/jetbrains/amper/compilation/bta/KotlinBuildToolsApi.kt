@@ -12,6 +12,7 @@ import org.jetbrains.amper.cli.lazyload.ExtraClasspath
 import org.jetbrains.amper.cli.logging.withoutConsoleLogging
 import org.jetbrains.amper.concurrency.AsyncConcurrentMap
 import org.jetbrains.amper.frontend.AmperModule
+import org.jetbrains.amper.problems.reporting.ProblemReporter
 import org.jetbrains.kotlin.buildtools.api.ExperimentalBuildToolsApi
 import org.jetbrains.kotlin.buildtools.api.KotlinLogger
 import org.jetbrains.kotlin.buildtools.api.KotlinToolchains
@@ -39,6 +40,7 @@ private val KotlinBuildToolsClassLoaderCache = AsyncConcurrentMap<String, ClassL
  * operation is thread-safe so that the same compiler version is never downloaded twice, even if requested concurrently.
  */
 @OptIn(ExperimentalBuildToolsApi::class)
+context(_: ProblemReporter)
 internal suspend fun KotlinToolchains.Companion.loadMaybeCachedImpl(
     kotlinVersion: String,
     downloader: KotlinArtifactsDownloader,

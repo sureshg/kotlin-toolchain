@@ -35,6 +35,7 @@ import org.jetbrains.amper.incrementalcache.ResultWithSerializable
 import org.jetbrains.amper.incrementalcache.execute
 import org.jetbrains.amper.maven.publish.PublicationCoordinatesOverride
 import org.jetbrains.amper.maven.publish.PublicationCoordinatesOverrides
+import org.jetbrains.amper.problems.reporting.ProblemReporter
 import org.jetbrains.amper.serialization.paths.SerializablePath
 import org.jetbrains.amper.tasks.CommonTaskUtils.userReadableList
 import org.jetbrains.amper.telemetry.setListAttribute
@@ -61,6 +62,7 @@ internal data class ExternalDependenciesResolutionResult(
  * a plain list of dependencies. It reuses the same cache that [ResolveExternalDependenciesTask],
  * so that in general graph will be deserialized from the cache entry.
  */
+context(_: ProblemReporter)
 internal suspend fun CliReportingMavenResolver.doResolveExternalDependencies(
     platform: Platform,
     isTest: Boolean,
@@ -151,6 +153,7 @@ class ResolveExternalDependenciesTask(
     companion object {
         private val logger = LoggerFactory.getLogger(ResolveExternalDependenciesTask::class.java)
 
+        context(_: ProblemReporter)
         internal suspend fun resolveModuleDependencies(
             resolutionPlatform: ResolutionPlatform,
             userCacheRoot: AmperUserCacheRoot,

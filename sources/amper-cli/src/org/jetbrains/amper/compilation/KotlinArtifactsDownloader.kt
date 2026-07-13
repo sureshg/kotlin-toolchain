@@ -14,6 +14,7 @@ import org.jetbrains.amper.dependency.resolution.ResolutionPlatform
 import org.jetbrains.amper.dependency.resolution.ResolutionScope
 import org.jetbrains.amper.frontend.dr.resolver.toIncrementalCacheResult
 import org.jetbrains.amper.incrementalcache.IncrementalCache
+import org.jetbrains.amper.problems.reporting.ProblemReporter
 import java.nio.file.Path
 import kotlin.io.path.name
 
@@ -29,6 +30,7 @@ internal class KotlinArtifactsDownloader(
      * The [version] should match the Kotlin version requested by the user, it is the version of the Kotlin compiler
      * that will be used behind the scenes.
      */
+    context(_: ProblemReporter)
     suspend fun downloadKotlinBuildToolsImpl(version: String): Collection<Path> = downloadMavenArtifact(
         groupId = KOTLIN_GROUP_ID,
         artifactId = "kotlin-build-tools-impl",
@@ -41,6 +43,7 @@ internal class KotlinArtifactsDownloader(
      * The [version] should match the Kotlin version requested by the user, it is the version of the Kotlin compiler
      * that will be used behind the scenes.
      */
+    context(_: ProblemReporter)
     suspend fun downloadKotlinCompilerEmbeddable(version: String): List<Path> = downloadMavenArtifact(
         groupId = KOTLIN_GROUP_ID,
         artifactId = "kotlin-compiler-embeddable",
@@ -50,12 +53,14 @@ internal class KotlinArtifactsDownloader(
     /**
      * Downloads the implementation of the embeddable Kotlin commonizer in the given [version].
      */
+    context(_: ProblemReporter)
     suspend fun downloadKotlinCommonizerEmbeddable(version: String): List<Path> = downloadMavenArtifact(
         groupId = KOTLIN_GROUP_ID,
         artifactId = "kotlin-klib-commonizer-embeddable",
         version = version,
     )
 
+    context(_: ProblemReporter)
     suspend fun downloadKotlinCompilerPlugin(
         pluginConfig: SCompilerPluginConfig,
         repositories: List<Repository>,
@@ -71,6 +76,7 @@ internal class KotlinArtifactsDownloader(
         return artifacts.filterNot { it.name.startsWith("kotlin-compiler-embeddable") }
     }
 
+    context(_: ProblemReporter)
     private suspend fun downloadMavenArtifact(
         groupId: String,
         artifactId: String,

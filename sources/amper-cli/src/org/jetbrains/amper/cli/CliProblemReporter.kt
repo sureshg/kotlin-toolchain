@@ -35,9 +35,7 @@ import org.jetbrains.amper.problems.reporting.ProblemReporter
 import org.jetbrains.amper.stdlib.collections.forEachEndAware
 import org.slf4j.LoggerFactory
 
-internal class CliProblemReporter(
-    @Suppress("unused") /*TODO: Soon to be used*/ private val terminal: Terminal,
-) : ProblemReporter {
+private class CliProblemReporter : ProblemReporter {
     private val logger = LoggerFactory.getLogger("build")
 
     override fun reportMessage(message: BuildProblem) {
@@ -100,3 +98,12 @@ internal class CliProblemReporter(
     private fun List<TraceableString>.renderReference(): String =
         joinToString(separator = ".", prefix = $$"${", postfix = "}")
 }
+
+/**
+ * Creates a [ProblemReporter] implementation to be used in CLI.
+ */
+fun createProblemReporterForCli(
+    @Suppress("unused") terminal: Terminal,
+): ProblemReporter = DeduplicatingProblemReporter(
+    delegate = CliProblemReporter(),
+)

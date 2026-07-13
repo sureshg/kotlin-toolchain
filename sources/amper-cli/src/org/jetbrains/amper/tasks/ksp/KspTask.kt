@@ -39,6 +39,7 @@ import org.jetbrains.amper.ksp.KspNativeConfig
 import org.jetbrains.amper.ksp.KspOutputPaths
 import org.jetbrains.amper.ksp.WebBackend
 import org.jetbrains.amper.ksp.downloadKspJars
+import org.jetbrains.amper.problems.reporting.ProblemReporter
 import org.jetbrains.amper.stdlib.io.path.clean
 import org.jetbrains.amper.tasks.ClasspathProvider
 import org.jetbrains.amper.tasks.ResolveExternalDependenciesTask
@@ -166,6 +167,7 @@ internal class KspTask(
         )
     }
 
+    context(_: ProblemReporter)
     private suspend fun downloadKspCli(kspVersion: String): List<Path> {
         val repositories = module.mavenResolveRepositories.map { it.toRepository() }.distinct()
         val kspDownloadConfiguration = mapOf(

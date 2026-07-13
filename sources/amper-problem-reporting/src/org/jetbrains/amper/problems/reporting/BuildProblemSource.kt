@@ -8,6 +8,8 @@ import java.nio.file.Path
 
 /**
  * Designates the place where the cause of the problem is located.
+ *
+ * NOTE: Must implement `equals`/`hashCode` correctly.
  */
 sealed interface BuildProblemSource
 
@@ -24,7 +26,7 @@ data object GlobalBuildProblemSource : BuildProblemSource
  * @param groupingMessage a message to be displayed before listing the list of sources,
  *   e.g. `"See here:"` or `"Encountered in:"`
  */
-class MultipleLocationsBuildProblemSource(
+data class MultipleLocationsBuildProblemSource(
     val sources: List<FileBuildProblemSource>,
     val groupingMessage: String,
 ) : BuildProblemSource {

@@ -22,6 +22,8 @@ import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.problems.reporting.BuildProblem
 import org.jetbrains.amper.problems.reporting.CollectingProblemReporter
 import org.jetbrains.amper.problems.reporting.Level
+import org.jetbrains.amper.problems.reporting.ProblemReporter
+import org.jetbrains.amper.problems.reporting.plus
 import org.jetbrains.amper.telemetry.spanBuilder
 import org.jetbrains.amper.telemetry.use
 import kotlin.io.path.pathString
@@ -37,6 +39,7 @@ open class MavenResolver(
     /**
      * Perform resolution over a set of maven coordinates.
      */
+    context(_: ProblemReporter)
     suspend fun resolve(
         coordinates: List<MavenCoordinates>,
         repositories: List<Repository>,
@@ -51,6 +54,7 @@ open class MavenResolver(
      * Create a [Context] and resolve dependencies of the passed [mavenCoordinates].
      * Also, create respective span.
      */
+    context(_: ProblemReporter)
     suspend fun resolveBomAware(
         repositories: List<Repository>,
         scope: ResolutionScope,
@@ -90,6 +94,7 @@ open class MavenResolver(
     /**
      * Perform a resolution over a passed [root].
      */
+    context(problemReporter: ProblemReporter)
     private suspend fun resolveAndReport(
         resolveSourceMoniker: String,
         resolve: suspend () -> ResolvedGraph
@@ -97,15 +102,15 @@ open class MavenResolver(
         resolve()
             .also { resolvedGraph ->
                 // Collecting diagnostics from the resolved graph
-                val reporter = CollectingProblemReporter().also {
-                    collectBuildProblems(graph = resolvedGraph.root, it, Level.Warning)
-                }
-                processProblems(reporter.problems, resolveSourceMoniker)
+                val collecting = CollectingProblemReporter()
+                collectBuildProblems(graph = resolvedGraph.root, collecting + problemReporter, Level.Warning)
+                handleProblems(collecting.problems, resolveSourceMoniker)
             }
 
     /**
      * Perform a resolution of module dependencies [moduleDependencies].
      */
+    context(_: ProblemReporter)
     suspend fun resolve(
         moduleDependencies: ModuleDependencies,
         isTest: Boolean,
@@ -121,11 +126,9 @@ open class MavenResolver(
         )
     }
 
-    protected open fun processProblems(buildProblems: List<BuildProblem>, resolveSourceMoniker: String) =
+    protected open fun handleProblems(buildProblems: List<BuildProblem>, resolveSourceMoniker: String) =
         Unit
 }
-
-class MavenResolverException(message: String, cause: Throwable? = null) : RuntimeException(message, cause)
 
 fun ResolvedGraph.toIncrementalCacheResult() =
     IncrementalCache.ExecutionResult(outputFiles = root.dependencyPaths(), expirationTime = expirationTime)

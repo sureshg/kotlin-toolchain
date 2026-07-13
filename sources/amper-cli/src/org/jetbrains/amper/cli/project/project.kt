@@ -34,19 +34,21 @@ internal suspend fun ProjectCliContext.preparePluginsAndReadModel(): Model {
     val pluginData = spanBuilder("Prepare plugins")
         .use { preparePlugins(context = this@preparePluginsAndReadModel) }
     val mavenPluginsWithXmls = spanBuilder("Prepare Maven plugins").use {
-        prepareMavenPlugins(
-            projectContext = projectContext,
-            incrementalCache = mavenPluginsIncrementalCache(
-                projectContext,
-                GlobalOpenTelemetry.get(),
-                AmperBuild.mavenVersion
-            ),
-        )
+        context(problemReporter) {
+            prepareMavenPlugins(
+                projectContext = projectContext,
+                incrementalCache = mavenPluginsIncrementalCache(
+                    projectContext,
+                    GlobalOpenTelemetry.get(),
+                    AmperBuild.mavenVersion
+                ),
+            )
+        }
     }
 
     val collecting = CollectingProblemReporter()
     val model = spanBuilder("Read model from Kotlin project files").use {
-        with(collecting + problemReporter) {
+        context(collecting + problemReporter) {
             projectContext.readProjectModel(
                 pluginData = pluginData,
                 mavenPluginXmls = mavenPluginsWithXmls,

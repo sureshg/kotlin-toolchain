@@ -12,6 +12,7 @@ import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.jar.JarConfig
 import org.jetbrains.amper.jar.ZipInput
 import org.jetbrains.amper.jar.writeJar
+import org.jetbrains.amper.problems.reporting.ProblemReporter
 import java.nio.file.Path
 import kotlin.io.path.createParentDirectories
 import kotlin.io.path.pathString
@@ -21,6 +22,7 @@ abstract class AbstractJarTask(
     private val incrementalCache: IncrementalCache,
 ) : Task {
 
+    context(_: ProblemReporter)
     protected abstract suspend fun assembleInputDirs(dependenciesResult: List<TaskResult>): List<ZipInput>
     protected abstract fun outputJarPath(): Path
     protected abstract fun jarConfig(): JarConfig

@@ -17,12 +17,14 @@ import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.maven.MavenPluginXml
 import org.jetbrains.amper.maven.download.downloadSingleArtifactJar
 import org.jetbrains.amper.maven.parseMavenPluginXml
+import org.jetbrains.amper.problems.reporting.ProblemReporter
 import org.slf4j.LoggerFactory
 
 /**
  * Download specified maven plugins jars, extract their `plugin.xml` metadata and parse it.
  */
 @UsedInIdePlugin
+context(_: ProblemReporter)
 suspend fun prepareMavenPlugins(
     projectContext: AmperProjectContext,
     incrementalCache: IncrementalCache,

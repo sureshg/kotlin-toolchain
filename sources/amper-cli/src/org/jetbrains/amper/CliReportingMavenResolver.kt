@@ -4,50 +4,26 @@
 
 package org.jetbrains.amper
 
-import io.opentelemetry.api.trace.Span
-import org.jetbrains.amper.cli.logging.withoutConsoleLogging
 import org.jetbrains.amper.cli.userReadableError
 import org.jetbrains.amper.core.AmperUserCacheRoot
 import org.jetbrains.amper.frontend.dr.resolver.MavenResolver
-import org.jetbrains.amper.frontend.dr.resolver.MavenResolverException
-import org.jetbrains.amper.frontend.messages.renderMessage
 import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.problems.reporting.BuildProblem
 import org.jetbrains.amper.problems.reporting.Level
-import org.slf4j.LoggerFactory
 
 /**
- * [org.jetbrains.amper.frontend.dr.resolver.MavenResolver] inheritor that logs encountered problems to the CLI.
+ * [org.jetbrains.amper.frontend.dr.resolver.MavenResolver] inheritor that throws a
+ * [org.jetbrains.amper.cli.UserReadableError] if any problems are errors.
  */
 class CliReportingMavenResolver(
     userCacheRoot: AmperUserCacheRoot,
     incrementalCache: IncrementalCache,
 ) : MavenResolver(userCacheRoot, incrementalCache) {
 
-    private val logger = LoggerFactory.getLogger(javaClass)
-
-    override fun processProblems(buildProblems: List<BuildProblem>, resolveSourceMoniker: String) {
-        val span = Span.current()
-        
-        for (buildProblem in buildProblems) {
-            val message = renderMessage(buildProblem)
-            when (buildProblem.level) {
-                Level.WeakWarning -> logger.info(message)
-                Level.Warning -> logger.warn(message)
-                Level.Error -> {
-                    span.recordException(MavenResolverException(message))
-                    withoutConsoleLogging {
-                        logger.error(message)
-                    }
-                }
-            }
-        }
-        
+    override fun handleProblems(buildProblems: List<BuildProblem>, resolveSourceMoniker: String) {
         val errors = buildProblems.filter { it.level.atLeastAsSevereAs(Level.Error) }
         if (errors.isNotEmpty()) {
-            userReadableError(
-                "Unable to resolve dependencies for $resolveSourceMoniker:\n\n" +
-                        errors.joinToString("\n\n") { renderMessage(it) })
+            userReadableError("Unable to resolve dependencies for $resolveSourceMoniker, see the errors above.")
         }
     }
 }

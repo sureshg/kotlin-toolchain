@@ -17,6 +17,7 @@ dependencies:
   - //sources/amper-telemetry
   - //sources/core
   - //sources/dependency-resolution: exported
+  - //sources/amper-problem-reporting: exported
   - //sources/libraries/telemetry
   - //sources/libraries/incremental-cache
   - //sources/libraries/kotlin-native-rules: exported

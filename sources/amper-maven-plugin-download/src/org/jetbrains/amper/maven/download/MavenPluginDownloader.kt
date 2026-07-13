@@ -11,6 +11,7 @@ import org.jetbrains.amper.dependency.resolution.Repository
 import org.jetbrains.amper.dependency.resolution.ResolutionPlatform
 import org.jetbrains.amper.dependency.resolution.ResolutionScope
 import org.jetbrains.amper.frontend.dr.resolver.MavenResolver
+import org.jetbrains.amper.problems.reporting.ProblemReporter
 import java.nio.file.Path
 
 /**
@@ -20,6 +21,7 @@ import java.nio.file.Path
  * @param repositories The repositories to search (defaults to Maven Central)
  * @return Path to the downloaded JAR file, or null if no JAR was found
  */
+context(_: ProblemReporter)
 suspend fun MavenResolver.downloadSingleArtifactJar(
     coordinates: MavenCoordinates,
     repositories: List<Repository> = listOf(MavenCentral),

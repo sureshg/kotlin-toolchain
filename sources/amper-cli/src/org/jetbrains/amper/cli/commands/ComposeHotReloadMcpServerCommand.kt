@@ -68,10 +68,13 @@ internal class ComposeHotReloadMcpServerCommand : AmperProjectAwareCommand(name 
             cliContext.jdkProvider.getDefaultJdk()
         }
 
-        val classpath = ToolingArtifactsDownloader(
+        val downloader = ToolingArtifactsDownloader(
             userCacheRoot = cliContext.userCacheRoot,
             incrementalCache = cliContext.incrementalCache,
-        ).downloadHotReloadMcp(hotReloadVersion.toString())
+        )
+        val classpath = context(cliContext.problemReporter) {
+            downloader.downloadHotReloadMcp(hotReloadVersion.toString())
+        }
 
         val pidFile = JvmHotRunTask.pidFilePath(cliContext.buildOutputRoot)
         val javaArgs = [

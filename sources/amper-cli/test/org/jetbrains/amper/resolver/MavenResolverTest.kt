@@ -9,11 +9,18 @@ import org.jetbrains.amper.CliReportingMavenResolver
 import org.jetbrains.amper.cli.AmperVersion
 import org.jetbrains.amper.cli.UserReadableError
 import org.jetbrains.amper.cli.context.AmperBuildOutputRoot
+import org.jetbrains.amper.cli.userReadableError
 import org.jetbrains.amper.core.AmperUserCacheRoot
+import org.jetbrains.amper.dependency.resolution.MavenCoordinates
 import org.jetbrains.amper.dependency.resolution.MavenRepository
+import org.jetbrains.amper.dependency.resolution.Repository
 import org.jetbrains.amper.dependency.resolution.ResolutionPlatform
 import org.jetbrains.amper.dependency.resolution.ResolutionScope
+import org.jetbrains.amper.dependency.resolution.ResolvedGraph
+import org.jetbrains.amper.frontend.messages.renderMessage
 import org.jetbrains.amper.incrementalcache.IncrementalCache
+import org.jetbrains.amper.problems.reporting.CollectingProblemReporter
+import org.jetbrains.amper.problems.reporting.Level
 import org.jetbrains.amper.test.dr.toMavenCoordinates
 import org.jetbrains.amper.test.runTestWithMdc
 import org.junit.jupiter.api.assertThrows
@@ -45,7 +52,7 @@ class MavenResolverTest {
         val resolver = CliReportingMavenResolver(AmperUserCacheRoot(amperCacheRoot), incrementalCache)
 
         val result = runBlocking {
-            resolver.resolve(
+            resolver.resolveInTest(
                 coordinates = listOf("org.tinylog:slf4j-tinylog:2.7.0-M1").toMavenCoordinates(),
                 repositories = listOf(MAVEN_CENTRAL_CACHE_REDIRECTOR),
                 scope = ResolutionScope.COMPILE,
@@ -73,7 +80,7 @@ class MavenResolverTest {
 
         // https://search.maven.org/artifact/org.tinylog/tinylog-api/2.7.0-M1/bundle
         val result = runBlocking {
-            resolver.resolve(
+            resolver.resolveInTest(
                 coordinates = listOf("org.tinylog:tinylog-api:2.7.0-M1").toMavenCoordinates(),
                 repositories = listOf(MAVEN_CENTRAL_CACHE_REDIRECTOR),
                 scope = ResolutionScope.COMPILE,
@@ -93,7 +100,7 @@ class MavenResolverTest {
         val resolver = CliReportingMavenResolver(AmperUserCacheRoot(amperCacheRoot), incrementalCache)
 
         val result = runBlocking {
-            resolver.resolve(
+            resolver.resolveInTest(
                 coordinates = listOf("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0").toMavenCoordinates(),
                 repositories = listOf(MAVEN_CENTRAL_CACHE_REDIRECTOR),
                 scope = ResolutionScope.COMPILE,
@@ -118,7 +125,7 @@ class MavenResolverTest {
 
         // TODO find a smaller example of maven central artifact with runtime-scoped dependencies
         val result = runBlocking {
-            resolver.resolve(
+            resolver.resolveInTest(
                 coordinates = listOf("org.jetbrains.kotlin:kotlin-build-tools-impl:1.9.22").toMavenCoordinates(),
                 repositories = listOf(MAVEN_CENTRAL_CACHE_REDIRECTOR),
                 scope = ResolutionScope.RUNTIME,
@@ -155,7 +162,7 @@ class MavenResolverTest {
 
         val t = assertThrows<UserReadableError> {
             runBlocking {
-                resolver.resolve(
+                resolver.resolveInTest(
                     coordinates = listOf("org.tinylog:slf4j-tinylog:9999").toMavenCoordinates(),
                     repositories = listOf(MAVEN_CENTRAL_CACHE_REDIRECTOR),
                     scope = ResolutionScope.COMPILE,
@@ -183,7 +190,7 @@ class MavenResolverTest {
         val resolver = CliReportingMavenResolver(AmperUserCacheRoot(amperCacheRoot), incrementalCache)
 
         // kotlinx-datetime:0.2.1 is available for macos_x64
-        val macosX64 = resolver.resolve(
+        val macosX64 = resolver.resolveInTest(
             coordinates = listOf("org.jetbrains.kotlinx:kotlinx-datetime:0.2.1").toMavenCoordinates(),
             repositories = listOf(MAVEN_CENTRAL_CACHE_REDIRECTOR),
             scope = ResolutionScope.COMPILE,
@@ -195,7 +202,7 @@ class MavenResolverTest {
 
         // kotlinx-datetime:0.2.1 is NOT available for macos_arm64
         val t = assertThrows<UserReadableError> {
-            resolver.resolve(
+            resolver.resolveInTest(
                 coordinates = listOf("org.jetbrains.kotlinx:kotlinx-datetime:0.2.1").toMavenCoordinates(),
                 repositories = listOf(MAVEN_CENTRAL_CACHE_REDIRECTOR),
                 scope = ResolutionScope.COMPILE,
@@ -220,7 +227,7 @@ class MavenResolverTest {
 
         // TODO find a smaller example of maven central artifact with runtime-scoped dependencies
         val result = runBlocking {
-            resolver.resolve(
+            resolver.resolveInTest(
                 coordinates = listOf("org.gradle:gradle-tooling-api:8.4").toMavenCoordinates(),
                 repositories = listOf(
                     MAVEN_CENTRAL_CACHE_REDIRECTOR,
@@ -247,7 +254,7 @@ class MavenResolverTest {
 
         val t = assertThrows<UserReadableError> {
             runBlocking {
-                resolver.resolve(
+                resolver.resolveInTest(
                     coordinates = listOf("org.tinylog:slf4j-tinylog:9999", "org.tinylog:xxx:9998").toMavenCoordinates(),
                     repositories = listOf(MAVEN_CENTRAL_CACHE_REDIRECTOR),
                     scope = ResolutionScope.COMPILE,
@@ -277,4 +284,39 @@ class MavenResolverTest {
     }
 
     private fun List<String>.toMavenCoordinates() = map { it.toMavenCoordinates() }
+
+    /**
+     * Wraps [CliReportingMavenResolver.resolve] with a [CollectingProblemReporter] and re-throws any
+     * [UserReadableError] with the aggregated error messages inlined, so that assertions in these
+     * tests can inspect the full details of the failure via the exception message (which is how it
+     * used to work before [CliReportingMavenResolver.handleProblems] started reporting individual
+     * problems via a [org.jetbrains.amper.problems.reporting.ProblemReporter]).
+     */
+    private suspend fun CliReportingMavenResolver.resolveInTest(
+        coordinates: List<MavenCoordinates>,
+        repositories: List<Repository>,
+        scope: ResolutionScope,
+        platform: ResolutionPlatform,
+        resolveSourceMoniker: String,
+    ): ResolvedGraph {
+        val reporter = CollectingProblemReporter()
+        try {
+            return context(reporter) {
+                resolve(
+                    coordinates = coordinates,
+                    repositories = repositories,
+                    scope = scope,
+                    platform = platform,
+                    resolveSourceMoniker = resolveSourceMoniker,
+                )
+            }
+        } catch (e: UserReadableError) {
+            val errors = reporter.problems.filter { it.level.atLeastAsSevereAs(Level.Error) }
+            userReadableError(
+                "Unable to resolve dependencies for $resolveSourceMoniker:\n\n" +
+                        errors.joinToString("\n\n") { renderMessage(it) },
+                cause = e,
+            )
+        }
+    }
 }

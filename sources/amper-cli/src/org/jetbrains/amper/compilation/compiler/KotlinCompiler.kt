@@ -7,6 +7,7 @@ package org.jetbrains.amper.compilation.compiler
 import org.jetbrains.amper.ProcessRunner
 import org.jetbrains.amper.compilation.KotlinArtifactsDownloader
 import org.jetbrains.amper.jdk.provisioning.Jdk
+import org.jetbrains.amper.problems.reporting.ProblemReporter
 import org.jetbrains.amper.processes.ArgsMode
 import org.jetbrains.amper.processes.LoggingProcessOutputListener
 import org.jetbrains.amper.processes.ProcessResult
@@ -22,6 +23,7 @@ import kotlin.io.path.Path
  * The [version] should match the Kotlin version requested by the user, it is the version of the Kotlin compiler
  * that will be used behind the scenes.
  */
+context(_: ProblemReporter)
 internal suspend fun KotlinArtifactsDownloader.downloadKotlinCompiler(version: String, jdk: Jdk): KotlinCompiler =
     KotlinCompiler(downloadKotlinCompilerEmbeddable(version), jdk)
 

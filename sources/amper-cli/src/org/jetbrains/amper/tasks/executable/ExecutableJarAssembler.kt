@@ -11,6 +11,7 @@ import org.jetbrains.amper.jar.CompressionStrategy
 import org.jetbrains.amper.jar.JarConfig
 import org.jetbrains.amper.jar.ZipConfig
 import org.jetbrains.amper.jar.ZipInput
+import org.jetbrains.amper.problems.reporting.ProblemReporter
 import org.jetbrains.amper.run.ToolingArtifactsDownloader
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -26,6 +27,7 @@ class ExecutableJarAssembler(
     private val incrementalCache: IncrementalCache
 ) {
 
+    context(_: ProblemReporter)
     suspend fun ExecutableJarConfig.prepareJarInputs(
         classes: List<Path>,
         runtimeDependencies: List<Path>
@@ -57,6 +59,7 @@ class ExecutableJarAssembler(
         zipConfig = ZipConfig(compressionStrategy = CompressionStrategy.Selective(listOf("^BOOT-INF/lib/.+"))),
     )
 
+    context(_: ProblemReporter)
     private suspend fun downloadSpringBootLoader(): Path {
         val toolingArtifactsDownloader = ToolingArtifactsDownloader(userCacheRoot, incrementalCache)
         return toolingArtifactsDownloader.downloadSpringBootLoader()

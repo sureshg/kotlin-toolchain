@@ -64,6 +64,10 @@ suspend fun main(args: Array<String>) {
         exitProcess(e.exitCode)
     } catch (e: UserReadableError) {
         printUserError(e.message, e.cause)
+        // See `resultsOrThrowCombinedError`
+        e.suppressedExceptions
+            .filterIsInstance<UserReadableError>()
+            .forEach { printUserError(it.message, it.cause) }
         exitProcess(e.exitCode)
     } catch (e: Exception) {
         printInternalError(e)

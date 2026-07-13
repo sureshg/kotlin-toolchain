@@ -77,6 +77,7 @@ class JvmHotRunTask(
             .compose
     }
 
+    context(_: ProblemReporter)
     override suspend fun getJvmArgs(dependenciesResult: List<TaskResult>): List<String> {
         val agentClasspath = toolingArtifactsDownloader.downloadHotReloadAgent(
             hotReloadVersion = composeSettingsJvm.experimental.hotReload.version,
@@ -107,6 +108,7 @@ class JvmHotRunTask(
         return amperJvmArgs + runSettings.userJvmArgs
     }
 
+    context(_: ProblemReporter)
     override suspend fun getClasspath(dependenciesResult: List<TaskResult>): List<Path> {
         val classpath = super.getClasspath(dependenciesResult)
         val agentClasspath = toolingArtifactsDownloader.downloadHotReloadAgent(

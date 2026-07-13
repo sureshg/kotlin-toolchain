@@ -73,6 +73,7 @@ abstract class AbstractJvmRunTask(
     context(_: ProblemReporter)
     protected open suspend fun getJdk(): Jdk = jdkProvider.getJdkOrUserError(module.jdkSettings)
 
+    context(_: ProblemReporter)
     protected open suspend fun getJvmArgs(dependenciesResult: List<TaskResult>): List<String> = buildList {
         if (fragments.any { it.settings.ktor.enabled }) {
             add("-Dio.ktor.development=true")
@@ -81,6 +82,7 @@ abstract class AbstractJvmRunTask(
         addAll(runSettings.userJvmArgs)
     }
 
+    context(_: ProblemReporter)
     protected open suspend fun getClasspath(dependenciesResult: List<TaskResult>): List<Path> {
         val runtimeClasspathTask = dependenciesResult.filterIsInstance<JvmRuntimeClasspathTask.Result>().singleOrNull()
             ?: error("Could not find a single ${JvmRuntimeClasspathTask.Result::class.simpleName} in dependencies of ${taskName.id.value}")

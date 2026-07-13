@@ -14,6 +14,7 @@ import org.jetbrains.amper.frontend.Platform
 import org.jetbrains.amper.frontend.kotlin.CompilerPluginConfig
 import org.jetbrains.amper.frontend.kotlin.ParcelizeCompilerPluginConfig
 import org.jetbrains.amper.frontend.kotlin.compilerPluginsConfigurations
+import org.jetbrains.amper.problems.reporting.ProblemReporter
 import java.nio.file.Path
 
 /**
@@ -93,6 +94,7 @@ internal data class ResolvedCompilerPlugin(
  * Downloads the jars of each compiler plugin and their dependencies, and returns ready-to-use
  * [ResolvedCompilerPlugin]s.
  */
+context(_: ProblemReporter)
 internal suspend fun KotlinArtifactsDownloader.downloadCompilerPlugins(
     plugins: List<SCompilerPluginConfig>,
     repositories: List<Repository>,

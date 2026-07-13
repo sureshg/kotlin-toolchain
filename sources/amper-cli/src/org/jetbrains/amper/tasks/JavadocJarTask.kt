@@ -11,6 +11,7 @@ import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.incrementalcache.executeForFiles
 import org.jetbrains.amper.jar.JarConfig
 import org.jetbrains.amper.jar.ZipInput
+import org.jetbrains.amper.problems.reporting.ProblemReporter
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.createDirectories
@@ -29,6 +30,7 @@ class JavadocJarTask(
     private val incrementalCache: IncrementalCache,
 ) : AbstractJarTask(taskName, incrementalCache) {
 
+    context(_: ProblemReporter)
     override suspend fun assembleInputDirs(dependenciesResult: List<TaskResult>): List<ZipInput> {
         // TODO give the option to provide real Javadocs by calling Dokka
         val contentsDir = taskOutputRoot.path / "contents"

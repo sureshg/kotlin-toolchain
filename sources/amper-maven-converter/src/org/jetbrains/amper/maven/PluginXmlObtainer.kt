@@ -17,6 +17,7 @@ import org.jetbrains.amper.frontend.dr.resolver.MavenResolver
 import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.maven.contributor.filterJarProjects
 import org.jetbrains.amper.maven.download.downloadSingleArtifactJar
+import org.jetbrains.amper.problems.reporting.ProblemReporter
 import org.slf4j.LoggerFactory
 import java.nio.file.Path
 import kotlin.io.path.div
@@ -43,6 +44,7 @@ private val pluginsToIgnore = setOf(
 
 private data class PluginId(val groupId: String, val artifactId: String)
 
+context(_: ProblemReporter)
 internal suspend fun Set<MavenProject>.extractUnknownPluginXmls(
     userCacheRoot: AmperUserCacheRoot,
     codeVersion: String = "1.0-SNAPSHOT",
@@ -76,6 +78,7 @@ internal suspend fun Set<MavenProject>.extractUnknownPluginXmls(
             .filterNotNull()
     }
 
+context(_: ProblemReporter)
 private suspend fun downloadAndParsePluginXml(
     mavenResolver: MavenResolver,
     plugin: Plugin,
@@ -100,6 +103,7 @@ private suspend fun downloadAndParsePluginXml(
     }
 }
 
+context(_: ProblemReporter)
 private suspend fun downloadPlugin(
     mavenResolver: MavenResolver,
     coordinates: MavenCoordinates,

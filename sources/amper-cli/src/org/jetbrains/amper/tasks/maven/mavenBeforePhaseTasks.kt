@@ -19,6 +19,7 @@ import org.jetbrains.amper.frontend.Platform
 import org.jetbrains.amper.frontend.dr.resolver.AmperResolutionSettings
 import org.jetbrains.amper.frontend.dr.resolver.ModuleDependencies
 import org.jetbrains.amper.incrementalcache.IncrementalCache
+import org.jetbrains.amper.problems.reporting.ProblemReporter
 import org.jetbrains.amper.tasks.EmptyTaskResult
 import org.jetbrains.amper.tasks.TaskResult
 import org.jetbrains.amper.tasks.artifacts.ArtifactTaskBase
@@ -68,6 +69,7 @@ open class BeforeMavenPhaseTask(
 
     override val taskName get() = parameters.taskName
 
+    context(_: ProblemReporter)
     open suspend fun PhaseTaskParameters.configureSharedMavenProject(dependenciesResult: List<TaskResult>) =
         Unit
 
@@ -95,6 +97,7 @@ class GeneratedSourcesMavenPhaseTask(parameters: PhaseTaskParameters) : BeforeMa
         quantifier = Quantifier.AnyOrNone,
     )
 
+    context(_: ProblemReporter)
     override suspend fun PhaseTaskParameters.configureSharedMavenProject(dependenciesResult: List<TaskResult>) =
         if (!isTest) sharedMavenProject.addCompileSourceRoots(additionalSourceDirs.map { it.path })
         else sharedMavenProject.addTestCompileSourceRoots(additionalSourceDirs.map { it.path })
@@ -113,6 +116,7 @@ class AdditionalResourcesAwareMavenPhaseTask(parameters: PhaseTaskParameters) : 
         quantifier = Quantifier.AnyOrNone,
     )
 
+    context(_: ProblemReporter)
     override suspend fun PhaseTaskParameters.configureSharedMavenProject(dependenciesResult: List<TaskResult>) =
         if (!isTest) sharedMavenProject.addResources(additionalResourceDirs.map { it.path })
         else sharedMavenProject.addTestResources(additionalResourceDirs.map { it.path })
@@ -130,6 +134,7 @@ class ClassesAwareMavenPhaseTask(parameters: PhaseTaskParameters) : BeforeMavenP
         isTest = parameters.isTest,
     )
 
+    context(_: ProblemReporter)
     override suspend fun PhaseTaskParameters.configureSharedMavenProject(
         dependenciesResult: List<TaskResult>,
     ) {
@@ -187,6 +192,7 @@ class InitialMavenPhaseTask(parameters: PhaseTaskParameters) : BeforeMavenPhaseT
         }
 
     // Here we are converting the external dependencies graph to the flat list of maven artifacts.
+    context(_: ProblemReporter)
     private suspend fun PhaseTaskParameters.getExternalAetherArtifacts(isTest: Boolean) =
         mavenResolver.doResolveExternalDependencies(
             platform = Platform.JVM,
@@ -227,6 +233,7 @@ class InitialMavenPhaseTask(parameters: PhaseTaskParameters) : BeforeMavenPhaseT
                 .apply { file = path.resolve(it).toFile() }
         }
 
+    context(_: ProblemReporter)
     override suspend fun PhaseTaskParameters.configureSharedMavenProject(dependenciesResult: List<TaskResult>) {
         val classesArtifacts = moduleDependenciesClasses
             .flatMap { it.toArtifacts(if (it.isTest) MavenArtifact.SCOPE_TEST else MavenArtifact.SCOPE_RUNTIME) }

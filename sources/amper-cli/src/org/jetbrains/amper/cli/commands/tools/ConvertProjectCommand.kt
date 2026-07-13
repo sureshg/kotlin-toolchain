@@ -5,12 +5,14 @@
 package org.jetbrains.amper.cli.commands.tools
 
 import com.github.ajalt.clikt.core.Context
+import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.path
 import org.jetbrains.amper.cli.AmperVersion
 import org.jetbrains.amper.cli.commands.AmperSubcommand
+import org.jetbrains.amper.cli.createProblemReporterForCli
 import org.jetbrains.amper.cli.userReadableError
 import org.jetbrains.amper.maven.MavenProjectConvertor
 import org.jetbrains.amper.maven.contributor.MavenRootNotFoundException
@@ -46,13 +48,15 @@ internal class ConvertProjectCommand : AmperSubcommand(name = "convert-project")
                 userReadableError("pom.xml file not found at: $pathToPomXml")
             }
             spanBuilder("Convert Maven Project to use the Kotlin Toolchain").use {
-                MavenProjectConvertor.convert(
-                    pathToPomXml,
-                    overwriteExisting,
-                    commonOptions.sharedCachesRoot,
-                    AmperVersion.codeIdentifier,
-                    enableCompatibilityPlugins
-                )
+                context(createProblemReporterForCli(terminal)) {
+                    MavenProjectConvertor.convert(
+                        pathToPomXml,
+                        overwriteExisting,
+                        commonOptions.sharedCachesRoot,
+                        AmperVersion.codeIdentifier,
+                        enableCompatibilityPlugins
+                    )
+                }
             }
             printSuccessfulCommandConclusion("Convert successful")
         } catch (e: MavenRootNotFoundException) {

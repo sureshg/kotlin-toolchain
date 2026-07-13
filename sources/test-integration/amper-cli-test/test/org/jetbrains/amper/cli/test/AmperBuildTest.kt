@@ -37,7 +37,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
-import kotlin.test.fail
 
 @ParameterizedTest(name = "{displayName}; jps={0}")
 @ValueSource(booleans = [true, false])
@@ -196,43 +195,24 @@ class AmperBuildTest : AmperCliTestBase() {
             assertEmptyStdErr = false,
         )
 
-        val actualStderr = r.stderr.lines().filter { it.isNotBlank() }.joinToString("\n")
+        // The order and set of "ERROR: Task ..." lines is non-deterministic depending on task execution
+        // order and which tasks fail first, so we exclude them here and assert on the diagnostic block only.
+        val actualStderr = r.stderr.lines()
+            .filter { it.isNotBlank() }
+            .filterNot { it.startsWith("ERROR: Task ") }
+            .joinToString("\n")
         val sharedModule = r.projectDir.resolve("shared/module.yaml")
 
-        // Prepend \n manually, since trimIndent will remove it.
-        val sharedErrorPart = "\n" + """
-            $sharedModule:6:5: Unable to resolve dependency org.junit.jupiter:junit-jupiter-api:9999
+        val expected = """
+            ERROR $sharedModule:6:5: Unable to resolve dependency org.junit.jupiter:junit-jupiter-api:9999
               Unable to download checksums of file junit-jupiter-api-9999.pom
               Unable to download checksums of file junit-jupiter-api-9999.module
             Repositories used for resolution:
               - https://cache-redirector.jetbrains.com/kotlin/repo1.maven.org/maven2
               - https://maven.google.com
-            """.trimIndent()
-        
-        // Could be any of them:
-        fun errorPrefix(module: String, task: String) = 
-            "ERROR: Task ':$module:$task' failed: Unable to resolve dependencies for module $module:"
-        val expectedOf = listOf(
-            errorPrefix("app", "resolveDependenciesJvm") + sharedErrorPart.repeat(1),
-            errorPrefix("app", "resolveDependenciesJvmTest") + sharedErrorPart.repeat(1),
-            errorPrefix("shared", "resolveDependenciesJvm") + sharedErrorPart.repeat(2),
-            errorPrefix("shared", "resolveDependenciesJvmTest") + sharedErrorPart.repeat(2),
-        )
+        """.trimIndent()
 
-        if (actualStderr !in expectedOf) {
-            val expectedActualComparisonText = buildString {
-                expectedOf.forEachIndexed { index, it ->
-                    appendLine(it.prependIndent("EXPECTED$index> "))
-                    appendLine()
-                }
-                appendLine(actualStderr.prependIndent("ACTUAL> "))
-            }
-
-            // produce IDEA-viewable diff
-            println(expectedActualComparisonText)
-
-            fail("Kotlin Toolchain error doesn't match expected dependency resolution errors:\n$expectedActualComparisonText")
-        }
+        assertEquals(expected, actualStderr)
     }
 
     @Test
