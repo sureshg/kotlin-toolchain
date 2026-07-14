@@ -280,7 +280,27 @@ Read more in the [Testing](../user-guide/testing.md) section.
 | `signing: object`             |                         | Android signing settings. [Read more](https://developer.android.com/studio/publish/app-signing).                                                                                                                              |
 | `versionCode: int`            | 1                       | Version code. [Read more](https://developer.android.com/studio/publish/versioning).                                                                                                                                           |
 | `versionName: string`         | `unspecified`           | Version name. [Read more](https://developer.android.com/studio/publish/versioning).                                                                                                                                           |
+| `resourcePackaging: object`   | (empty)                 | Configure how duplicate Java resources from dependencies are packaged in an Android app. See [Resolving duplicate Java resources](../user-guide/product-types/android-app.md#resolving-duplicate-java-resources).                                                                            |
 | `parcelize: object \| string` | (disabled)              | Configure [Parcelize](https://developer.android.com/kotlin/parcelize).                                                                                                                                                        |
+
+#### `settings.android.resourcePackaging`
+
+`settings.android.resourcePackaging` configures how Java resources from dependencies are packaged in an Android app.
+Use it to resolve duplicate-resource failures from `MergeJavaResWorkAction`.
+
+| Attribute                 | Default | Description                                                                                      |
+|---------------------------|---------|--------------------------------------------------------------------------------------------------|
+| `excludes: string list`   | `[]`    | Glob patterns matching Java resources that should not be packaged in the APK.                    |
+| `merges: string list`     | `[]`    | Glob patterns matching Java resources whose contents should be concatenated into one APK entry. |
+| `pickFirsts: string list` | `[]`    | Glob patterns matching Java resources for which only the first occurrence should be packaged.   |
+
+```yaml title="Excluding a duplicated Java resource"
+settings:
+  android:
+    resourcePackaging:
+      excludes:
+        - META-INF/versions/9/OSGI-INF/MANIFEST.MF
+```
 
 #### `settings.android.parcelize`
 

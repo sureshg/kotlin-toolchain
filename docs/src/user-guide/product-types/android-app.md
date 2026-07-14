@@ -46,6 +46,33 @@ You can use the `build` command to create an APK, or the `package` command to cr
 The `package` command will not only build the APK, but also minify/obfuscate it with ProGuard, and sign it.
 See the dedicated [signing](#signing) and [code shrinking](#code-shrinking) sections below to learn how to configure this.
 
+### Resolving duplicate Java resources
+
+Dependencies can package Java resources under the same path. If Android packaging fails in `MergeJavaResWorkAction`
+with an error such as `2 files found with path ...`, use `settings.android.resourcePackaging` to tell the Android
+packager how to handle the conflict.
+
+For example, the following configuration excludes a duplicated resource from the APK:
+
+```yaml
+settings:
+  android:
+    resourcePackaging:
+      excludes:
+        - META-INF/versions/9/OSGI-INF/MANIFEST.MF
+```
+
+Choose the rule that matches the resource's semantics:
+
+* `excludes` omits matching resources from the APK.
+* `pickFirsts` packages only the first matching resource.
+* `merges` concatenates all matching resources into a single APK entry.
+
+The values are glob patterns accepted by Android's
+[`Packaging.Resources`](https://developer.android.com/reference/tools/gradle-api/com/android/build/api/dsl/Resources)
+API. See the [`resourcePackaging` reference](../../reference/module.md#settingsandroidresourcepackaging) for all
+available options.
+
 ### Code shrinking
 
 When creating a release build with the Kotlin Toolchain, R8 will be used automatically, with minification and shrinking enabled.
