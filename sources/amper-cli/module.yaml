@@ -118,3 +118,24 @@ settings:
       # NOTE: The maven subsystem worked before even with the "wrong" dependency being present in the classpath,
       #  but that relied on the Amper classpath ordering. And that ordering is not really stable atm: AMPER-5148
       - org.codehaus.plexus:plexus-component-api
+
+      # This legacy ASM library (org.objectweb.asm.* as in ASM 3.x, where ClassVisitor is an interface) is pulled
+      # transitively via:
+      # org.apache.maven.plugins:maven-site-plugin:3.22.0
+      #    ╰─── org.apache.maven.doxia:doxia-site-renderer:2.1.0
+      #         ╰─── org.apache.velocity.tools:velocity-tools-generic:3.1
+      #              ╰─── org.apache.commons:commons-digester3:3.2
+      #                   ╰─── cglib:cglib:2.2.2
+      #                        ╰─── asm:asm:3.3.1
+      # It collides with the modern org.ow2.asm:asm (same package, but ClassVisitor is a class) that Sisu 1.0.0 now
+      # requires since it stopped shading ASM, and which is brought via:
+      # amper-maven-publish
+      #     ╰─── org.apache.maven:maven-core:3.9.16
+      #          ├─── org.eclipse.sisu:org.eclipse.sisu.plexus:1.0.0
+      #          │    ╰─── org.eclipse.sisu:org.eclipse.sisu.inject:1.0.0
+      #          │         ╰─── org.ow2.asm:asm:9.9.1
+      #          ╰─── org.eclipse.sisu:org.eclipse.sisu.inject:1.0.0 (*)
+      # Conflict resolution cannot solve this because of the change in coordinates, and having both on the classpath
+      # causes an IncompatibleClassChangeError in org.eclipse.sisu.space.SpaceScanner (in MavenPluginsTest).
+      # These obsolete coordinates are fully superseded by org.ow2.asm:asm, so we exclude them here.
+      - asm:asm

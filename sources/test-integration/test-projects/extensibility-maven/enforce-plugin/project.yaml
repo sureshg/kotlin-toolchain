@@ -2,4 +2,4 @@ modules:
   - app
 
 mavenPlugins:
-  - org.apache.maven.plugins:maven-enforcer-plugin:3.6.2
+  - org.apache.maven.plugins:maven-enforcer-plugin:3.6.3
