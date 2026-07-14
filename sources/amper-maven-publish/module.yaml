@@ -10,9 +10,11 @@ dependencies:
   - //sources/frontend-api: exported
   - //sources/frontend/dr
   - //sources/libraries/maven-central-configuration
-  - $libs.maven.core: exported
+  - $libs.maven.core: exported # exported for MavenRepositorySystem
+  - $libs.maven.model: exported # exported for writePom(Model)
+  - $libs.maven.resolver.api: exported # exported for Artifact, RemoteRepository, and the likes
   - $libs.maven.resolver.connectorBasic: runtime-only
-  - $libs.maven.resolver.transportHttp: runtime-only
+  - $libs.maven.resolver.transport.http: runtime-only
 
 settings:
   kotlin:

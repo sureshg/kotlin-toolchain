@@ -22,7 +22,6 @@ import org.eclipse.aether.RepositorySystemSession
 import org.eclipse.aether.artifact.Artifact
 import org.eclipse.aether.deployment.DeployRequest
 import org.eclipse.aether.installation.InstallRequest
-import org.eclipse.aether.internal.impl.Maven2RepositoryLayoutFactory
 import org.eclipse.aether.repository.RemoteRepository
 import org.jetbrains.amper.frontend.schema.Checksum
 import org.jetbrains.amper.mavencentral.MavenCentralDefaultConfiguration
@@ -111,10 +110,7 @@ fun PlexusContainer.createRepositorySession(
     // We let the user choose which checksums to publish
     // Note: in more recent versions of the resolver, we could customize aether.checksums.uploadChecksumAlgorithms
     // independently. We're using an old one right now.
-    session.setConfigProperty(
-        Maven2RepositoryLayoutFactory.CONFIG_PROP_CHECKSUMS_ALGORITHMS,
-        checksumAlgorithms.joinToString(",") { it.algorithmName },
-    )
+    session.setConfigProperty("aether.checksums.algorithms", checksumAlgorithms.joinToString(",") { it.algorithmName })
 
     // Disable caching HTTP connection pooling between sessions, to allow closing the connection pool later.
     // If we don't do this, the connection manager is stored in a GlobalState and the LocalState doesn't delegate close()
