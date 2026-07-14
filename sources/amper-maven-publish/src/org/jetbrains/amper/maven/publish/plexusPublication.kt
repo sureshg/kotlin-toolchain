@@ -17,6 +17,7 @@ import org.codehaus.plexus.classworlds.ClassWorld
 import org.codehaus.plexus.logging.AbstractLogger
 import org.codehaus.plexus.logging.BaseLoggerManager
 import org.codehaus.plexus.logging.Logger
+import org.eclipse.aether.ConfigurationProperties
 import org.eclipse.aether.RepositorySystem
 import org.eclipse.aether.RepositorySystemSession
 import org.eclipse.aether.artifact.Artifact
@@ -115,6 +116,11 @@ fun PlexusContainer.createRepositorySession(
     // Disable caching HTTP connection pooling between sessions, to allow closing the connection pool later.
     // If we don't do this, the connection manager is stored in a GlobalState and the LocalState doesn't delegate close()
     session.setConfigProperty("aether.connector.http.cacheState", false)
+    // Gateway timeouts should also be retried, we faced this a bunch of times (see AMPER-5476)
+    session.setConfigProperty(
+        ConfigurationProperties.HTTP_RETRY_HANDLER_SERVICE_UNAVAILABLE,
+        ConfigurationProperties.DEFAULT_HTTP_RETRY_HANDLER_SERVICE_UNAVAILABLE + ",504",
+    )
     return session
 }
 
