@@ -16,6 +16,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import org.jetbrains.amper.concurrency.FileMutexGroup
+import org.jetbrains.amper.concurrency.StripedFileMutexGroup
 import org.jetbrains.amper.concurrency.withRetry
 import org.jetbrains.amper.dependency.resolution.DependencyFileImpl.Companion.HttpHeaders.USER_AGENT
 import org.jetbrains.amper.dependency.resolution.DependencyFileImpl.Companion.HttpHeaders.USER_AGENT_VALUE
@@ -1532,7 +1533,7 @@ class SnapshotDependencyFileImpl(
          * It protects from concurrent attempts to download maven-metadata
          * while downloading pom/module/different artifacts in parallel
          */
-        private val mavenMetadataFilesLock = FileMutexGroup.striped(stripeCount = 512)
+        private val mavenMetadataFilesLock = StripedFileMutexGroup(stripeCount = 512)
 
         val snapshotValidityPeriod = 1.days
 

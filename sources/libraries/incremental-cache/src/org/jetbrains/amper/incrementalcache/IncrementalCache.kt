@@ -9,8 +9,8 @@ package org.jetbrains.amper.incrementalcache
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.Tracer
-import kotlinx.coroutines.sync.Mutex
-import org.jetbrains.amper.concurrency.withReentrantLock
+import org.jetbrains.amper.concurrency.FineGrainedFileMutexGroup
+import org.jetbrains.amper.concurrency.withDoubleLock
 import org.jetbrains.amper.incrementalcache.DynamicInputsTracker.Companion.withDynamicInputsTracker
 import org.jetbrains.amper.incrementalcache.IncrementalCache.Change.ChangeType
 import org.jetbrains.amper.telemetry.setListAttribute
@@ -19,9 +19,7 @@ import org.jetbrains.amper.telemetry.use
 import org.slf4j.LoggerFactory
 import java.nio.channels.FileChannel
 import java.nio.file.Path
-import java.nio.file.StandardOpenOption
 import java.security.MessageDigest
-import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
@@ -106,7 +104,7 @@ class IncrementalCache(
 
             // Prevent parallel execution of this 'id' from this or other processes,
             // tracked by a lock on the state file
-            withLock(key, stateFile) { stateFileChannel ->
+            withLock(stateFile) { stateFileChannel ->
                 val cachedState = tracer.spanBuilder("inc: get-cached-state").use {
                     getCachedState(stateFile, stateFileChannel, inputValues, inputFiles)
                 }
@@ -412,19 +410,16 @@ class IncrementalCache(
     companion object {
         private val logger = LoggerFactory.getLogger(IncrementalCache::class.java)
 
-        private val executeOnChangedLocks = ConcurrentHashMap<String, Mutex>()
+        // Important: we must not use a StripedFileMutexGroup here, because we have lots of cases of nested incremental
+        // cache blocks, and this could lead to unfortunate deadlocks if we're unlucky on the stripes.
+        // So far we've lived fine with a fine-grained but memory-unbounded approach. We can revisit the approach if
+        // memory turns out to be a problem (having 10k modules would multiply greatly the number of locks in the map).
+        private val fileMutexGroup = FineGrainedFileMutexGroup()
 
-        private suspend fun <R> withLock(id: String, stateFile: Path, block: suspend (FileChannel) -> R): R {
-            val mutex = executeOnChangedLocks.computeIfAbsent(id) { Mutex() }
-            return mutex.withReentrantLock {
-                FileChannel.open(stateFile, StandardOpenOption.READ, StandardOpenOption.WRITE, StandardOpenOption.CREATE)
-                    .use { fileChannel ->
-                        fileChannel.lock().use {
-                            block(fileChannel)
-                        }
-                    }
+        private suspend fun <R> withLock(stateFile: Path, block: suspend (FileChannel) -> R): R =
+            fileMutexGroup.withDoubleLock(stateFile) { channel ->
+                block(channel)
             }
-        }
     }
 }
 

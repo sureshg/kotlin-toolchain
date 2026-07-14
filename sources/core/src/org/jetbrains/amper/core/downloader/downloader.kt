@@ -16,7 +16,7 @@ import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
-import org.jetbrains.amper.concurrency.FileMutexGroup
+import org.jetbrains.amper.concurrency.StripedFileMutexGroup
 import org.jetbrains.amper.concurrency.withLock
 import org.jetbrains.amper.core.AmperUserCacheRoot
 import org.jetbrains.amper.stdlib.hashing.sha256String
@@ -53,7 +53,7 @@ object Downloader {
 
     private val logger = LoggerFactory.getLogger(javaClass)
 
-    private val fileLocks = FileMutexGroup.striped(stripeCount = 256)
+    private val fileLocks = StripedFileMutexGroup(stripeCount = 256)
 
     private val archivesDownloadClient = amperHttpClient.config {
 
