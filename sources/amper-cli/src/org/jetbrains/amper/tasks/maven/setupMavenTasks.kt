@@ -23,6 +23,10 @@ import org.jetbrains.amper.tasks.getTaskName
 
 // Set up maven tasks only for JVM modules. 
 fun ProjectTasksBuilder.setupMavenCompatibilityTasks() {
+    if (!includePluginTasks) {
+        return
+    }
+
     // Skip maven tasks registration if we have no maven plugins specified.
     if (context.projectContext.externalMavenPlugins.isEmpty()) return
 

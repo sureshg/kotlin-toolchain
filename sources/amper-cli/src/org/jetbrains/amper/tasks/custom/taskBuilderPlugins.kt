@@ -34,6 +34,10 @@ private fun TaskFromPluginDescription.taskName() = TaskName(
 )
 
 fun ProjectTasksBuilder.setupTasksFromPlugins() {
+    if (!includePluginTasks) {
+        return
+    }
+
     allModules().withEach {
         module.tasksFromPlugins.forEach { taskDescription ->
             val taskDependencies = mutableListOf<TaskName>()

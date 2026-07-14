@@ -51,6 +51,7 @@ class ProjectTasksBuilder(
     val model: Model,
     val runSettings: AllRunSettings,
     val cinteropGenSettings: CinteropGenSettings,
+    val includePluginTasks: Boolean,
 ) {
     val tasks = TaskGraphBuilder()
 

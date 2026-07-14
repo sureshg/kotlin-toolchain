@@ -25,6 +25,7 @@ internal suspend fun <T> withBackend(
     model: Model,
     runSettings: AllRunSettings = AllRunSettings(),
     cinteropGenSettings: CinteropGenSettings = CinteropGenSettings(),
+    includePluginTasks: Boolean = true,
     taskExecutionMode: TaskExecutor.Mode = TaskExecutor.Mode.FAIL_FAST,
     block: suspend (AmperBackend) -> T,
 ): T {
@@ -45,6 +46,7 @@ internal suspend fun <T> withBackend(
             model = model,
             runSettings = runSettings,
             cinteropGenSettings = cinteropGenSettings,
+            includePluginTasks = includePluginTasks,
             taskExecutionMode = taskExecutionMode,
             backgroundScope = backgroundScope,
         )

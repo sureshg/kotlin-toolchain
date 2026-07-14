@@ -74,6 +74,11 @@ class AmperBackend(
      */
     val cinteropGenSettings: CinteropGenSettings = CinteropGenSettings(),
     /**
+     * Whether to include tasks that come from plugins to the task graph.
+     * Affects both Amper and Maven-compat plugins.
+     */
+    val includePluginTasks: Boolean = true,
+    /**
      * Defines how other tasks are executed if a task fails.
      */
     val taskExecutionMode: TaskExecutor.Mode = TaskExecutor.Mode.FAIL_FAST,
@@ -89,6 +94,7 @@ class AmperBackend(
                 model = model,
                 runSettings = runSettings,
                 cinteropGenSettings = cinteropGenSettings,
+                includePluginTasks = includePluginTasks,
             ).build()
         }
     }
