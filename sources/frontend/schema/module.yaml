@@ -39,7 +39,6 @@ dependencies:
   - $libs.maven.artifact
   - $libs.intellij.platform.core: exported # because we expose Project in public API
   - $libs.intellij.platform.coreImpl
-  - $libs.intellij.platform.ideCore
   - $libs.intellij.platform.util
   - $libs.xmlutil.serialization
 

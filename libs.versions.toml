@@ -77,7 +77,6 @@ intellij-jps-build-javac-rt = { module = "com.jetbrains.intellij.platform:jps-bu
 intellij-parsing-core = { module = "org.jetbrains:ij-parsing-core", version.ref = "intellij-parsing" }
 intellij-platform-core = { module = "com.jetbrains.intellij.platform:core", version.ref = "intellij-platform" }
 intellij-platform-coreImpl = { module = "com.jetbrains.intellij.platform:core-impl", version.ref = "intellij-platform" }
-intellij-platform-ideCore = { module = "com.jetbrains.intellij.platform:ide-core", version.ref = "intellij-platform" }
 intellij-platform-util = { module = "com.jetbrains.intellij.platform:util", version.ref = "intellij-platform" }
 intellij-platform-utilEx = { module = "com.jetbrains.intellij.platform:util-ex", version.ref = "intellij-platform" }
 jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref = "jetbrains-annotations" }
