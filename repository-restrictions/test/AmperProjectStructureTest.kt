@@ -205,51 +205,51 @@ class AmperProjectStructureTest {
     private val usedInIdeaAnnotationRegex = Regex("""@(?:\w+:)?(?:[\w.]+\.)?UsedInIdePlugin\b""")
 
     @Test
-    fun `Amper-agnostic library modules don't use the word Amper`() = runTestWithMdc {
+    fun `KTC-agnostic library modules don't use the word Kotlin Toolchain, KTC, or Amper`() = runTestWithMdc {
         val invalidLines = readAmperProjectModel()
             .modules
-            .filter { it.isAmperAgnosticLibrary() }
-            .map { it to it.linesWithTheWordAmper() }
+            .filter { it.isKTCAgnosticLibrary() }
+            .map { it to it.linesWithKtcWords() }
             .filter { it.second.isNotEmpty() }
         if (invalidLines.isNotEmpty()) {
             fail(
-                "Some Amper-agnostic library modules contain the word 'Amper'.\n\n" +
+                "Some KTC-agnostic library modules contain words that relate them to the Kotlin Toolchain.\n\n" +
                     invalidLines.joinToString("\n\n") { [module, linesWithAmper] ->
-                        "Module '${module.userReadableName}' uses the word 'Amper':\n" +
+                        "Module '${module.userReadableName}':\n" +
                                 linesWithAmper.joinToString("\n") { "  - $it" }
-                    } + "\n\nMake sure these modules are Amper-agnostic.")
+                    } + "\n\nMake sure these modules are KTC-agnostic.")
         }
     }
 
-    private fun AmperModule.linesWithTheWordAmper(): List<String> = fragments.flatMap { it.linesWithTheWordAmper() }
+    private fun AmperModule.linesWithKtcWords(): List<String> = fragments.flatMap { it.linesWithKtcWords() }
 
-    private fun Fragment.linesWithTheWordAmper(): Sequence<String> =
+    private fun Fragment.linesWithKtcWords(): Sequence<String> =
         (sourceRoots.flatMap { it.walk() } + resourcesPath.walk())
-            .flatMap { it.linesWithTheWordAmper() }
+            .flatMap { it.linesWithKtcWords() }
             .asSequence()
 
     /**
      * We are still in the Amper repo, and the libraries are not yet (or maybe ever) separated from Amper, so they still
      * legitimately use the org.jetbrains.amper package root. Apart from that, there should be no Amper reference.
      */
-    private val amperExceptInPackageRegex = Regex("""(?<!org\.jetbrains\.)[aA]mper""")
-    private fun Path.linesWithTheWordAmper(): List<String> = readLines()
+    private val amperExceptInPackageRegex = Regex("""(?<!org\.jetbrains\.)[aA]mper|[kK]otlin [tT]oolchain|KTC""")
+    private fun Path.linesWithKtcWords(): List<String> = readLines()
         .withIndex()
         .filter { it.value.contains(amperExceptInPackageRegex) }
         .map { (index, value) -> "${absolutePathString()}:$index: $value" }
 
     @Test
-    fun `Amper-agnostic library modules don't depend on Amper-aware modules`() = runTestWithMdc {
+    fun `KTC-agnostic library modules don't depend on KTC-aware modules`() = runTestWithMdc {
         val invalidDeps = readAmperProjectModel()
             .modules
-            .filter { it.isAmperAgnosticLibrary() }
+            .filter { it.isKTCAgnosticLibrary() }
             .map { it to it.nonLibraryDependencies(includeTestDeps = true) }
             .filter { it.second.isNotEmpty() }
         if (invalidDeps.isNotEmpty()) {
             fail(
-                "Some Amper-agnostic library modules depend on Amper-aware modules.\n\n" +
+                "Some KTC-agnostic library modules depend on KTC-aware modules.\n\n" +
                         invalidDeps.joinToString("\n\n") { [module, dependencies] ->
-                            "Module '${module.userReadableName}' depends on Amper-aware module(s):\n" +
+                            "Module '${module.userReadableName}' depends on KTC-aware module(s):\n" +
                                     dependencies.joinToString("\n") { "  - $it" }
                         } + "\n\nRemove these dependencies or move the modules out of the 'libraries' directory.")
         }
@@ -315,10 +315,10 @@ class AmperProjectStructureTest {
 
     private fun AmperModule.nonLibraryDependencies(includeTestDeps: Boolean): List<String> =
         localModuleDependencies(includeTestDeps)
-            .filterNot { it.module.isAmperAgnosticLibrary() }
+            .filterNot { it.module.isKTCAgnosticLibrary() }
             .map { it.module.source.moduleDir.relativeTo(Dirs.amperCheckoutRoot).toString() }
 
-    private fun AmperModule.isAmperAgnosticLibrary(): Boolean =
+    private fun AmperModule.isKTCAgnosticLibrary(): Boolean =
         source.moduleDir.absolute().startsWith(Dirs.amperCheckoutRoot.resolve("sources/libraries"))
 
     private fun AmperModule.localModuleDependencies(includeTestDeps: Boolean): List<LocalModuleDependency> = fragments
