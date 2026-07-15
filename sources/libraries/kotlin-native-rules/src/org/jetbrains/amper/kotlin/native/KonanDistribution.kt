@@ -47,7 +47,7 @@ data class KonanDistribution(val homeDir: Path, val kotlinVersion: String) {
         klibDir / "commonized" / URLEncoder.encode(kotlinVersion, Charsets.UTF_8.name())
     }
 
-    val platformLibsDir: Path
+    private val platformLibsDir: Path
         get() = klibDir / "platform"
 
     val stdlibDir: Path
@@ -57,8 +57,15 @@ data class KonanDistribution(val homeDir: Path, val kotlinVersion: String) {
         NativeDistributionCommonizerCache(commonizedRoot)
     }
 
+    /**
+     * The "leaf" non-commonized part of Kotlin/Native platform libraries.
+     */
     fun platformLibs(platform: KonanPlatform): List<Path> = (platformLibsDir / platform.nameForCompiler).listLibraries()
 
+    /**
+     * The commonized klibs of the Kotlin/Native distribution (stdlib and platform libraries) for the set of platforms
+     * represented by the given [CommonizerTarget].
+     */
     fun commonizedKlibs(target: CommonizerTarget): List<Path> = (commonizedRoot / target.dirName).listLibraries()
 }
 
@@ -70,7 +77,7 @@ private fun Path.listLibraries(): List<Path> {
 }
 
 /**
- * Returns the libraries that should be used as `-dependency-libraries` when commonizing klibs for Cinterop.
+ * Returns the libraries that should be used as `-dependency-libraries` when commonizing third-party klibs for Cinterop.
  */
 fun KonanDistribution.dependencyLibrariesForCommonization(target: CommonizerTarget): List<Path> = buildList {
     // Commonized platform libs

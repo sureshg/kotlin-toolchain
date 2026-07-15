@@ -14,13 +14,13 @@ test-dependencies:
 
 dependencies:
   - //sources/frontend/schema
+  - //sources/amper-kotlin-native
   - //sources/amper-telemetry
   - //sources/core
   - //sources/dependency-resolution: exported
   - //sources/amper-problem-reporting: exported
   - //sources/libraries/telemetry
   - //sources/libraries/incremental-cache
-  - //sources/libraries/kotlin-native-rules: exported
   - //sources/libraries/maven-central-configuration
   - $libs.slf4j.api
   - $libs.intellij.platform.util

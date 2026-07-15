@@ -17,9 +17,9 @@ import org.jetbrains.amper.engine.GenerateKlibsForIdeTask
 import org.jetbrains.amper.engine.TaskGraphExecutionContext
 import org.jetbrains.amper.engine.TaskName
 import org.jetbrains.amper.frontend.Fragment
-import org.jetbrains.amper.frontend.dr.resolver.native.asCommonizerTarget
 import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.jdk.provisioning.JdkProvider
+import org.jetbrains.amper.kotlin.native.asCommonizerTarget
 import org.jetbrains.amper.kotlin.native.dependencyLibrariesForCommonization
 import org.jetbrains.amper.processes.ArgsMode
 import org.jetbrains.amper.processes.LoggingProcessOutputListener
@@ -41,9 +41,7 @@ import kotlin.io.path.createDirectories
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.deleteRecursively
 import kotlin.io.path.div
-import kotlin.io.path.extension
 import kotlin.io.path.isDirectory
-import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.moveTo
 import kotlin.io.path.nameWithoutExtension
 
@@ -132,7 +130,7 @@ class CommonizeCInteropKlibsTask(
                 "dependencyLibraries" to dependencyLibraries,
             ),
             inputFiles = buildList {
-                add(compiler.kotlinNativeHome)
+                add(compiler.konanDistribution.homeDir)
                 klibs.mapTo(this) { it.path }
                 addAll(commonizerClasspath)
             }
@@ -143,7 +141,7 @@ class CommonizeCInteropKlibsTask(
                 val commonizerArgs: MutableList<String> = [
                     "native-klib-commonize",
                     "-distribution-path",
-                    compiler.kotlinNativeHome.absolutePathString(),
+                    compiler.konanDistribution.homeDir.absolutePathString(),
                     "-output-path",
                     tempOutput.absolutePathString(),
                     "-input-libraries",

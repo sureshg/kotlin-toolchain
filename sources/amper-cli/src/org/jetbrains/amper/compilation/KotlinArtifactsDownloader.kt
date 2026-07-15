@@ -6,7 +6,6 @@ package org.jetbrains.amper.compilation
 
 import org.jetbrains.amper.CliReportingMavenResolver
 import org.jetbrains.amper.core.AmperUserCacheRoot
-import org.jetbrains.amper.core.downloader.KOTLIN_GROUP_ID
 import org.jetbrains.amper.dependency.resolution.MavenCoordinates
 import org.jetbrains.amper.dependency.resolution.MavenRepository
 import org.jetbrains.amper.dependency.resolution.Repository
@@ -100,6 +99,8 @@ internal class KotlinArtifactsDownloader(
         }.outputFiles
 
     companion object {
+        private const val KOTLIN_GROUP_ID = "org.jetbrains.kotlin"
+
         /**
          * Repository where dev Kotlin artifacts are hosted.
          * This is useful for compiler plugin authors that need to test in advance against future versions of Kotlin.

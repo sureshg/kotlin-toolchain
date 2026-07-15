@@ -1,0 +1,19 @@
+product: jvm/lib
+
+description: |
+  Kotlin/Native distribution provisioning and helpers for the Kotlin Toolchain.
+  
+  These declarations hold the rules for how the Kotlin Toolchain works
+  with Kotlin/Native, and these rules can be shared with the IDE plugin so the
+  behavior is aligned.
+
+apply:
+  - //sources/common.module-template.yaml
+  - //sources/used-in-idea.module-template.yaml
+
+dependencies:
+  - //sources/core
+  - //sources/frontend-api
+  - //sources/libraries/kotlin-native-rules: exported
+  - //sources/libraries/maven-central-configuration
+  - //sources/libraries/system-info

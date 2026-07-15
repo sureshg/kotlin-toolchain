@@ -17,10 +17,10 @@ import org.jetbrains.amper.engine.TaskGraphExecutionContext
 import org.jetbrains.amper.engine.TaskName
 import org.jetbrains.amper.frontend.Model
 import org.jetbrains.amper.frontend.Platform
-import org.jetbrains.amper.frontend.dr.resolver.native.asCommonizerTarget
 import org.jetbrains.amper.frontend.isDescendantOf
 import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.jdk.provisioning.JdkProvider
+import org.jetbrains.amper.kotlin.native.asCommonizerTarget
 import org.jetbrains.amper.problems.reporting.ProblemReporter
 import org.jetbrains.amper.processes.ArgsMode
 import org.jetbrains.amper.processes.LoggingProcessOutputListener
@@ -76,7 +76,7 @@ class CommonizeNativeDistributionTask(
         compiler.konanDistribution.commonizerCache.writeCacheForUncachedTargets(sharedPlatforms) { todoOutputTargets ->
             val commonizerArgs = buildList {
                 add("native-dist-commonize")
-                add("-distribution-path"); add(compiler.kotlinNativeHome.absolutePathString())
+                add("-distribution-path"); add(compiler.konanDistribution.homeDir.absolutePathString())
                 add("-output-path"); add(compiler.konanDistribution.commonizedRoot.absolutePathString())
                 add("-output-targets"); add(todoOutputTargets.joinToString(separator = ";") { it.targetNameForCompiler })
             }
@@ -89,7 +89,7 @@ class CommonizeNativeDistributionTask(
                         key = "native-dist-commonize-$todoOutputTargets",
                         inputValues = mapOf("commonizerArgs" to commonizerArgs.joinToString()),
                         inputFiles = listOf(
-                            compiler.kotlinNativeHome,
+                            compiler.konanDistribution.homeDir,
                             compiler.konanDistribution.commonizedRoot,
                             *commonizerClasspath.toTypedArray()
                         )

@@ -6,22 +6,18 @@ package org.jetbrains.amper.frontend.dr.resolver.native
 
 import org.jetbrains.amper.core.UsedInIdePlugin
 import org.jetbrains.amper.frontend.Platform
-import org.jetbrains.amper.kotlin.native.CommonizerTarget
 import org.jetbrains.amper.kotlin.native.KonanDistribution
-import org.jetbrains.amper.kotlin.native.KonanPlatform
-import org.jetbrains.amper.kotlin.native.asCommonizerTarget
 import java.nio.file.Path
+import org.jetbrains.amper.kotlin.native.commonizedKlibs as newCommonizedKlibs
 
+@Deprecated(
+    message = "Moved to 'amper-kotlin-native' module",
+    level = DeprecationLevel.ERROR,
+    replaceWith = ReplaceWith(
+        "this.commonizedKlibs(compilerPlatforms)",
+        "org.jetbrains.amper.kotlin.native.commonizedKlibs",
+    ),
+)
 @UsedInIdePlugin
 fun KonanDistribution.commonizedKlibs(compilerPlatforms: List<Platform>): List<Path> =
-    commonizedKlibs(compilerPlatforms.asCommonizerTarget())
-
-/**
- * Returns a [CommonizerTarget] that uniquely identifies this set of platforms in a commonizer-specific way.
- */
-fun Collection<Platform>.asCommonizerTarget(): CommonizerTarget = map { it.toKonanPlatform() }.asCommonizerTarget()
-
-/**
- * Returns the [KonanPlatform] that corresponds to this [Platform], so it can be used in the Konan library.
- */
-fun Platform.toKonanPlatform(): KonanPlatform = KonanPlatform(nameForCompiler)
+    newCommonizedKlibs(compilerPlatforms)

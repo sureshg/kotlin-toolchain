@@ -11,12 +11,13 @@ import org.jetbrains.amper.cli.telemetry.setAmperModule
 import org.jetbrains.amper.cli.telemetry.setProcessResultAttributes
 import org.jetbrains.amper.cli.userReadableError
 import org.jetbrains.amper.core.AmperUserCacheRoot
-import org.jetbrains.amper.core.downloader.downloadAndExtractKotlinNative
+import org.jetbrains.amper.core.downloader.Downloader
 import org.jetbrains.amper.frontend.AmperModule
 import org.jetbrains.amper.jdk.provisioning.Jdk
 import org.jetbrains.amper.jdk.provisioning.JdkProvider
 import org.jetbrains.amper.jvm.getDefaultJdk
 import org.jetbrains.amper.kotlin.native.KonanDistribution
+import org.jetbrains.amper.kotlin.native.downloadAndExtractKotlinNative
 import org.jetbrains.amper.problems.reporting.ProblemReporter
 import org.jetbrains.amper.processes.ArgsMode
 import org.jetbrains.amper.processes.LoggingProcessOutputListener
@@ -27,8 +28,8 @@ import org.jetbrains.amper.telemetry.spanBuilder
 import org.jetbrains.amper.telemetry.use
 import org.jetbrains.amper.util.ShellQuoting
 import org.slf4j.LoggerFactory
-import java.nio.file.Path
 import kotlin.io.path.div
+import kotlin.io.path.pathString
 
 context(_: ProblemReporter)
 suspend fun downloadNativeCompiler(
@@ -39,24 +40,21 @@ suspend fun downloadNativeCompiler(
     // TODO: Should we use KONAN_DATA_DIR here and elsewhere instead of Amper user cache folder?
     //  (as well as for the location of downloading compiler distribution itself.
     //  See AMPER-5319.
-    val kotlinNativeHome = downloadAndExtractKotlinNative(kotlinVersion, userCacheRoot)
+    val konanDistribution = Downloader.downloadAndExtractKotlinNative(kotlinVersion, userCacheRoot)
         ?: error("kotlin native compiler is not available for the current platform")
 
     // According to the Kotlin/Native team, no special requirements for this JDK, but they mostly test with 11.
     val jdk = jdkProvider.getDefaultJdk()
-    return KotlinNativeCompiler(kotlinNativeHome, kotlinVersion, jdk)
+    return KotlinNativeCompiler(konanDistribution, jdk)
 }
 
 class KotlinNativeCompiler(
-    val kotlinNativeHome: Path,
-    private val kotlinVersion: String,
+    val konanDistribution: KonanDistribution,
     val jdk: Jdk,
 ) {
     companion object {
         private val logger = LoggerFactory.getLogger(KotlinNativeCompiler::class.java)
     }
-
-    val konanDistribution = KonanDistribution(kotlinNativeHome, kotlinVersion)
 
     suspend fun compile(
         processRunner: ProcessRunner,
@@ -67,7 +65,7 @@ class KotlinNativeCompiler(
         spanBuilder("konanc")
             .setAmperModule(module)
             .setListAttribute("args", args)
-            .setAttribute("version", kotlinVersion)
+            .setAttribute("version", konanDistribution.kotlinVersion)
             .use { span ->
                 logger.debug("konanc ${ShellQuoting.quoteArgumentsPosixShellWay(args)}")
 
@@ -88,7 +86,7 @@ class KotlinNativeCompiler(
     ) {
         spanBuilder("cinterop")
             .setListAttribute("args", args)
-            .setAttribute("version", kotlinVersion)
+            .setAttribute("version", konanDistribution.kotlinVersion)
             .use { span ->
                 logger.debug("cinterop ${ShellQuoting.quoteArgumentsPosixShellWay(args)}")
                 val result = runNativeCompilerCommandImpl(
@@ -130,13 +128,13 @@ class KotlinNativeCompiler(
         // TODO in the future we'll switch to kotlin tooling api and remove this raw java exec anyway
         return processRunner.runJava(
             jdk = jdk,
-            workingDir = kotlinNativeHome,
+            workingDir = konanDistribution.homeDir,
             mainClass = "org.jetbrains.kotlin.cli.utilities.MainKt",
             classpath = listOf(
                 konanDistribution.konanLibDir / "kotlin-native-compiler-embeddable.jar",
                 konanDistribution.konanLibDir / "trove4j.jar",
             ),
-            programArgs = programArgs, //listOf(command, "@${argFile}"),
+            programArgs = programArgs,
             argsMode = argsMode,
             // JVM args partially copied from <kotlinNativeHome>/bin/run_konan
             jvmArgs = listOf(
@@ -144,7 +142,7 @@ class KotlinNativeCompiler(
                 "-Xmx3G",
                 "-XX:TieredStopAtLevel=1",
                 "-Dfile.encoding=UTF-8",
-                "-Dkonan.home=$kotlinNativeHome",
+                "-Dkonan.home=${konanDistribution.homeDir.pathString}",
             ),
             outputListener = LoggingProcessOutputListener(logger),
         )

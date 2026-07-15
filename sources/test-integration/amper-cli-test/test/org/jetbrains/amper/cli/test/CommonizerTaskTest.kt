@@ -6,8 +6,9 @@ package org.jetbrains.amper.cli.test
 
 import org.jetbrains.amper.cli.test.utils.runSlowTest
 import org.jetbrains.amper.core.AmperUserCacheRoot
-import org.jetbrains.amper.core.downloader.downloadAndExtractKotlinNative
+import org.jetbrains.amper.core.downloader.Downloader
 import org.jetbrains.amper.frontend.schema.DefaultVersions
+import org.jetbrains.amper.kotlin.native.downloadAndExtractKotlinNative
 import org.jetbrains.amper.test.MacOnly
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertNotNull
@@ -71,8 +72,12 @@ class CommonizerTaskTest: AmperCliTestBase() {
         val userCacheDir = tempRoot / "user-cache"
         userCacheDir.createDirectories()
 
-        val konanDataDir = downloadAndExtractKotlinNative(DefaultVersions.kotlin, AmperUserCacheRoot(userCacheDir))
-        assertNotNull(konanDataDir, "Konan compiler was not downloaded")
+        // TODO we should not rely on this. These tests should be done from the point of view of users without internal
+        //   knowledge of how things work. In this case, we should customize KONAN_DATA_DIR and look at the commonized
+        //   directory in it, just using the kotlin-native-rules library (KTC-agnostic).
+        //   This is related to AMPER-5319.
+        val konanDist = Downloader.downloadAndExtractKotlinNative(DefaultVersions.kotlin, AmperUserCacheRoot(userCacheDir))
+        assertNotNull(konanDist, "Konan compiler was not downloaded")
 
         val runResult = runCli(
             projectDir = testProject("commonizer/$projectName"),
@@ -81,7 +86,7 @@ class CommonizerTaskTest: AmperCliTestBase() {
         )
 
         assertEquals(0, runResult.exitCode, "The commonizer task failed with exit code ${runResult.exitCode}")
-        val commonizedRootDir = konanDataDir / "klib" / "commonized" / DefaultVersions.kotlin
+        val commonizedRootDir = konanDist.commonizedRoot
         assertTrue(commonizedRootDir.exists(), "$commonizedRootDir directory does not exist")
         return commonizedRootDir
     }

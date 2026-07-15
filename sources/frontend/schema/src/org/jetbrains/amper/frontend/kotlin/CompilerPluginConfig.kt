@@ -5,10 +5,9 @@
 package org.jetbrains.amper.frontend.kotlin
 
 import org.jetbrains.amper.core.UsedInIdePlugin
-import org.jetbrains.amper.core.downloader.KOTLIN_GROUP_ID
 import org.jetbrains.amper.frontend.kotlin.CompilerPluginConfig.Option
-import java.nio.file.Path
-import kotlin.io.path.pathString
+
+private const val KOTLIN_GROUP_ID = "org.jetbrains.kotlin"
 
 /**
  * The configuration for a Kotlin compiler plugin.

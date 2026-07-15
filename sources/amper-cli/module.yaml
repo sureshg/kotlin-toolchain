@@ -14,6 +14,7 @@ dependencies:
   - //sources/amper-build-info
   - //sources/amper-compose-hot-reload
   - //sources/amper-jdk-provisioning
+  - //sources/amper-kotlin-native
   - //sources/amper-maven-converter
   - //sources/amper-maven-publish
   - //sources/amper-project-templates
