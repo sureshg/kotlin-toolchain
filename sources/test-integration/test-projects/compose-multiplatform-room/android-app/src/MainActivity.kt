@@ -17,7 +17,7 @@ class MainActivity : AppCompatActivity() {
 
     suspend fun doSomethingWithRoom() {
         val db = getRoomDatabase(getDatabaseBuilder(applicationContext))
-        val dao = db.getTodoDao()
+        val dao = db.getDao()
         val todos = dao.getAllAsFlow()
         todos.collect {
             println(it)

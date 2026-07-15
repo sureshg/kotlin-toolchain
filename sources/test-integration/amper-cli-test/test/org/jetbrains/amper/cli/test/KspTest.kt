@@ -265,46 +265,40 @@ class KspTest: AmperCliTestBase() {
         val generatedSchemaPath = projectRoot / "shared/generated-db-schema"
         generatedSchemaPath.deleteRecursively()
 
-        // [AMPER-3957]: Should be changed back to build for all platforms
-        // AMPER-395 is fixed, but some other stuff is still broken that prevent it from being uncommented
         val buildResult = runCli(
             projectRoot,
-            "build", "--platform=jvm", /* "--platform=android", */
+            "build",
             configureAndroidHome = true,
         )
 
-        // [AMPER-3957]:
-//        buildResult.generatedFilesDir(module = "shared", fragment = "android").assertContainsRelativeFiles(
-//            "src/ksp/kotlin/AppDatabase_Impl.kt",
-//            "src/ksp/kotlin/TodoDao_Impl.kt",
-//        )
+        buildResult.generatedFilesDir(module = "shared", fragment = "android").assertContainsRelativeFiles(
+            "src/ksp/kotlin/AppDatabaseConstructor.kt",
+            "src/ksp/kotlin/AppDatabase_Impl.kt",
+            "src/ksp/kotlin/TodoDao_Impl.kt",
+        )
         buildResult.generatedFilesDir(module = "shared", fragment = "jvm").assertContainsRelativeFiles(
+            "src/ksp/kotlin/AppDatabaseConstructor.kt",
             "src/ksp/kotlin/AppDatabase_Impl.kt",
             "src/ksp/kotlin/TodoDao_Impl.kt",
         )
 
-        // TODO [KSP2_ISSUE] enable when KSP native bugs are fixed
-        // mingwX64 is not supported yet by room (despite the DR succeeding)
-        // apple targets or linuxX64 cause the following error:
-        // NullPointerException: null cannot be cast to non-null type org.jetbrains.kotlin.load.java.structure.impl.JavaClassImpl
-        // Related:
-        // https://github.com/google/ksp/issues/1823 (fix will be released with Kotlin 2.1 - KSP 2.1.0-1.0.x)
-        // https://github.com/google/ksp/issues/2112 (should be fixed in 1.0.26)
-        // https://github.com/google/ksp/issues/885#issuecomment-1933378627
-        // https://issuetracker.google.com/issues/359279551
-
-//        if (DefaultSystemInfo.detect().family.isMac) {
-//            buildResult.generatedFilesDir(module = "shared", fragment = "iosSimulatorArm64").assertContainsRelativeFiles(
-//                "src/ksp/kotlin/AppDatabase_Impl.kt",
-//                "src/ksp/kotlin/TodoDao_Impl.kt",
-//            )
-//        }
-
-        generatedSchemaPath.assertContainsRelativeFiles(
-            // [AMPER-3957]:
-//            "android/AppDatabase/1.json",
-            "jvm/AppDatabase/1.json",
-        )
+        if (SystemInfo.CurrentHost.family.isMac) {
+            buildResult.generatedFilesDir(module = "shared", fragment = "iosSimulatorArm64").assertContainsRelativeFiles(
+                "src/ksp/kotlin/AppDatabaseConstructor.kt",
+                "src/ksp/kotlin/AppDatabase_Impl.kt",
+                "src/ksp/kotlin/TodoDao_Impl.kt",
+            )
+            generatedSchemaPath.assertContainsRelativeFiles(
+                "android/AppDatabase/1.json",
+                "ios/AppDatabase/1.json",
+                "jvm/AppDatabase/1.json",
+            )
+        } else {
+            generatedSchemaPath.assertContainsRelativeFiles(
+                "android/AppDatabase/1.json",
+                "jvm/AppDatabase/1.json",
+            )
+        }
     }
 
     private fun AmperCliResult.generatedFilesDir(module: String, fragment: String): Path =

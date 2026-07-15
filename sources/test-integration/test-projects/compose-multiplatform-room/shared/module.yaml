@@ -1,18 +1,20 @@
 product:
   type: kmp/lib
-  platforms: [ jvm, android ] # TODO [KSP2_ISSUE] put iosSimulatorArm64 back here
+  platforms: [ jvm, android, iosArm64, iosSimulatorArm64 ]
 
 dependencies:
   - $compose.foundation: exported
   - $compose.material3: exported
-  - androidx.room:room-runtime:2.7.0-alpha12: exported # because of the RoomDatabase type that we output
-  - androidx.sqlite:sqlite-bundled:2.5.0-alpha09
+  - androidx.room:room-runtime:2.8.4: exported # because of the RoomDatabase type that we output
+  - androidx.sqlite:sqlite-bundled:2.7.0
 
 settings:
   kotlin:
+    freeCompilerArgs:
+      - -Xexpect-actual-classes
     ksp:
       processors:
-        - androidx.room:room-compiler:2.7.0-alpha12
+        - androidx.room:room-compiler:2.8.4
   compose: enabled
 
 # we want separate schema locations for each platform, otherwise there might be concurrency issues
@@ -26,3 +28,8 @@ settings@android:
     ksp:
       processorOptions:
         room.schemaLocation: ./generated-db-schema/android
+settings@ios:
+  kotlin:
+    ksp:
+      processorOptions:
+        room.schemaLocation: ./generated-db-schema/ios
