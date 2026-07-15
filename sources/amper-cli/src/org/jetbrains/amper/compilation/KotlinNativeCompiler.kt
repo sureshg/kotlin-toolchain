@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+ * Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
  */
 
 package org.jetbrains.amper.compilation
@@ -13,12 +13,10 @@ import org.jetbrains.amper.cli.userReadableError
 import org.jetbrains.amper.core.AmperUserCacheRoot
 import org.jetbrains.amper.core.downloader.downloadAndExtractKotlinNative
 import org.jetbrains.amper.frontend.AmperModule
-import org.jetbrains.amper.frontend.dr.resolver.native.KonanDistribution
-import org.jetbrains.amper.frontend.dr.resolver.native.commonizedRoot
-import org.jetbrains.amper.frontend.dr.resolver.native.platformLibsDir
 import org.jetbrains.amper.jdk.provisioning.Jdk
 import org.jetbrains.amper.jdk.provisioning.JdkProvider
 import org.jetbrains.amper.jvm.getDefaultJdk
+import org.jetbrains.amper.kotlin.native.KonanDistribution
 import org.jetbrains.amper.problems.reporting.ProblemReporter
 import org.jetbrains.amper.processes.ArgsMode
 import org.jetbrains.amper.processes.LoggingProcessOutputListener
@@ -38,6 +36,9 @@ suspend fun downloadNativeCompiler(
     userCacheRoot: AmperUserCacheRoot,
     jdkProvider: JdkProvider,
 ): KotlinNativeCompiler {
+    // TODO: Should we use KONAN_DATA_DIR here and elsewhere instead of Amper user cache folder?
+    //  (as well as for the location of downloading compiler distribution itself.
+    //  See AMPER-5319.
     val kotlinNativeHome = downloadAndExtractKotlinNative(kotlinVersion, userCacheRoot)
         ?: error("kotlin native compiler is not available for the current platform")
 
@@ -55,13 +56,7 @@ class KotlinNativeCompiler(
         private val logger = LoggerFactory.getLogger(KotlinNativeCompiler::class.java)
     }
 
-    private val konanDistribution = KonanDistribution(kotlinNativeHome)
-
-    val platformPath = konanDistribution.platformLibsDir
-
-    val commonizedPath by lazy {
-        konanDistribution.commonizedRoot(kotlinVersion)
-    }
+    val konanDistribution = KonanDistribution(kotlinNativeHome, kotlinVersion)
 
     suspend fun compile(
         processRunner: ProcessRunner,
@@ -132,15 +127,14 @@ class KotlinNativeCompiler(
         // We call konanc via java because the konanc command line doesn't support spaces in paths:
         // https://youtrack.jetbrains.com/issue/KT-66952
 
-        val konanLib = kotlinNativeHome / "konan" / "lib"
         // TODO in the future we'll switch to kotlin tooling api and remove this raw java exec anyway
         return processRunner.runJava(
             jdk = jdk,
             workingDir = kotlinNativeHome,
             mainClass = "org.jetbrains.kotlin.cli.utilities.MainKt",
             classpath = listOf(
-                konanLib / "kotlin-native-compiler-embeddable.jar",
-                konanLib / "trove4j.jar",
+                konanDistribution.konanLibDir / "kotlin-native-compiler-embeddable.jar",
+                konanDistribution.konanLibDir / "trove4j.jar",
             ),
             programArgs = programArgs, //listOf(command, "@${argFile}"),
             argsMode = argsMode,

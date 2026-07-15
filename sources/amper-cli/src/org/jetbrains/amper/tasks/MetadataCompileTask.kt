@@ -13,7 +13,6 @@ import org.jetbrains.amper.cli.telemetry.setAmperModule
 import org.jetbrains.amper.cli.userReadableError
 import org.jetbrains.amper.compilation.KotlinArtifactsDownloader
 import org.jetbrains.amper.compilation.KotlinCompilationType
-import org.jetbrains.amper.compilation.KotlinNativeCompiler
 import org.jetbrains.amper.compilation.KotlinUserSettings
 import org.jetbrains.amper.compilation.compiler.downloadKotlinCompiler
 import org.jetbrains.amper.compilation.downloadCompilerPlugins
@@ -38,15 +37,15 @@ import org.jetbrains.amper.frontend.dr.resolver.ModuleDependencies.Companion.toR
 import org.jetbrains.amper.frontend.dr.resolver.ModuleDependencyNode
 import org.jetbrains.amper.frontend.dr.resolver.flow.toPlatform
 import org.jetbrains.amper.frontend.dr.resolver.flow.toResolutionPlatform
-import org.jetbrains.amper.frontend.dr.resolver.native.KonanDistribution
-import org.jetbrains.amper.frontend.dr.resolver.native.commonizedKlibs
-import org.jetbrains.amper.frontend.dr.resolver.native.stdlibDir
+import org.jetbrains.amper.frontend.dr.resolver.native.asCommonizerTarget
 import org.jetbrains.amper.frontend.friends
 import org.jetbrains.amper.frontend.mavenResolveRepositories
 import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.jdk.provisioning.Jdk
 import org.jetbrains.amper.jdk.provisioning.JdkProvider
 import org.jetbrains.amper.jvm.getJdkOrUserError
+import org.jetbrains.amper.kotlin.native.KonanDistribution
+import org.jetbrains.amper.kotlin.native.librariesForMetadataCompilation
 import org.jetbrains.amper.problems.reporting.ProblemReporter
 import org.jetbrains.amper.processes.ArgsMode
 import org.jetbrains.amper.stdlib.io.path.clean
@@ -236,7 +235,7 @@ internal class MetadataCompileTask(
         }
 
         val nativeCompiler = downloadNativeCompiler(kotlinUserSettings.compilerVersion, userCacheRoot, jdkProvider)
-        val commonizedKlibs = commonizedKlibs(nativeCompiler, fragmentPlatforms, kotlinUserSettings)
+        val commonizedKlibs = nativeCompiler.konanDistribution.librariesForMetadataCompilation(fragmentPlatforms)
 
         val compilerPlugins = kotlinArtifactsDownloader.downloadCompilerPlugins(
             plugins = kotlinUserSettings.compilerPlugins,
@@ -272,28 +271,9 @@ internal class MetadataCompileTask(
             }
     }
 
-    private fun commonizedKlibs(
-        nativeCompiler: KotlinNativeCompiler,
+    private fun KonanDistribution.librariesForMetadataCompilation(
         fragmentPlatforms: Set<ResolutionPlatform>,
-        kotlinUserSettings: KotlinUserSettings,
-    ): List<Path> {
-        // Starting with 2.2.20,
-        // the kotlin-stdlib metadata JSON descriptor doesn't map common sourceSet to nativeApiElements variant.
-        // This way dependency on kotlin-stdlib is not resolved if at least one target platform is native.
-        // Fortunately, the commonMain metadata of kotlin-stdlib is shipped as a prebuilt klib with K/Native compiler.
-        // todo (AB) common sourceSet of kotlin-stdlib is still resolved for Native+non-native set of platforms
-        //  (check that this is expected, maybe it shouldn't and kotlin-stdlib metadata should be taken from platform commonizer output in this case)
-        val konanDistribution = KonanDistribution(nativeCompiler.kotlinNativeHome)
-
-        val commonizedKlibs = buildList {
-            add(konanDistribution.stdlibDir)
-            addAll(konanDistribution.commonizedKlibs(fragmentPlatforms.map { it.toPlatform() }, kotlinUserSettings))
-        }
-        return commonizedKlibs
-    }
-
-    private fun KonanDistribution.commonizedKlibs(platforms: List<Platform>, kotlinUserSettings: KotlinUserSettings) =
-        commonizedKlibs(platforms, kotlinUserSettings.compilerVersion)
+    ): List<Path> = librariesForMetadataCompilation(fragmentPlatforms.map { it.toPlatform() }.asCommonizerTarget())
 
     context(_: ProblemReporter)
     private suspend fun compileCommonSources(
@@ -312,7 +292,7 @@ internal class MetadataCompileTask(
         }
 
         val nativeCompiler = downloadNativeCompiler(kotlinUserSettings.compilerVersion, userCacheRoot, jdkProvider)
-        val commonizedKlibs = commonizedKlibs(nativeCompiler, fragmentPlatforms, kotlinUserSettings)
+        val commonizedKlibs = nativeCompiler.konanDistribution.librariesForMetadataCompilation(fragmentPlatforms)
 
         val kotlinCompiler = kotlinArtifactsDownloader.downloadKotlinCompiler(kotlinUserSettings.compilerVersion, jdk)
         val compilerPlugins = kotlinArtifactsDownloader.downloadCompilerPlugins(

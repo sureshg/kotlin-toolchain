@@ -17,7 +17,7 @@ import org.jetbrains.amper.engine.TaskGraphExecutionContext
 import org.jetbrains.amper.engine.TaskName
 import org.jetbrains.amper.frontend.Model
 import org.jetbrains.amper.frontend.Platform
-import org.jetbrains.amper.frontend.dr.resolver.native.commonizedPlatformsIdentifier
+import org.jetbrains.amper.frontend.dr.resolver.native.asCommonizerTarget
 import org.jetbrains.amper.frontend.isDescendantOf
 import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.jdk.provisioning.JdkProvider
@@ -67,19 +67,18 @@ class CommonizeNativeDistributionTask(
 
     context(_: ProblemReporter)
     private suspend fun commonize(kotlinVersion: String, sharedPlatformSets: Set<List<Platform>>) {
-        val sharedPlatforms = sharedPlatformSets.map {  it.commonizedPlatformsIdentifier() }.toSet()
+        val sharedPlatforms = sharedPlatformSets.map { it.asCommonizerTarget() }.toSet()
 
         // TODO Maybe this should be separated into something more than a suspend function.
         val compiler = downloadNativeCompiler(kotlinVersion, userCacheRoot, jdkProvider)
-        val cache = NativeDistributionCommonizerCache(compiler)
         val commonizerClasspath = kotlinDownloader.downloadKotlinCommonizerEmbeddable(kotlinVersion)
 
-        cache.writeCacheForUncachedTargets(sharedPlatforms) { todoOutputTargets ->
+        compiler.konanDistribution.commonizerCache.writeCacheForUncachedTargets(sharedPlatforms) { todoOutputTargets ->
             val commonizerArgs = buildList {
                 add("native-dist-commonize")
                 add("-distribution-path"); add(compiler.kotlinNativeHome.absolutePathString())
-                add("-output-path"); add(compiler.commonizedPath.absolutePathString())
-                add("-output-targets"); add(todoOutputTargets.joinToString(separator = ";"))
+                add("-output-path"); add(compiler.konanDistribution.commonizedRoot.absolutePathString())
+                add("-output-targets"); add(todoOutputTargets.joinToString(separator = ";") { it.targetNameForCompiler })
             }
 
             spanBuilder("kotlin-native-distribution-commonize")
@@ -91,7 +90,7 @@ class CommonizeNativeDistributionTask(
                         inputValues = mapOf("commonizerArgs" to commonizerArgs.joinToString()),
                         inputFiles = listOf(
                             compiler.kotlinNativeHome,
-                            compiler.commonizedPath,
+                            compiler.konanDistribution.commonizedRoot,
                             *commonizerClasspath.toTypedArray()
                         )
                     ) {

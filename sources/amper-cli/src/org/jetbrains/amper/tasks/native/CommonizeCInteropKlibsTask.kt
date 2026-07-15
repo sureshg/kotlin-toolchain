@@ -17,9 +17,10 @@ import org.jetbrains.amper.engine.GenerateKlibsForIdeTask
 import org.jetbrains.amper.engine.TaskGraphExecutionContext
 import org.jetbrains.amper.engine.TaskName
 import org.jetbrains.amper.frontend.Fragment
-import org.jetbrains.amper.frontend.dr.resolver.native.commonizedPlatformsIdentifier
+import org.jetbrains.amper.frontend.dr.resolver.native.asCommonizerTarget
 import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.jdk.provisioning.JdkProvider
+import org.jetbrains.amper.kotlin.native.dependencyLibrariesForCommonization
 import org.jetbrains.amper.processes.ArgsMode
 import org.jetbrains.amper.processes.LoggingProcessOutputListener
 import org.jetbrains.amper.processes.runJava
@@ -114,16 +115,10 @@ class CommonizeCInteropKlibsTask(
         name: String,
         klibs: List<CinteropKlibsArtifact.Klib>,
     ): Path {
-        val target = fragment.platforms.commonizedPlatformsIdentifier()
+        val target = fragment.platforms.asCommonizerTarget()
 
-        val dependencies = buildList {
-            // Commonized platform libs (we depend on the corresponding task)
-            addAll((compiler.commonizedPath / target).listLibraries())
-            // Leaf ("un-commonized") platform libs are required as well.
-            fragment.platforms.forEach { platform ->
-                addAll((compiler.platformPath / platform.nameForCompiler).listLibraries())
-            }
-        }
+        // We depend on the task that populates the Kotlin/Native distribution's cache, so this is ok
+        val dependencies = compiler.konanDistribution.dependencyLibrariesForCommonization(target)
 
         val inputLibraries = klibs.joinToString(";") { it.path.absolutePathString() }
         val dependencyLibraries = dependencies.joinToString(";") { it.absolutePathString() }
@@ -154,7 +149,7 @@ class CommonizeCInteropKlibsTask(
                     "-input-libraries",
                     inputLibraries,
                     "-output-targets",
-                    target,
+                    target.targetNameForCompiler,
                 ]
                 if (dependencies.isNotEmpty()) {
                     commonizerArgs += "-dependency-libraries"
@@ -173,7 +168,7 @@ class CommonizeCInteropKlibsTask(
                 if (result.exitCode != 0) {
                     userReadableError("cinterop commonization failed, see the errors above")
                 }
-                val tempResult = tempOutput / target / klibs.first().path.nameWithoutExtension
+                val tempResult = tempOutput / target.dirName / klibs.first().path.nameWithoutExtension
                 check(tempResult.isDirectory()) {
                     "Expected $tempResult to exist after commonization"
                 }
@@ -192,7 +187,4 @@ class CommonizeCInteropKlibsTask(
     }
 
     private val logger = LoggerFactory.getLogger(javaClass)
-
-    private fun Path.listLibraries() = listDirectoryEntries()
-        .filter { it.isDirectory() || it.extension == "klib" }
 }

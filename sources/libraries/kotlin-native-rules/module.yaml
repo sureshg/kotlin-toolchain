@@ -1,0 +1,11 @@
+product: jvm/lib
+
+description: Helpers and shared business logic to work with the Kotlin/Native distribution and commonizer.
+
+apply:
+  - //sources/common.module-template.yaml
+  - //sources/used-in-idea.module-template.yaml
+
+dependencies:
+  - //sources/libraries/concurrency
+  - $libs.slf4j.api

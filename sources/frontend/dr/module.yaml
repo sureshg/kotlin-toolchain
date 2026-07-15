@@ -19,6 +19,7 @@ dependencies:
   - //sources/dependency-resolution: exported
   - //sources/libraries/telemetry
   - //sources/libraries/incremental-cache
+  - //sources/libraries/kotlin-native-rules: exported
   - //sources/libraries/maven-central-configuration
   - $libs.slf4j.api
   - $libs.intellij.platform.util
