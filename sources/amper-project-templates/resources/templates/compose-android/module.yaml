@@ -4,8 +4,8 @@ dependencies:
   - $compose.foundation
   - $compose.material3
   # Compose integration with Android activities
-  - androidx.activity:activity-compose:1.7.2
-  - androidx.appcompat:appcompat:1.6.1
+  - androidx.activity:activity-compose:1.13.0
+  - androidx.appcompat:appcompat:1.7.1
 
 settings:
   android:
