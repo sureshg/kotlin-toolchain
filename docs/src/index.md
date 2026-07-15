@@ -134,8 +134,8 @@ Install the [Kotlin Toolchain plugin](https://plugins.jetbrains.com/plugin/31850
     # Android-only dependencies
     dependencies@android:
       # Android-specific integration with Compose
-      - androidx.activity:activity-compose:1.7.2: exported
-      - androidx.appcompat:appcompat:1.6.1: exported
+      - androidx.activity:activity-compose:1.13.0: exported
+      - androidx.appcompat:appcompat:1.7.1: exported
 
     settings:
       # Enable Kotlin serialization

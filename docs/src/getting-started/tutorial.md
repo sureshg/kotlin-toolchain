@@ -440,8 +440,8 @@ dependencies@jvm:
 
 dependencies@android:
   # Compose integration with Android activities
-  - androidx.activity:activity-compose:1.7.2: exported
-  - androidx.appcompat:appcompat:1.6.1: exported
+  - androidx.activity:activity-compose:1.13.0: exported
+  - androidx.appcompat:appcompat:1.7.1: exported
 
 settings:
   compose:
@@ -583,8 +583,8 @@ dependencies@jvm:
 
 dependencies@android:
   # Compose integration with Android activities
-  - androidx.activity:activity-compose:1.7.2: exported
-  - androidx.appcompat:appcompat:1.6.1: exported
+  - androidx.activity:activity-compose:1.13.0: exported
+  - androidx.appcompat:appcompat:1.7.1: exported
 ```
 
 ```yaml title="jvm-app/module.yaml"
