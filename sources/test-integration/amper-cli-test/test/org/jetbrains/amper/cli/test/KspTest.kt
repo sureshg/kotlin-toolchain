@@ -259,26 +259,6 @@ class KspTest: AmperCliTestBase() {
         )
     }
 
-    // TODO Enable when Koin supports KSP2
-    @Disabled("Koin doesn't support KSP2 yet: https://github.com/InsertKoinIO/koin-annotations/issues/132")
-    @Test
-    fun `ksp jvm koin`() = runSlowTest {
-        val projectRoot = testProject("ksp-jvm-koin")
-        val buildResult = runCli(projectRoot, "build")
-
-        val generatedFilesDir = buildResult.generatedFilesDir(module = "ksp-jvm-koin", fragment = "jvm")
-        generatedFilesDir.assertContainsRelativeFiles(
-            "src/ksp/kotlin/org/koin/ksp/generated/CoffeeShopModuleGencom\$sample\$koin.kt",
-            "src/ksp/kotlin/org/koin/ksp/generated/KoinMeta-1876525009.kt",
-        )
-
-        val runResult = runCli(projectRoot, "run")
-        runResult.assertSomeStdoutLineContains("Starting Koin...")
-        runResult.assertSomeStdoutLineContains("Hello, Koin!")
-        runResult.assertSomeStdoutLineContains("Heater: heating...")
-        runResult.assertSomeStdoutLineContains("CoffeeMaker: brewing...")
-    }
-
     @Test
     fun `compose multiplatform room`() = runSlowTest {
         val projectRoot = testProject("compose-multiplatform-room")
