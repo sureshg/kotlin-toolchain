@@ -5,7 +5,6 @@
 package org.jetbrains.amper.tasks.android
 
 import com.android.repository.api.ConsoleProgressIndicator
-import com.android.repository.api.License
 import com.android.repository.api.LocalPackage
 import com.android.repository.api.RemotePackage
 import com.android.repository.api.RepoManager
@@ -26,6 +25,7 @@ import org.jetbrains.amper.core.downloader.Downloader
 import org.jetbrains.amper.core.downloader.amperHttpClient
 import org.jetbrains.amper.core.extract.ExtractOptions
 import org.jetbrains.amper.core.extract.extractFileToCacheLocation
+import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.slf4j.LoggerFactory
 import java.io.InputStream
 import java.io.OutputStream
@@ -41,7 +41,6 @@ import kotlin.io.path.isDirectory
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.name
 import kotlin.io.path.outputStream
-import kotlin.io.path.walk
 
 private const val androidRepositoryUrl = "https://dl.google.com/"
 private const val androidRepositoryBasePath = "/android/repository/"
@@ -166,14 +165,10 @@ class SdkInstallManager(private val userCacheRoot: AmperUserCacheRoot, private v
     private suspend fun HttpClient.getRepository(url: Url): Repository =
         get(url).bodyAsChannel().toInputStream().use { it.unmarshal<Repository>() }
 
-    fun findUnacceptedSdkLicenses(): List<License> = androidSdkPath
-        .walk()
-        .filter { it.name == "package.xml" }
-        .map { it.readRepository().localPackage.license }
-        .filterNot { license -> license.checkAccepted(androidSdkPath) }
-        .distinct()
-        .sorted()
-        .toList()
+    suspend fun findUnacceptedSdkLicenseIds(incrementalCache: IncrementalCache): List<String> =
+        AndroidSdkLicenseChecker(androidSdkPath, incrementalCache) { packageManifest ->
+            packageManifest.readRepository().localPackage.license
+        }.findUnacceptedLicenseIds()
 
     private fun writePackageXml(pkg: RemotePackage, localPackagePath: Path): LocalPackage {
         val localPackage = LocalPackageImpl.create(pkg)

@@ -39,7 +39,8 @@ fun ProjectTasksBuilder.setupAndroidTasks() {
             task = CheckAndroidSdkLicenseTask(
                 androidSdkPath = androidSdkPath,
                 userCacheRoot = context.userCacheRoot,
-                taskName = AndroidTaskType.CheckAndroidSdkLicense.getTaskName(module, Platform.ANDROID)
+                incrementalCache = context.incrementalCache,
+                taskName = AndroidTaskType.CheckAndroidSdkLicense.getTaskName(module, Platform.ANDROID),
             ),
             dependsOn = AndroidTaskType.InstallCmdlineTools.getTaskName(module, Platform.ANDROID)
         )

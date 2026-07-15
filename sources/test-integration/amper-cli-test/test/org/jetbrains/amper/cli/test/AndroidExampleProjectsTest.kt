@@ -9,6 +9,7 @@ import com.google.devrel.gmscore.tools.apk.arsc.ArscBlamer
 import com.google.devrel.gmscore.tools.apk.arsc.BinaryResourceFile
 import com.google.devrel.gmscore.tools.apk.arsc.BinaryResourceIdentifier
 import com.google.devrel.gmscore.tools.apk.arsc.ResourceTableChunk
+import io.opentelemetry.api.common.AttributeKey
 import org.gradle.tooling.internal.consumer.ConnectorServices
 import org.jetbrains.amper.cli.test.utils.assertStdoutContains
 import org.jetbrains.amper.cli.test.utils.getTaskOutputPath
@@ -16,12 +17,18 @@ import org.jetbrains.amper.cli.test.utils.runSlowTest
 import org.jetbrains.amper.core.extract.extractZip
 import org.jetbrains.amper.test.AmperCliResult
 import org.jetbrains.amper.test.Dirs
+import org.jetbrains.amper.test.android.AndroidTools
 import org.jf.dexlib2.DexFileFactory
 import org.jf.dexlib2.Opcodes
+import org.junit.jupiter.api.parallel.ResourceLock
 import java.nio.file.Path
+import java.util.UUID
 import kotlin.io.path.PathWalkOption
 import kotlin.io.path.absolutePathString
+import kotlin.io.path.copyTo
 import kotlin.io.path.createDirectories
+import kotlin.io.path.createParentDirectories
+import kotlin.io.path.deleteRecursively
 import kotlin.io.path.div
 import kotlin.io.path.exists
 import kotlin.io.path.extension
@@ -36,6 +43,9 @@ import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.test.fail
+
+private const val androidSdkLicenseCacheSpanNamePrefix = "inc: run: android-sdk-license-check:"
+private val incrementalCacheStatusKey = AttributeKey.stringKey("status")
 
 class AndroidExampleProjectsTest : AmperCliTestBase() {
 
@@ -124,6 +134,106 @@ class AndroidExampleProjectsTest : AmperCliTestBase() {
         } else {
             assertContains(result.stderr, expectedError1)
         }
+    }
+
+    @Test
+    @ResourceLock("android-sdk-license-cache-traces")
+    fun `SDK license check cache is hit on a repeated Android build`() = runSlowTest {
+        val projectDir = testProject("android/simple")
+        val androidTools = AndroidTools.getOrInstallForTests()
+
+        val coldBuild = runCli(
+            projectDir = projectDir,
+            "build",
+            configureAndroidHome = false,
+            environment = androidTools.environment(),
+        )
+        assertEquals(
+            "requires-building",
+            coldBuild.telemetrySpans
+                .single { it.name.startsWith(androidSdkLicenseCacheSpanNamePrefix) }
+                .attributes[incrementalCacheStatusKey],
+        )
+
+        val warmBuild = runCli(
+            projectDir = projectDir,
+            "build",
+            configureAndroidHome = false,
+            environment = androidTools.environment(),
+        )
+        assertEquals(
+            "up-to-date",
+            warmBuild.telemetrySpans
+                .single { it.name.startsWith(androidSdkLicenseCacheSpanNamePrefix) }
+                .attributes[incrementalCacheStatusKey],
+        )
+    }
+
+    @Test
+    @ResourceLock("android-sdk-license-cache-traces")
+    fun `Android builds invalidate the SDK license cache when a package manifest is added or removed`() = runSlowTest {
+        val projectDir = testProject("android/simple")
+        val androidTools = AndroidTools.getOrInstallForTests()
+        val androidSdkPath = androidTools.androidSdkHome
+
+        val coldBuild = runCli(
+            projectDir = projectDir,
+            "build",
+            configureAndroidHome = false,
+            environment = androidTools.environment(),
+        )
+        assertEquals(
+            "requires-building",
+            coldBuild.telemetrySpans
+                .single { it.name.startsWith(androidSdkLicenseCacheSpanNamePrefix) }
+                .attributes[incrementalCacheStatusKey],
+        )
+
+        val extraPackageDir = androidSdkPath / "build-tools" / "amper-license-cache-test-${UUID.randomUUID()}"
+        val sourcePackageManifest = androidSdkPath / "cmdline-tools" / "latest" / "package.xml"
+        try {
+            sourcePackageManifest.copyTo((extraPackageDir / "package.xml").createParentDirectories())
+            val buildAfterAddingPackage = runCli(
+                projectDir = projectDir,
+                "build",
+                configureAndroidHome = false,
+                environment = androidTools.environment(),
+            )
+            assertEquals(
+                "requires-building",
+                buildAfterAddingPackage.telemetrySpans
+                    .single { it.name.startsWith(androidSdkLicenseCacheSpanNamePrefix) }
+                    .attributes[incrementalCacheStatusKey],
+            )
+
+            val unchangedBuild = runCli(
+                projectDir = projectDir,
+                "build",
+                configureAndroidHome = false,
+                environment = androidTools.environment(),
+            )
+            assertEquals(
+                "up-to-date",
+                unchangedBuild.telemetrySpans
+                    .single { it.name.startsWith(androidSdkLicenseCacheSpanNamePrefix) }
+                    .attributes[incrementalCacheStatusKey],
+            )
+        } finally {
+            extraPackageDir.deleteRecursively()
+        }
+
+        val buildAfterRemovingPackage = runCli(
+            projectDir = projectDir,
+            "build",
+            configureAndroidHome = false,
+            environment = androidTools.environment(),
+        )
+        assertEquals(
+            "requires-building",
+            buildAfterRemovingPackage.telemetrySpans
+                .single { it.name.startsWith(androidSdkLicenseCacheSpanNamePrefix) }
+                .attributes[incrementalCacheStatusKey],
+        )
     }
 
     private fun unacceptedLicenseMessage(sdkManagerPath: Path, licenseName: String) = """
