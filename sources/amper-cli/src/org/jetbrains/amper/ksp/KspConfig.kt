@@ -24,7 +24,7 @@ internal fun KspJsConfig(
     block: KspJsConfig.Builder.() -> Unit = {},
 ): KspJsConfig = KspJsConfig.Builder(kspOutputPaths, compilationSettings).apply(block)
 
-internal fun KspNativeConfig(
+internal inline fun KspNativeConfig(
     kspOutputPaths: KspOutputPaths,
     compilationSettings: CompilationUserSettings,
     block: KspNativeConfig.Builder.() -> Unit = {},

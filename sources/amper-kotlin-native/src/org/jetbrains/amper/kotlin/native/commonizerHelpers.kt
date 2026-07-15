@@ -22,4 +22,4 @@ fun Collection<Platform>.asCommonizerTarget(): CommonizerTarget = map { it.toKon
 /**
  * Returns the [KonanPlatform] that corresponds to this [Platform], so it can be used in the Konan library.
  */
-private fun Platform.toKonanPlatform(): KonanPlatform = KonanPlatform(nameForCompiler)
+fun Platform.toKonanPlatform(): KonanPlatform = KonanPlatform(nameForCompiler)

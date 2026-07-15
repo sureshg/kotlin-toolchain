@@ -8,6 +8,9 @@ import org.jetbrains.amper.CliReportingMavenResolver
 import org.jetbrains.amper.ProcessRunner
 import org.jetbrains.amper.cli.context.AmperBuildOutputRoot
 import org.jetbrains.amper.cli.context.AmperProjectTempRoot
+import org.jetbrains.amper.cli.logging.infoNoConsole
+import org.jetbrains.amper.compilation.CompilationUserSettings
+import org.jetbrains.amper.compilation.downloadNativeCompiler
 import org.jetbrains.amper.compilation.kotlinModuleName
 import org.jetbrains.amper.compilation.serializableCompilationSettings
 import org.jetbrains.amper.compilation.singleLeafFragment
@@ -29,6 +32,7 @@ import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.incrementalcache.executeForFiles
 import org.jetbrains.amper.jdk.provisioning.JdkProvider
 import org.jetbrains.amper.jvm.getJdkOrUserError
+import org.jetbrains.amper.kotlin.native.toKonanPlatform
 import org.jetbrains.amper.ksp.Ksp
 import org.jetbrains.amper.ksp.KspCommonConfig
 import org.jetbrains.amper.ksp.KspCompilationType
@@ -184,6 +188,7 @@ internal class KspTask(
         }.outputFiles
     }
 
+    context(_: ProblemReporter)
     private suspend fun Ksp.runKsp(
         compileLibraries: List<Path>,
         kspOutputPaths: KspOutputPaths,
@@ -226,8 +231,9 @@ internal class KspTask(
                 sharedConfig()
                 targetName = platform.schemaValue
 
-                // TODO should we add stdlib and platform libs manually like in the KSP Gradle plugin?
+                // Add stdlib and platform libs manually like in the KSP Gradle plugin (AMPER-4398).
                 // https://github.com/google/ksp/blob/e1b8468309aeff7912420a202300751783d0b2c9/gradle-plugin/src/main/kotlin/com/google/devtools/ksp/gradle/KspAATask.kt#L474-L486
+                libraries = compileLibraries + provisionRequiredNativePlatformLibs(compilationSettings)
             }
         }
         val legacyListMode = KspConfig.needsLegacyListMode(kspVersion)
@@ -244,7 +250,7 @@ internal class KspTask(
             if (sources.isEmpty()) {
                 logger.debug("No sources were found for ${fragments.identificationPhrase()}, skipping KSP")
             } else {
-                logger.info("Running KSP on ${fragments.identificationPhrase()}")
+                logger.infoNoConsole("Running KSP on ${fragments.identificationPhrase()}")
                 run(
                     compilationType = kspCompilationType,
                     processorClasspath = kspProcessorClasspath,
@@ -253,6 +259,24 @@ internal class KspTask(
                 )
             }
             kspOutputPaths.outputDirs
+        }
+    }
+
+    /**
+     * Provisions the stdlib and platform libs of the K/N distribution manually like
+     * [in the KSP Gradle plugin](https://github.com/google/ksp/blob/e1b8468309aeff7912420a202300751783d0b2c9/gradle-plugin/src/main/kotlin/com/google/devtools/ksp/gradle/KspAATask.kt#L474-L486).
+     *
+     * KSP needs this to know about stdlib declarations (see AMPER-4398 for example failures).
+     */
+    context(_: ProblemReporter)
+    private suspend fun provisionRequiredNativePlatformLibs(compilationSettings: CompilationUserSettings): List<Path> {
+        val kotlinVersion = compilationSettings.kotlin.compilerVersion
+        val konanData = downloadNativeCompiler(kotlinVersion, userCacheRoot, jdkProvider).konanDistribution
+        return buildList {
+            if (konanData.stdlibDir.exists()) {
+                add(konanData.stdlibDir)
+            }
+            addAll(konanData.platformLibs(platform.toKonanPlatform()))
         }
     }
 
