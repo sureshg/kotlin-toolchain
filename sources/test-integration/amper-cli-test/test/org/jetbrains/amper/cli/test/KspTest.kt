@@ -279,43 +279,6 @@ class KspTest: AmperCliTestBase() {
         runResult.assertSomeStdoutLineContains("CoffeeMaker: brewing...")
     }
 
-    // TODO Enable when Koin supports KSP2
-    @Disabled("Koin doesn't support KSP2 yet: https://github.com/InsertKoinIO/koin-annotations/issues/132")
-    @Test
-    fun `ksp multiplatform koin`() = runSlowTest {
-        val kspResult = runCli(testProject("ksp-kmp-koin"), "task", ":ksp-kmp-koin:kspJvm")
-
-        kspResult.generatedFilesDir(module = "ksp-kmp-koin", fragment = "jvm").assertContainsRelativeFiles(
-            "src/ksp/kotlin/org/koin/ksp/generated/CoffeeShopModuleGencom\$sample\$koin.kt",
-            "src/ksp/kotlin/org/koin/ksp/generated/KoinMeta-1876525009.kt",
-        )
-
-        val os = SystemInfo.CurrentHost
-        if (os.family.isWindows) {
-            kspResult.generatedFilesDir(module = "shared", fragment = "mingwX64").assertContainsRelativeFiles(
-                "src/ksp/kotlin/org/koin/ksp/generated/CoffeeShopModuleGencom\$sample\$koin.kt",
-                "src/ksp/kotlin/org/koin/ksp/generated/KoinMeta-1876525009.kt",
-            )
-        }
-
-        if (os.family.isMac) {
-            if (os.arch == Arch.Arm64) {
-                kspResult.generatedFilesDir(module = "shared", fragment = "macosArm64")
-                    .assertContainsRelativeFiles(
-                        "src/ksp/kotlin/org/koin/ksp/generated/CoffeeShopModuleGencom\$sample\$koin.kt",
-                        "src/ksp/kotlin/org/koin/ksp/generated/KoinMeta-1876525009.kt",
-                    )
-            }
-            if (os.arch == Arch.X64) {
-                kspResult.generatedFilesDir(module = "shared", fragment = "macosX64")
-                    .assertContainsRelativeFiles(
-                        "src/ksp/kotlin/org/koin/ksp/generated/CoffeeShopModuleGencom\$sample\$koin.kt",
-                        "src/ksp/kotlin/org/koin/ksp/generated/KoinMeta-1876525009.kt",
-                    )
-            }
-        }
-    }
-
     @Test
     fun `compose multiplatform room`() = runSlowTest {
         val projectRoot = testProject("compose-multiplatform-room")
