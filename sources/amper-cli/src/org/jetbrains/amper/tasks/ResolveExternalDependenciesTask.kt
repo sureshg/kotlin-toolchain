@@ -27,7 +27,9 @@ import org.jetbrains.amper.frontend.dr.resolver.flow.toPlatform
 import org.jetbrains.amper.frontend.dr.resolver.flow.toResolutionPlatform
 import org.jetbrains.amper.frontend.dr.resolver.getExternalDependencies
 import org.jetbrains.amper.frontend.fragmentsTargeting
+import org.jetbrains.amper.frontend.internalSettings
 import org.jetbrains.amper.frontend.mavenResolveRepositories
+import org.jetbrains.amper.frontend.testInternalSettings
 import org.jetbrains.amper.incrementalcache.IncrementalCache
 import org.jetbrains.amper.incrementalcache.ResultWithSerializable
 import org.jetbrains.amper.incrementalcache.execute
@@ -197,12 +199,15 @@ class ResolveExternalDependenciesTask(
 
                     val result = try {
                         val moduleDependenciesRoot = moduleDependencies.allLeafPlatformsGraph(isTest)
+                        val internalSettings = if (isTest) module.testInternalSettings else module.internalSettings
                         incrementalCache.execute(
                             key = cacheEntryKey,
                             inputValues = mapOf(
                                 "userCacheRoot" to userCacheRoot.path.pathString,
                                 "dependencies" to moduleDependenciesRoot.children.flatMap { it.getExternalDependencies() }
                                     .joinToString("|"),
+                                // FIXME this is not completely correct, we also need to account for exclusions in transitive module dependencies
+                                "excludedDependencies" to internalSettings.excludeDependencies.joinToString("|"),
                                 "repositories" to repositories.joinToString("|"),
                                 "resolvePlatform" to resolutionPlatform.type.value,
                                 "resolveNativeTarget" to (resolutionPlatform.nativeTarget ?: ""),

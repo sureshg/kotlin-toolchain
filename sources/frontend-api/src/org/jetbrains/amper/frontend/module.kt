@@ -11,6 +11,7 @@ import org.jetbrains.amper.frontend.plugins.AmperMavenPluginDescription
 import org.jetbrains.amper.frontend.plugins.CheckFromPlugin
 import org.jetbrains.amper.frontend.plugins.CustomCommandFromPlugin
 import org.jetbrains.amper.frontend.plugins.TaskFromPluginDescription
+import org.jetbrains.amper.frontend.schema.InternalSettings
 import org.jetbrains.amper.frontend.schema.JdkSettings
 import org.jetbrains.amper.frontend.schema.MavenPluginSettings
 import org.jetbrains.amper.frontend.schema.Module
@@ -231,3 +232,15 @@ val AmperModule.jdkSettings: JdkSettings get() = fragments.first { !it.isTest }.
  */
 // We don't have to go through all fragments, the JdkSettings are platform-agnostic.
 val AmperModule.testJdkSettings: JdkSettings get() = fragments.first { it.isTest }.settings.jvm.jdk
+
+/**
+ * Returns the internal settings for this module's production code.
+ */
+// We don't have to go through all fragments, the JdkSettings are platform-agnostic.
+val AmperModule.internalSettings: InternalSettings get() = fragments.first { !it.isTest }.settings.internal
+
+/**
+ * Returns the internal settings for this module's test code.
+ */
+// We don't have to go through all fragments, the JdkSettings are platform-agnostic.
+val AmperModule.testInternalSettings: InternalSettings get() = fragments.first { !it.isTest }.settings.internal
