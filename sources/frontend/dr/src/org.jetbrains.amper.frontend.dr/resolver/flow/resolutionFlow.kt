@@ -72,6 +72,11 @@ internal abstract class AbstractDependenciesFlow<T: DependenciesFlowType>(
         val repositories = with(ModuleDependencies) {
             getValidRepositories()
         }
+        // todo (AB): [AMPER-5545] Should dependenciesBlocklist be transitive? Should it affect consumer?
+        //  if it should affect consumer, then it should be propagated to the entire graph like a constraint or exclude,
+        //  if it is a transitive setting, then it should be used in contextKey below.
+        //  Module Dependencies should be resolved against union of all excluded dependencies the upstream consumer modules.
+        // See details in the issue
         val context = contextMap.computeIfAbsent(
             ContextKey(
                 scope,
